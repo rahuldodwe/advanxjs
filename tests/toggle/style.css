@@ -1,3 +1,1 @@
-.card { padding: 2rem; text-align: center; font-family: sans-serif; }
-.secret-box { margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; color: #1565c0; border: 1px solid #bbdefb; }
-button { padding: 10px 20px; cursor: pointer; border-radius: 5px; border: none; background: #333; color: white; }
+.card { font-family: sans-serif; padding: 20px; border: 1px solid #ddd; }

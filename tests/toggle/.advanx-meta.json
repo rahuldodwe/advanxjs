@@ -1,0 +1,19 @@
+{
+  "component": "toggle",
+  "signals": [
+    "showSecret",
+    "btnText"
+  ],
+  "actions": [
+    "toggle"
+  ],
+  "structure": {
+    "mustaches": [
+      "btnText"
+    ],
+    "conditionals": [
+      "showSecret"
+    ]
+  },
+  "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
+}

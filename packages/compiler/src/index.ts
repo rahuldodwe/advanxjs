@@ -8,44 +8,35 @@ export async function compileComponent(dir: string) {
   const logicCode = fs.readFileSync(logicPath, "utf-8");
   const style = fs.readFileSync(path.join(dir, "style.css"), "utf-8");
 
-  // 1. Extract Exports
-  const exports = [...logicCode.matchAll(/export\s+(const|function)\s+(\w+)/g)].map(m => m[2]);
+  const exports = [...logicCode.matchAll(/export\s+(const|function|class)\s+(\w+)/g)].map(m => m[2]);
+  const { mustacheBindings, ifBindings } = validateBindings(view, exports);
 
-  // 2. Validate Contract
-  validateBindings(view, exports);
+  // ARTICLE VIII: SELF-MAPPING METADATA
+  const metadata = {
+    component: path.basename(dir),
+    signals: exports.filter(e => logicCode.includes(`${e} = signal`) || logicCode.includes(`${e} = computed`)),
+    actions: exports.filter(e => logicCode.includes(`function ${e}`) || logicCode.includes(`${e} = (`)),
+    structure: { mustaches: mustacheBindings, conditionals: ifBindings },
+    tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled."
+  };
+  fs.writeFileSync(path.join(dir, ".advanx-meta.json"), JSON.stringify(metadata, null, 2));
 
-  // 3. Prepare Build
   const dist = path.join(dir, "dist");
   if (!fs.existsSync(dist)) fs.mkdirSync(dist);
 
-  // This is the glue code that connects everything
   const glue = `
     import * as logic from "../logic.ts";
-    import { mount } from "../../../packages/core/src/runtime.ts";
-
-    const styleTag = document.createElement("style");
-    styleTag.innerHTML = \`${style}\`;
-    document.head.appendChild(styleTag);
-
-    const appDiv = document.getElementById("app");
-    if (appDiv) {
-      appDiv.innerHTML = \`${view}\`;
-      mount(appDiv, logic);
-    }
+    import { bootstrap } from "../../../packages/core/src/runtime.ts";
+    const view = ${JSON.stringify(view)};
+    const style = ${JSON.stringify(style)};
+    bootstrap(view, style, logic);
   `;
 
-  const entryPath = path.join(dist, "entry.ts");
-  fs.writeFileSync(entryPath, glue);
-
+  fs.writeFileSync(path.join(dist, "entry.ts"), glue);
   const result = await Bun.build({
-    entrypoints: [entryPath],
+    entrypoints: [path.join(dist, "entry.ts")],
     outdir: dist,
     naming: "bundle.js",
   });
-
-  if (!result.success) {
-    console.error("🚨 Bun Build Failed!");
-    console.log(result.logs);
-    throw new Error("Build process failed.");
-  }
+  if (!result.success) throw new Error("Build failed");
 }

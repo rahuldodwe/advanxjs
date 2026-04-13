@@ -43,3 +43,31 @@ bun install
 # Build the sample counter
 bun packages/cli/src/index.ts tests/counter
 ```
+
+
+
+
+---
+
+### 🗺️ Roadmap
+
+- [x] **Phase 1: The Spark** - Core Runtime + Contract Validator (Current)
+- [ ] **Phase 2: The Engine** - `ax-if`, `ax-for` Directives & List Rendering
+- [ ] **Phase 3: The CLI** - Project Scaffolding & `npm create advanx`
+- [ ] **Phase 4: AdvanxUI** - Agent-Native Premium Component Library
+
+---
+
+### 👨‍💻 Founder
+
+**Rahul Dodwe**  
+*Building the future of Agent-Native (AX) development.*  
+[Follow the journey on GitHub](https://github.com/YOUR_GITHUB_USERNAME)
+
+---
+
+### 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+© 2026 Rahul Dodwe

@@ -1,11 +1,5 @@
 <div class="card">
   <h1>AdvanxJS Toggle</h1>
-  
-  <button onclick="toggle()">
-    {{ buttonText }}
-  </button>
-
-  <div ax-if="isVisible" class="secret-box">
-    <p>🔓 This is a secret message!</p>
-  </div>
+  <button onclick="toggle()">{{ btnText }}</button>
+  <p ax-if="showSecret">🔓 The secret code is: ADVANX-2026</p>
 </div>

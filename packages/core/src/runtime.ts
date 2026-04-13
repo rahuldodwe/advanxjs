@@ -1,11 +1,8 @@
-// ARTICLE II: THE SIGNAL IS TRUTH
-// We export signals from here so the entire app uses ONE instance.
-export { signal, computed, effect } from "@preact/signals-core";
-import { effect } from "@preact/signals-core";
+import { effect, signal, computed } from "@preact/signals-core";
+export { signal, computed, effect };
 
 export function mount(root: HTMLElement, logic: any) {
-  console.log("AdvanxJS: Mounting with logic keys:", Object.keys(logic));
-
+  // 1. MUSTACHE BINDINGS
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const textNodes: { node: Text; original: string }[] = [];
   let tNode;
@@ -14,31 +11,51 @@ export function mount(root: HTMLElement, logic: any) {
       textNodes.push({ node: tNode as Text, original: tNode.textContent });
     }
   }
-
   textNodes.forEach(({ node, original }) => {
-    const match = original.match(/\{\{\s*(\w+)\s*\}\}/);
-    if (match) {
-      const key = match[1];
-      const sig = logic[key];
-
-      if (sig && typeof sig === 'object' && 'value' in sig) {
-        effect(() => {
-          const val = sig.value;
-          console.log(`AdvanxJS: DOM Update -> ${key} = ${val}`);
-          node.textContent = original.replace(match[0], val);
-        });
-      }
+    const key = original.match(/\{\{\s*(\w+)\s*\}\}/)?.[1];
+    if (key && logic[key] && 'value' in logic[key]) {
+      effect(() => { node.textContent = original.replace(/\{\{.*?\}\}/, logic[key].value); });
     }
   });
 
-  root.querySelectorAll('[onclick]').forEach(el => {
-    const method = el.getAttribute('onclick')?.replace('()', '');
-    if (method && logic[method]) {
-      el.removeAttribute('onclick');
-      el.addEventListener('click', () => {
-        console.log(`AdvanxJS: Action Triggered -> ${method}`);
-        logic[method]();
+  // 2. CONDITIONALS (ax-if)
+  Array.from(root.querySelectorAll('[ax-if]')).forEach(el => {
+    const element = el as HTMLElement;
+    const key = element.getAttribute('ax-if');
+    const sig = logic[key!];
+    if (sig && 'value' in sig) {
+      const placeholder = document.createComment(` ax-if: ${key} `);
+      let isMounted = true;
+      effect(() => {
+        const show = !!sig.value;
+        if (show && !isMounted) {
+          placeholder.parentNode?.replaceChild(element, placeholder);
+          isMounted = true;
+        } else if (!show && isMounted) {
+          element.parentNode?.replaceChild(placeholder, element);
+          isMounted = false;
+        }
       });
     }
   });
+
+  // 3. EVENTS
+  root.querySelectorAll('[onclick]').forEach(el => {
+    const method = el.getAttribute('onclick')?.replace('()', '');
+    if (method && typeof logic[method] === 'function') {
+      el.removeAttribute('onclick');
+      el.addEventListener('click', () => logic[method]());
+    }
+  });
+}
+
+export function bootstrap(view: string, style: string, logic: any) {
+  const styleTag = document.createElement("style");
+  styleTag.innerHTML = style;
+  document.head.appendChild(styleTag);
+  const appDiv = document.getElementById("app");
+  if (appDiv) {
+    appDiv.innerHTML = view;
+    mount(appDiv, logic);
+  }
 }

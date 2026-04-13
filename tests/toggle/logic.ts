@@ -1,11 +1,4 @@
-import { signal, computed } from "../../packages/core/node_modules/@preact/signals-core";
-
-export const isVisible = signal(false);
-
-export const buttonText = computed(() => 
-  isVisible.value ? "Hide Message" : "Show Message"
-);
-
-export function toggle() {
-  isVisible.value = !isVisible.value;
-}
+import { signal, computed } from "../../packages/core/src/runtime.ts";
+export const showSecret = signal(false);
+export const btnText = computed(() => showSecret.value ? "Hide" : "Show");
+export function toggle() { showSecret.value = !showSecret.value; }
