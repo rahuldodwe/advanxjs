@@ -39,12 +39,16 @@ export function mount(root: HTMLElement, logic: any) {
     }
   });
 
-  // 3. EVENTS
-  root.querySelectorAll('[onclick]').forEach(el => {
-    const method = el.getAttribute('onclick')?.replace('()', '');
-    if (method && typeof logic[method] === 'function') {
-      el.removeAttribute('onclick');
-      el.addEventListener('click', () => logic[method]());
+  // 3. EVENTS (ax-on:<event>="handler")
+  root.querySelectorAll('*').forEach(el => {
+    for (const attr of Array.from(el.attributes)) {
+      if (!attr.name.startsWith('ax-on:')) continue;
+      const event = attr.name.slice(6);
+      const method = attr.value;
+      if (typeof logic[method] === 'function') {
+        el.removeAttribute(attr.name);
+        el.addEventListener(event, () => logic[method]());
+      }
     }
   });
 }

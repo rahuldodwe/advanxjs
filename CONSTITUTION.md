@@ -27,6 +27,9 @@ The core runtime must remain under 5KB (gzipped). Features that exceed this budg
 ### ARTICLE VII: INTENT OVER BEHAVIOR
 Prioritize declarative attributes (e.g., `ax-api`, `ax-cache`) over manual JavaScript execution. Describe *what* the data is, not *how* to fetch it.
 
+### ARTICLE VIII: SELF-MAPPING (Agent Discoverability)
+Every compiled component MUST emit a `.advanx-meta.json` sibling file enumerating its signals, actions, and view bindings (mustaches, conditionals, and event handlers). This artifact is the Agent's contract for reasoning about the component without parsing source. If the metadata cannot be produced, the build MUST fail.
+
 ---
 **Founder:** Rahul Dodwe
 **Status:** ACTIVE
