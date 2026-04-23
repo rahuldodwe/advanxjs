@@ -1,7 +1,19 @@
 import type { LogicAnalysis } from "./analyze";
 import type { ViewBindings } from "./parseView";
 
+const IDENT = /^[A-Za-z_$][\w$]*$/;
+
 export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
+  // Article I — No logic in the View. ax-if must be a bare identifier.
+  for (const name of view.conditionals) {
+    if (!IDENT.test(name)) {
+      throw new Error(
+        `🚨 ADVANXJS CONTRACT VIOLATION: ax-if="${name}" must be a bare identifier — ` +
+        `expressions belong in logic.ts (Article I).`
+      );
+    }
+  }
+
   const actions = new Set(logic.actions);
   const declared = new Set([...logic.signals, ...logic.computed, ...logic.actions]);
 
