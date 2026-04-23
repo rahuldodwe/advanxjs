@@ -3,6 +3,7 @@
   "signals": [
     "count"
   ],
+  "computed": [],
   "actions": [
     "increment"
   ],
@@ -10,7 +11,13 @@
     "mustaches": [
       "count"
     ],
-    "conditionals": []
+    "conditionals": [],
+    "events": [
+      {
+        "event": "click",
+        "handler": "increment"
+      }
+    ]
   },
   "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
 }

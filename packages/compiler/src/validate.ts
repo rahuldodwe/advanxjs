@@ -1,13 +1,27 @@
-export function validateBindings(html: string, logicExports: string[]) {
-  const mustacheBindings = [...html.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map(m => m[1]);
-  const ifBindings = [...html.matchAll(/ax-if="(\w+)"/g)].map(m => m[1]);
+import type { LogicAnalysis } from "./analyze";
+import type { ViewBindings } from "./parseView";
 
-  const allNeeded = [...new Set([...mustacheBindings, ...ifBindings])];
-  const missing = allNeeded.filter(name => !logicExports.includes(name));
+export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
+  const actions = new Set(logic.actions);
+  const declared = new Set([...logic.signals, ...logic.computed, ...logic.actions]);
 
-  if (missing.length > 0) {
-    throw new Error(`🚨 ADVANXJS CONTRACT VIOLATION: Missing exports for [${missing.join(", ")}]`);
+  const missing = new Set<string>();
+  view.mustaches.forEach(n => { if (!declared.has(n)) missing.add(n); });
+  view.conditionals.forEach(n => { if (!declared.has(n)) missing.add(n); });
+  view.events.forEach(({ handler }) => { if (!declared.has(handler)) missing.add(handler); });
+
+  if (missing.size) {
+    throw new Error(
+      `🚨 ADVANXJS CONTRACT VIOLATION: Missing exports for [${[...missing].join(", ")}]`
+    );
   }
 
-  return { mustacheBindings, ifBindings };
+  for (const { event, handler } of view.events) {
+    if (!actions.has(handler)) {
+      throw new Error(
+        `🚨 ADVANXJS CONTRACT VIOLATION: ax-on:${event}="${handler}" expects an action (function), ` +
+        `but "${handler}" is a signal/computed.`
+      );
+    }
+  }
 }

@@ -1,23 +1,30 @@
 import fs from "fs";
 import path from "path";
+import { analyzeLogic } from "./analyze";
+import { parseView } from "./parseView";
 import { validateBindings } from "./validate";
 
 export async function compileComponent(dir: string) {
   const view = fs.readFileSync(path.join(dir, "view.html"), "utf-8");
-  const logicPath = path.join(dir, "logic.ts");
-  const logicCode = fs.readFileSync(logicPath, "utf-8");
+  const logicCode = fs.readFileSync(path.join(dir, "logic.ts"), "utf-8");
   const style = fs.readFileSync(path.join(dir, "style.css"), "utf-8");
 
-  const exports = [...logicCode.matchAll(/export\s+(const|function|class)\s+(\w+)/g)].map(m => m[2]);
-  const { mustacheBindings, ifBindings } = validateBindings(view, exports);
+  const logic = analyzeLogic(logicCode);
+  const bindings = parseView(view);
+  validateBindings(bindings, logic);
 
-  // ARTICLE VIII: SELF-MAPPING METADATA
+  // Article VIII — Self-Mapping metadata
   const metadata = {
     component: path.basename(dir),
-    signals: exports.filter(e => logicCode.includes(`${e} = signal`) || logicCode.includes(`${e} = computed`)),
-    actions: exports.filter(e => logicCode.includes(`function ${e}`) || logicCode.includes(`${e} = (`)),
-    structure: { mustaches: mustacheBindings, conditionals: ifBindings },
-    tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled."
+    signals: logic.signals,
+    computed: logic.computed,
+    actions: logic.actions,
+    structure: {
+      mustaches: bindings.mustaches,
+      conditionals: bindings.conditionals,
+      events: bindings.events,
+    },
+    tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled.",
   };
   fs.writeFileSync(path.join(dir, ".advanx-meta.json"), JSON.stringify(metadata, null, 2));
 
@@ -31,8 +38,8 @@ export async function compileComponent(dir: string) {
     const style = ${JSON.stringify(style)};
     bootstrap(view, style, logic);
   `;
-
   fs.writeFileSync(path.join(dist, "entry.ts"), glue);
+
   const result = await Bun.build({
     entrypoints: [path.join(dist, "entry.ts")],
     outdir: dist,
