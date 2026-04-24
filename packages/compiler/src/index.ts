@@ -23,6 +23,7 @@ export async function compileComponent(dir: string) {
       mustaches: bindings.mustaches,
       conditionals: bindings.conditionals,
       events: bindings.events,
+      loops: bindings.loops,
     },
     tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled.",
   };

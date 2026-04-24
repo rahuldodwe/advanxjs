@@ -1,0 +1,9 @@
+.card {
+  font-family: sans-serif;
+}
+.card ul {
+  padding-left: 1.25rem;
+}
+.card button {
+  margin-right: 0.5rem;
+}

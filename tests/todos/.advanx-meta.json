@@ -1,24 +1,34 @@
 {
-  "component": "counter",
+  "component": "todos",
   "signals": [
-    "count"
+    "todos"
   ],
   "computed": [],
   "actions": [
-    "increment"
+    "addTodo",
+    "removeLast"
   ],
   "structure": {
     "mustaches": [
-      "count"
+      "todo"
     ],
     "conditionals": [],
     "events": [
       {
         "event": "click",
-        "handler": "increment"
+        "handler": "addTodo"
+      },
+      {
+        "event": "click",
+        "handler": "removeLast"
       }
     ],
-    "loops": []
+    "loops": [
+      {
+        "alias": "todo",
+        "source": "todos"
+      }
+    ]
   },
   "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
 }

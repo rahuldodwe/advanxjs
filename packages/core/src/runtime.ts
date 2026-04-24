@@ -2,6 +2,9 @@ import { effect, signal, computed } from "@preact/signals-core";
 export { signal, computed, effect };
 
 export function mount(root: HTMLElement, logic: any) {
+  // 0. LOOPS (ax-for) — detach templates before other passes see them
+  processLoops(root, logic);
+
   // 1. MUSTACHE BINDINGS
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const textNodes: { node: Text; original: string }[] = [];
@@ -40,7 +43,64 @@ export function mount(root: HTMLElement, logic: any) {
   });
 
   // 3. EVENTS (ax-on:<event>="handler")
-  root.querySelectorAll('*').forEach(el => {
+  wireEvents(root, logic);
+}
+
+function processLoops(root: HTMLElement, logic: any) {
+  Array.from(root.querySelectorAll('[ax-for]')).forEach(el => {
+    const element = el as HTMLElement;
+    const expr = element.getAttribute('ax-for')!;
+    const [alias, source] = expr.split(/\s+in\s+/).map(s => s.trim());
+    const sig = logic[source];
+    if (!sig || !('value' in sig)) return;
+
+    element.removeAttribute('ax-for');
+    const template = element.cloneNode(true) as HTMLElement;
+    const placeholder = document.createComment(` ax-for: ${alias} in ${source} `);
+    element.parentNode!.replaceChild(placeholder, element);
+
+    const rendered: { node: Element; data: any }[] = [];
+
+    effect(() => {
+      const items = (sig.value ?? []) as any[];
+      const parent = placeholder.parentNode!;
+      items.forEach((item, i) => {
+        if (i < rendered.length) {
+          if (rendered[i].data !== item) {
+            const fresh = hydrateClone(template, alias, item, logic);
+            parent.replaceChild(fresh, rendered[i].node);
+            rendered[i] = { node: fresh, data: item };
+          }
+        } else {
+          const fresh = hydrateClone(template, alias, item, logic);
+          parent.insertBefore(fresh, placeholder);
+          rendered.push({ node: fresh, data: item });
+        }
+      });
+      while (rendered.length > items.length) {
+        parent.removeChild(rendered.pop()!.node);
+      }
+    });
+  });
+}
+
+function hydrateClone(template: HTMLElement, alias: string, item: any, logic: any): Element {
+  const clone = template.cloneNode(true) as HTMLElement;
+  const aliasRe = new RegExp(`\\{\\{\\s*${alias}\\s*\\}\\}`, 'g');
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+  let t: Node | null;
+  while ((t = walker.nextNode())) {
+    if (t.textContent?.includes('{{')) {
+      t.textContent = t.textContent.replace(aliasRe, String(item));
+    }
+  }
+  wireEvents(clone, logic);
+  return clone;
+}
+
+function wireEvents(root: Element, logic: any) {
+  const targets: Element[] = [root, ...Array.from(root.querySelectorAll('*'))];
+  for (const el of targets) {
     for (const attr of Array.from(el.attributes)) {
       if (!attr.name.startsWith('ax-on:')) continue;
       const event = attr.name.slice(6);
@@ -50,7 +110,7 @@ export function mount(root: HTMLElement, logic: any) {
         el.addEventListener(event, () => logic[method]());
       }
     }
-  });
+  }
 }
 
 export function bootstrap(view: string, style: string, logic: any) {

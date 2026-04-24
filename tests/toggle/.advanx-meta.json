@@ -21,7 +21,8 @@
         "event": "click",
         "handler": "toggle"
       }
-    ]
+    ],
+    "loops": []
   },
   "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
 }

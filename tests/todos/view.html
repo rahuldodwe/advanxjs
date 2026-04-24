@@ -1,0 +1,8 @@
+<div class="card">
+  <h1>AdvanxJS Todo List</h1>
+  <ul>
+    <li ax-for="todo in todos">{{ todo }}</li>
+  </ul>
+  <button ax-on:click="addTodo">Add Task</button>
+  <button ax-on:click="removeLast">Remove Last</button>
+</div>
