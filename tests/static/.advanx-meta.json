@@ -1,0 +1,14 @@
+{
+  "component": "static",
+  "signals": [],
+  "computed": [],
+  "actions": [],
+  "structure": {
+    "mustaches": [],
+    "conditionals": [],
+    "events": [],
+    "loops": [],
+    "models": []
+  },
+  "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
+}

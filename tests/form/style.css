@@ -1,0 +1,4 @@
+.card { font-family: sans-serif; }
+.card label { display: block; margin: 0.5rem 0; }
+.card input { margin-left: 0.5rem; padding: 0.25rem 0.5rem; }
+.card button { margin-top: 0.5rem; }

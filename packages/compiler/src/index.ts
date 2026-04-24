@@ -24,6 +24,7 @@ export async function compileComponent(dir: string) {
       conditionals: bindings.conditionals,
       events: bindings.events,
       loops: bindings.loops,
+      models: bindings.models,
     },
     tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled.",
   };
@@ -32,13 +33,28 @@ export async function compileComponent(dir: string) {
   const dist = path.join(dir, "dist");
   if (!fs.existsSync(dist)) fs.mkdirSync(dist);
 
-  const glue = `
-    import * as logic from "../logic.ts";
-    import { bootstrap } from "../../../packages/core/src/runtime.ts";
-    const view = ${JSON.stringify(view)};
-    const style = ${JSON.stringify(style)};
-    bootstrap(view, style, logic);
-  `;
+  // Article III — Static by Default. Skip the runtime when nothing is reactive.
+  const isStatic =
+    bindings.mustaches.length === 0 &&
+    bindings.conditionals.length === 0 &&
+    bindings.events.length === 0 &&
+    bindings.loops.length === 0 &&
+    bindings.models.length === 0;
+
+  const glue = isStatic
+    ? `const styleTag = document.createElement("style");
+styleTag.innerHTML = ${JSON.stringify(style)};
+document.head.appendChild(styleTag);
+const app = document.getElementById("app");
+if (app) app.innerHTML = ${JSON.stringify(view)};
+`
+    : `import * as logic from "../logic.ts";
+import { bootstrap } from "../../../packages/core/src/runtime.ts";
+const view = ${JSON.stringify(view)};
+const style = ${JSON.stringify(style)};
+bootstrap(view, style, logic);
+`;
+
   fs.writeFileSync(path.join(dist, "entry.ts"), glue);
 
   const result = await Bun.build({

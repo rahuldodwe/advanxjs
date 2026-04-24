@@ -15,16 +15,24 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
     if (!IDENT.test(alias)) throw articleI("ax-for alias", alias);
     if (!IDENT.test(source)) throw articleI("ax-for source", source);
   }
+  for (const name of view.models) {
+    if (!IDENT.test(name)) throw articleI("ax-model", name);
+  }
 
+  const signals = new Set(logic.signals);
   const reactive = new Set([...logic.signals, ...logic.computed]);
   const actions = new Set(logic.actions);
   const loopAliases = new Set(view.loops.map(l => l.alias));
   const declared = new Set([...reactive, ...actions, ...loopAliases]);
 
   const missing = new Set<string>();
-  view.mustaches.forEach(n => { if (!declared.has(n)) missing.add(n); });
+  view.mustaches.forEach(n => {
+    const root = n.split(".")[0];
+    if (!declared.has(root)) missing.add(n);
+  });
   view.conditionals.forEach(n => { if (!declared.has(n)) missing.add(n); });
   view.events.forEach(({ handler }) => { if (!declared.has(handler)) missing.add(handler); });
+  view.models.forEach(n => { if (!declared.has(n)) missing.add(n); });
 
   if (missing.size) {
     throw new Error(
@@ -46,6 +54,15 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
       throw new Error(
         `🚨 ADVANXJS CONTRACT VIOLATION: ax-for="${alias} in ${source}" requires "${source}" ` +
         `to be a signal or computed exported from logic.ts.`
+      );
+    }
+  }
+
+  for (const name of view.models) {
+    if (!signals.has(name)) {
+      throw new Error(
+        `🚨 ADVANXJS CONTRACT VIOLATION: ax-model="${name}" requires "${name}" to be a writable signal ` +
+        `(not a computed or action).`
       );
     }
   }
