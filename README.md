@@ -62,7 +62,7 @@ bun packages/cli/src/index.ts tests/counter
 
 **Rahul Dodwe**  
 *Building the future of Agent-Native (AX) development.*  
-[Follow the journey on GitHub](https://github.com/YOUR_GITHUB_USERNAME)
+[Follow the journey on GitHub](https://github.com/rahuldodwe)
 
 ---
 

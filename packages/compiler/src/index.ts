@@ -61,6 +61,7 @@ bootstrap(view, style, logic);
     entrypoints: [path.join(dist, "entry.ts")],
     outdir: dist,
     naming: "bundle.js",
+    format: "iife",
   });
   if (!result.success) throw new Error("Build failed");
 }

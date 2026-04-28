@@ -10,12 +10,18 @@ export function wireMustaches(root: Element, logic: any) {
     }
   }
   textNodes.forEach(({ node, original }) => {
-    const path = original.match(/\{\{\s*([\w.]+)\s*\}\}/)?.[1];
-    if (!path) return;
-    const rootKey = path.split(".")[0];
-    if (!logic[rootKey] || !('value' in logic[rootKey])) return;
+    const allPaths = [...original.matchAll(/\{\{\s*([\w.]+)\s*\}\}/g)].map(m => m[1]);
+    const valid = allPaths.filter(p => {
+      const rk = p.split(".")[0];
+      return logic[rk] && 'value' in logic[rk];
+    });
+    if (valid.length === 0) return;
     effect(() => {
-      node.textContent = original.replace(/\{\{.*?\}\}/, String(resolvePath(logic, path) ?? ""));
+      node.textContent = original.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, p) => {
+        const rk = p.split(".")[0];
+        if (!logic[rk] || !('value' in logic[rk])) return `{{ ${p} }}`;
+        return String(resolvePath(logic, p) ?? "");
+      });
     });
   });
 }
@@ -125,7 +131,9 @@ export function wireModels(root: Element, logic: any) {
       const v = String(sig.value ?? "");
       if (input.value !== v) input.value = v;
     });
-    input.addEventListener('input', () => { sig.value = input.value; });
+    const sync = () => { sig.value = input.value; };
+    ['input', 'change'].forEach(e => input.addEventListener(e, sync));
+    if (input.value) sync();
   });
 }
 
