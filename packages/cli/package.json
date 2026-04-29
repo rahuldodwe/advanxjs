@@ -1,0 +1,10 @@
+{
+  "name": "advanx",
+  "version": "0.1.0",
+  "description": "AdvanxJS — Agent-Native CLI",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "advanx": "./src/index.ts"
+  }
+}
