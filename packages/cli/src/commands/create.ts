@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { CONSTITUTION } from "../templates/constitution.ts";
 import { GITIGNORE, TSCONFIG, packageJson, readme } from "../templates/project.ts";
 import {
@@ -9,6 +8,7 @@ import {
   COUNTER_STYLE,
   COUNTER_VIEW,
 } from "../templates/counter.ts";
+import { RUNTIME, DIRECTIVES } from "../templates/framework.ts";
 
 export async function run(args: string[]): Promise<void> {
   const name = args[0];
@@ -36,17 +36,14 @@ export async function run(args: string[]): Promise<void> {
   write("tsconfig.json", TSCONFIG);
   write(".gitignore", GITIGNORE);
   write("README.md", readme(name));
-  write("packages/.gitkeep", "");
+  write("index.html", COUNTER_INDEX_HTML);
 
-  const runtime = readFrameworkFile("runtime.ts");
-  const directives = readFrameworkFile("directives.ts");
-  write("packages/core/src/runtime.ts", runtime);
-  write("packages/core/src/directives.ts", directives);
+  write("src/components/counter/logic.ts", COUNTER_LOGIC);
+  write("src/components/counter/view.html", COUNTER_VIEW);
+  write("src/components/counter/style.css", COUNTER_STYLE);
 
-  write("tests/counter/logic.ts", COUNTER_LOGIC);
-  write("tests/counter/view.html", COUNTER_VIEW);
-  write("tests/counter/style.css", COUNTER_STYLE);
-  write("tests/counter/dist/index.html", COUNTER_INDEX_HTML);
+  write("src/lib/advanx/runtime.ts", RUNTIME);
+  write("src/lib/advanx/directives.ts", DIRECTIVES);
 
   console.log(`✔ Scaffolded AdvanxJS project at ${root}`);
   for (const rel of written) console.log(`  + ${rel}`);
@@ -54,18 +51,6 @@ export async function run(args: string[]): Promise<void> {
   console.log("Next steps:");
   console.log(`  cd ${name}`);
   console.log("  bun install");
-  console.log("  advanx build tests/counter");
-  console.log("  advanx explain tests/counter");
-}
-
-function readFrameworkFile(filename: string): string {
-  const here = path.dirname(fileURLToPath(import.meta.url));
-  const corePath = path.resolve(here, "..", "..", "..", "core", "src", filename);
-  if (!fs.existsSync(corePath)) {
-    throw new Error(
-      `🚨 Framework runtime not found at ${corePath}. ` +
-        `Run \`advanx create\` from a checkout of the AdvanxJS monorepo.`
-    );
-  }
-  return fs.readFileSync(corePath, "utf-8");
+  console.log("  advanx build src/components/counter");
+  console.log("  advanx explain src/components/counter");
 }

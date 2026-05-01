@@ -1,4 +1,4 @@
-export const COUNTER_LOGIC = `import { signal } from "../../packages/core/src/runtime.ts";
+export const COUNTER_LOGIC = `import { signal } from "../../lib/advanx/runtime.ts";
 
 export const count = signal(0);
 
@@ -27,7 +27,7 @@ export const COUNTER_INDEX_HTML = `<!DOCTYPE html>
 </head>
 <body>
   <div id="app"></div>
-  <script src="./bundle.js"></script>
+  <script src="./src/components/counter/dist/bundle.js"></script>
 </body>
 </html>
 `;

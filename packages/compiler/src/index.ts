@@ -49,7 +49,7 @@ const app = document.getElementById("app");
 if (app) app.innerHTML = ${JSON.stringify(view)};
 `
     : `import * as logic from "../logic.ts";
-import { bootstrap } from "../../../packages/core/src/runtime.ts";
+import { bootstrap } from "${findRuntimeImport(dir)}";
 const view = ${JSON.stringify(view)};
 const style = ${JSON.stringify(style)};
 bootstrap(view, style, logic);
@@ -64,4 +64,24 @@ bootstrap(view, style, logic);
     format: "iife",
   });
   if (!result.success) throw new Error("Build failed");
+}
+
+function findRuntimeImport(componentDir: string): string {
+  const candidates = ["lib/advanx/runtime.ts", "packages/core/src/runtime.ts"];
+  let cur = componentDir;
+  while (true) {
+    const parent = path.dirname(cur);
+    for (const rel of candidates) {
+      const abs = path.join(parent, rel);
+      if (fs.existsSync(abs)) {
+        return path.relative(path.join(componentDir, "dist"), abs);
+      }
+    }
+    if (parent === cur) break;
+    cur = parent;
+  }
+  throw new Error(
+    `🚨 AdvanxJS runtime not found above ${componentDir}. ` +
+      `Expected src/lib/advanx/runtime.ts or packages/core/src/runtime.ts in an ancestor directory.`
+  );
 }
