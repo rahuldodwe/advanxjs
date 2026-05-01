@@ -52,8 +52,8 @@ bun packages/cli/src/index.ts tests/counter
 ### 🗺️ Roadmap
 
 - [x] **Phase 1: The Spark** - Core Runtime + Contract Validator (Current)
-- [ ] **Phase 2: The Engine** - `ax-if`, `ax-for` Directives & List Rendering
-- [ ] **Phase 3: The CLI** - Project Scaffolding & `npm create advanx`
+- [x] **Phase 2: The Engine** - `ax-if`, `ax-for` Directives & List Rendering
+- [x] **Phase 3: The CLI** - Project Scaffolding & `npm create advanx`
 - [ ] **Phase 4: AdvanxUI** - Agent-Native Premium Component Library
 
 ---
