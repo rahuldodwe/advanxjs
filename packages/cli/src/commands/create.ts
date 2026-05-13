@@ -8,7 +8,8 @@ import {
   COUNTER_STYLE,
   COUNTER_VIEW,
 } from "../templates/counter.ts";
-import { RUNTIME, DIRECTIVES } from "../templates/framework.ts";
+import RUNTIME from "../templates/core/runtime.ts" with { type: "text" };
+import DIRECTIVES from "../templates/core/directives.ts" with { type: "text" };
 
 export async function run(args: string[]): Promise<void> {
   const name = args[0];

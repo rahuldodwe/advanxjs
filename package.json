@@ -1,13 +1,32 @@
 {
-  "name": "advanx-monorepo",
-  "module": "index.ts",
-  "type": "module",
+  "name": "advanxjs",
   "private": true,
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^6.0.3"
+  "version": "0.1.0",
+  "description": "The first Agent-Native (AX) frontend framework. Built for the AI era.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "bin": {
+    "advanx": "./src/index.ts"
   },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rahuldodwe/advanx-monorepo"
+  },
+  "keywords": [
+    "advanx",
+    "framework",
+    "ai-native",
+    "signals",
+    "bun"
+  ],
+  "author": "Rahul Dodwe",
+  "license": "MIT",
   "dependencies": {
-    "@preact/signals-core": "^1.13.0"
+    "@preact/signals-core": "^1.13.0",
+    "typescript": "^6.0.3"
   }
 }

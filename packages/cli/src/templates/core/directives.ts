@@ -1,41 +1,4 @@
-// Embedded framework source for the AdvanxJS scaffolder.
-// These strings are verbatim copies of packages/core/src/runtime.ts and
-// packages/core/src/directives.ts. If those files change, regenerate this file.
-// Embedding is required so `advanx create` works after `bun link` (no
-// monorepo-relative path traversal at runtime).
-
-export const RUNTIME = `import { effect, signal, computed } from "@preact/signals-core";
-import {
-  processLoops,
-  wireMustaches,
-  wireConditionals,
-  wireEvents,
-  wireModels,
-} from "./directives";
-
-export { signal, computed, effect };
-
-export function mount(root: HTMLElement, logic: any) {
-  processLoops(root, logic);
-  wireMustaches(root, logic);
-  wireConditionals(root, logic);
-  wireEvents(root, logic);
-  wireModels(root, logic);
-}
-
-export function bootstrap(view: string, style: string, logic: any) {
-  const styleTag = document.createElement("style");
-  styleTag.innerHTML = style;
-  document.head.appendChild(styleTag);
-  const appDiv = document.getElementById("app");
-  if (appDiv) {
-    appDiv.innerHTML = view;
-    mount(appDiv, logic);
-  }
-}
-`;
-
-export const DIRECTIVES = `import { effect } from "@preact/signals-core";
+import { effect } from "@preact/signals-core";
 
 export function wireMustaches(root: Element, logic: any) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -47,16 +10,16 @@ export function wireMustaches(root: Element, logic: any) {
     }
   }
   textNodes.forEach(({ node, original }) => {
-    const allPaths = [...original.matchAll(/\\{\\{\\s*([\\w.]+)\\s*\\}\\}/g)].map(m => m[1]);
+    const allPaths = [...original.matchAll(/\{\{\s*([\w.]+)\s*\}\}/g)].map(m => m[1]);
     const valid = allPaths.filter(p => {
       const rk = p.split(".")[0];
       return logic[rk] && 'value' in logic[rk];
     });
     if (valid.length === 0) return;
     effect(() => {
-      node.textContent = original.replace(/\\{\\{\\s*([\\w.]+)\\s*\\}\\}/g, (_, p) => {
+      node.textContent = original.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, p) => {
         const rk = p.split(".")[0];
-        if (!logic[rk] || !('value' in logic[rk])) return \`{{ \${p} }}\`;
+        if (!logic[rk] || !('value' in logic[rk])) return `{{ ${p} }}`;
         return String(resolvePath(logic, p) ?? "");
       });
     });
@@ -69,7 +32,7 @@ export function wireConditionals(root: Element, logic: any) {
     const key = element.getAttribute('ax-if');
     const sig = logic[key!];
     if (!sig || !('value' in sig)) return;
-    const placeholder = document.createComment(\` ax-if: \${key} \`);
+    const placeholder = document.createComment(` ax-if: ${key} `);
     let isMounted = true;
     effect(() => {
       const show = !!sig.value;
@@ -88,13 +51,13 @@ export function processLoops(root: Element, logic: any) {
   Array.from(root.querySelectorAll('[ax-for]')).forEach(el => {
     const element = el as HTMLElement;
     const expr = element.getAttribute('ax-for')!;
-    const [alias, source] = expr.split(/\\s+in\\s+/).map(s => s.trim());
+    const [alias, source] = expr.split(/\s+in\s+/).map(s => s.trim());
     const sig = logic[source];
     if (!sig || !('value' in sig)) return;
 
     element.removeAttribute('ax-for');
     const template = element.cloneNode(true) as HTMLElement;
-    const placeholder = document.createComment(\` ax-for: \${alias} in \${source} \`);
+    const placeholder = document.createComment(` ax-for: ${alias} in ${source} `);
     element.parentNode!.replaceChild(placeholder, element);
 
     const rendered: { node: Element; data: any }[] = [];
@@ -123,7 +86,7 @@ export function processLoops(root: Element, logic: any) {
 
 function hydrateClone(template: HTMLElement, alias: string, item: any, logic: any): Element {
   const clone = template.cloneNode(true) as HTMLElement;
-  const aliasRe = new RegExp(\`\\\\{\\\\{\\\\s*\${alias}(\\\\.[\\\\w.]+)?\\\\s*\\\\}\\\\}\`, "g");
+  const aliasRe = new RegExp(`\\{\\{\\s*${alias}(\\.[\\w.]+)?\\s*\\}\\}`, "g");
   const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
   let t: Node | null;
   while ((t = walker.nextNode())) {
@@ -185,4 +148,3 @@ function resolvePath(logic: any, path: string): any {
   }
   return cur;
 }
-`;

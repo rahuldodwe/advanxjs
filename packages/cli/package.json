@@ -1,10 +1,27 @@
 {
-  "name": "advanx",
-  "version": "0.1.0",
-  "description": "AdvanxJS — Agent-Native CLI",
+  "name": "advanxjs",
+  "version": "0.1.11",
+  "description": "The first Agent-Native (AX) frontend framework.",
   "type": "module",
-  "private": true,
+  "main": "./src/index.ts",
   "bin": {
-    "advanx": "./src/index.ts"
+    "advanxjs": "./bin/index.js"
+  },
+  "files": [
+    "bin/index.js",
+    "bin/core.js",
+    "src",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "chmod +x bin/index.js"
+  },
+  "author": "Rahul Dodwe",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^6.0.3"
   }
 }
