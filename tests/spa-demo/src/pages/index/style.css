@@ -1,0 +1,5 @@
+.page { font-family: system-ui, sans-serif; max-width: 640px; margin: 4rem auto; padding: 2rem; }
+.page h1 { color: #5b21b6; }
+.page nav a { color: #2563eb; text-decoration: none; }
+.page nav a:hover { text-decoration: underline; }
+.page button { padding: 0.5rem 1rem; cursor: pointer; }

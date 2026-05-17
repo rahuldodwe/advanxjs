@@ -1,0 +1,28 @@
+{
+  "component": "index",
+  "route": "/",
+  "signals": [
+    "siteName",
+    "clicks"
+  ],
+  "computed": [],
+  "actions": [
+    "bump"
+  ],
+  "structure": {
+    "mustaches": [
+      "siteName",
+      "clicks"
+    ],
+    "conditionals": [],
+    "events": [
+      {
+        "event": "click",
+        "handler": "bump"
+      }
+    ],
+    "loops": [],
+    "models": []
+  },
+  "tokens_hint": "This page is AdvanxJS compliant. Logic and View are decoupled."
+}

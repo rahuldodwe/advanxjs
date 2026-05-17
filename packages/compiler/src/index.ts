@@ -4,6 +4,8 @@ import { analyzeLogic } from "./analyze";
 import { parseView } from "./parseView";
 import { validateBindings } from "./validate";
 
+export { compilePages } from "./pages";
+
 export async function compileComponent(dir: string) {
   const view = fs.readFileSync(path.join(dir, "view.html"), "utf-8");
   const logicCode = fs.readFileSync(path.join(dir, "logic.ts"), "utf-8");
@@ -73,4 +75,12 @@ bootstrap(view, style, logic);
     for (const log of result.logs) console.error(log);
     throw new Error("Build failed — see logs above for details.");
   }
+
+  const html = `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><title>${path.basename(dir)}</title></head>
+<body><div id="app"></div><script src="./bundle.js"></script></body>
+</html>
+`;
+  fs.writeFileSync(path.join(dist, "index.html"), html);
 }

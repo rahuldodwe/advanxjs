@@ -8,6 +8,7 @@ import {
 } from "./directives";
 
 export { signal, computed, effect };
+export { initRouter } from "./router";
 
 export function mount(root: HTMLElement, logic: any) {
   processLoops(root, logic);

@@ -1,13 +1,18 @@
 export const HELP = `AdvanxJS — Agent-Native CLI
 
 Usage:
-  advanx build <component-path>      Compile a component (logic.ts + view.html + style.css)
+  advanx build <path>                Compile a component, or — if <path>/src/pages exists —
+                                     compile every subfolder as an SPA route and emit routes.js
+  advanx serve <dir>                 Run a dev server with SPA history fallback
+                                     (defaults to ./dist; PORT env var overrides 3000)
   advanx create <project-name>       Scaffold a new AdvanxJS project
   advanx explain <component-path>    Print the component's contract from .advanx-meta.json
   advanx --help                      Show this help
 
 Examples:
-  advanx build tests/counter
+  advanx build tests/counter         (single-component mode)
+  advanx build tests/spa-demo        (SPA / pages mode — auto-detects src/pages)
+  advanx serve tests/spa-demo/dist   (serve the SPA build with deep-link refresh support)
   advanx create my-app
   advanx explain tests/counter
 `;
