@@ -88,8 +88,7 @@ async function addComponent(name: string): Promise<void> {
   }
 
   // Determine target directory
-  const cwd = process.cwd();
-  const targetDir = path.join(cwd, "src", "components", name);
+  const targetDir = path.resolve(process.cwd(), "src", "components", name);
 
   // Check for conflicts
   if (fs.existsSync(targetDir)) {

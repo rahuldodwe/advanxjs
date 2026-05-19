@@ -18,7 +18,7 @@ export async function run(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  const root = path.resolve(name);
+  const root = path.resolve(process.cwd(), name);
   if (fs.existsSync(root)) {
     console.error(`🚨 Refusing to overwrite existing path: ${root}`);
     process.exit(1);
