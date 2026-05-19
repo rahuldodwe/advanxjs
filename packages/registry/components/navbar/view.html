@@ -1,0 +1,18 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a ax-link="/" class="navbar-logo" ax-on:click="closeMenu">AdvanxJS</a>
+    <button class="navbar-toggle" ax-on:click="toggleMenu" aria-label="Toggle menu">
+      <span class="navbar-toggle-icon"></span>
+    </button>
+  </div>
+  <ul class="navbar-menu" ax-if="isMenuOpen">
+    <li ax-for="link in navLinks">
+      <a ax-link="{{ link.path }}" ax-on:click="closeMenu">{{ link.label }}</a>
+    </li>
+  </ul>
+  <ul class="navbar-menu navbar-desktop">
+    <li ax-for="link in navLinks">
+      <a ax-link="{{ link.path }}">{{ link.label }}</a>
+    </li>
+  </ul>
+</nav>

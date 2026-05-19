@@ -7,6 +7,8 @@ Usage:
                                      (defaults to ./dist; PORT env var overrides 3000)
   advanx create <project-name>       Scaffold a new AdvanxJS project
   advanx explain <component-path>    Print the component's contract from .advanx-meta.json
+  advanx add <component>             Add a component from the registry
+  advanx add --list                  List available registry components
   advanx --help                      Show this help
 
 Examples:
@@ -15,6 +17,8 @@ Examples:
   advanx serve tests/spa-demo/dist   (serve the SPA build with deep-link refresh support)
   advanx create my-app
   advanx explain tests/counter
+  advanx add navbar                  (add navbar component to src/components/)
+  advanx add --list                  (show available components)
 `;
 
 export function printHelp(): void {

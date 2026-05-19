@@ -19,6 +19,11 @@ switch (cmd) {
     await run(rest);
     break;
   }
+  case "add": {
+    const { run } = await import("./commands/add.ts");
+    await run(rest);
+    break;
+  }
   case "serve": {
     const { run } = await import("./commands/serve.ts");
     await run(rest);

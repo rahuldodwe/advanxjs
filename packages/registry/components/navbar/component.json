@@ -1,0 +1,8 @@
+{
+  "name": "navbar",
+  "version": "0.1.0",
+  "description": "Responsive navigation bar with mobile menu toggle",
+  "tags": ["navigation", "ui", "layout"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}

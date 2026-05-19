@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { listComponents } from "../../../registry/src/index.ts";
 
 interface Meta {
   component: string;
@@ -33,6 +34,21 @@ export async function run(args: string[]): Promise<void> {
 
   const meta: Meta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
   const lines = render(meta, target);
+
+  // Add component suggestions
+  const viewPath = path.join(dir, "view.html");
+  if (fs.existsSync(viewPath)) {
+    const viewContent = fs.readFileSync(viewPath, "utf-8");
+    const suggestions = suggestComponents(viewContent, meta);
+    if (suggestions.length > 0) {
+      lines.push("");
+      lines.push("RELATED COMPONENTS:");
+      for (const suggestion of suggestions) {
+        lines.push(`  ${suggestion}`);
+      }
+    }
+  }
+
   console.log(lines.join("\n"));
 }
 
@@ -92,4 +108,40 @@ function describeFlow(m: Meta): string[] {
 
 function list(items: string[]): string {
   return items.length === 0 ? "(none)" : items.join(", ");
+}
+
+interface ComponentSuggestion {
+  component: string;
+  reason: string;
+}
+
+function suggestComponents(viewContent: string, meta: Meta): string[] {
+  const suggestions: ComponentSuggestion[] = [];
+  const availableComponents = listComponents();
+  const availableNames = new Set(availableComponents.map(c => c.name));
+
+  // Check for missing navigation
+  const hasNav = /<nav[\s>]/i.test(viewContent) || /navbar/i.test(viewContent);
+  const hasAxLink = /ax-link/i.test(viewContent);
+
+  if (!hasNav && hasAxLink && availableNames.has("navbar")) {
+    suggestions.push({
+      component: "navbar",
+      reason: "This page uses ax-link but has no navigation component.",
+    });
+  }
+
+  // Check for missing footer (future component)
+  const hasFooter = /<footer[\s>]/i.test(viewContent);
+  if (!hasFooter && availableNames.has("footer")) {
+    suggestions.push({
+      component: "footer",
+      reason: "This page has no footer element.",
+    });
+  }
+
+  // Format suggestions
+  return suggestions.map(s => {
+    return `💡 ${s.reason}\n     Run: advanx add ${s.component}`;
+  });
 }
