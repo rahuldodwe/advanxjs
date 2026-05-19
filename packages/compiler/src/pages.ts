@@ -104,12 +104,21 @@ initRouter(routes);
 `;
   fs.writeFileSync(path.join(dist, "entry.ts"), entry);
 
+  const runtimeAbs = path.resolve(dist, runtimeImport);
+  const signalsPath = Bun.resolveSync("@preact/signals-core", path.dirname(runtimeAbs));
+
   const result = await Bun.build({
     entrypoints: [path.join(dist, "entry.ts")],
     outdir: dist,
     naming: "bundle.js",
     format: "iife",
     throw: false,
+    plugins: [{
+      name: "dedupe-signals",
+      setup(build) {
+        build.onResolve({ filter: /^@preact\/signals-core$/ }, () => ({ path: signalsPath }));
+      },
+    }],
   });
   if (!result.success) {
     for (const log of result.logs) console.error(log);

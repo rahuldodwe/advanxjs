@@ -1,0 +1,8 @@
+{
+  "name": "hero-simple",
+  "version": "0.1.0",
+  "description": "Centered hero section with title and CTA",
+  "tags": ["hero", "ui", "landing"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}

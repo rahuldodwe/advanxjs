@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 import {
-  listComponents,
-  resolveComponent,
-  componentExists,
+  listComponentsWithFallback,
+  resolveComponentWithFallback,
+  componentExistsWithFallback,
 } from "../../../registry/src/index.ts";
 import { compileComponent } from "../../../compiler/src/index.ts";
 
@@ -12,7 +12,7 @@ export async function run(args: string[]): Promise<void> {
 
   // Handle --list flag
   if (arg === "--list" || arg === "-l") {
-    listAvailableComponents();
+    await listAvailableComponents();
     return;
   }
 
@@ -27,15 +27,23 @@ export async function run(args: string[]): Promise<void> {
   await addComponent(componentName);
 }
 
-function listAvailableComponents(): void {
-  const components = listComponents();
+async function listAvailableComponents(): Promise<void> {
+  console.log("Fetching from registry...");
+
+  let components;
+  try {
+    components = await listComponentsWithFallback();
+  } catch (err: any) {
+    console.error("Failed to fetch component list:", err.message);
+    process.exit(1);
+  }
 
   if (components.length === 0) {
     console.log("No components available in the registry.");
     return;
   }
 
-  console.log("Available components:\n");
+  console.log("\nAvailable components:\n");
   for (const comp of components) {
     const tierBadge = comp.tier === "free" ? "" : " [premium]";
     console.log(`  - ${comp.name}${tierBadge}`);
@@ -48,15 +56,32 @@ function listAvailableComponents(): void {
 }
 
 async function addComponent(name: string): Promise<void> {
+  console.log("Fetching from registry...");
+
   // Check if component exists in registry
-  if (!componentExists(name)) {
+  let exists;
+  try {
+    exists = await componentExistsWithFallback(name);
+  } catch (err: any) {
+    console.error("Failed to check component:", err.message);
+    process.exit(1);
+  }
+
+  if (!exists) {
     console.error(`Component "${name}" not found in registry.`);
     console.error("Run 'advanx add --list' to see available components.");
     process.exit(1);
   }
 
   // Resolve component files
-  const component = resolveComponent(name);
+  let component;
+  try {
+    component = await resolveComponentWithFallback(name);
+  } catch (err: any) {
+    console.error("Failed to fetch component:", err.message);
+    process.exit(1);
+  }
+
   if (!component) {
     console.error(`Failed to resolve component "${name}".`);
     process.exit(1);

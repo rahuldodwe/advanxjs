@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "components": [
+    {
+      "name": "navbar",
+      "description": "Responsive navigation bar with mobile menu toggle",
+      "tags": ["navigation", "ui", "layout"],
+      "tier": "free"
+    },
+    {
+      "name": "hero-simple",
+      "description": "Centered hero section with title and CTA",
+      "tags": ["hero", "ui", "landing"],
+      "tier": "free"
+    },
+    {
+      "name": "button-group",
+      "description": "Reactive primary/secondary button set",
+      "tags": ["buttons", "ui", "forms"],
+      "tier": "free"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "button-group",
+  "version": "0.1.0",
+  "description": "Reactive primary/secondary button set",
+  "tags": ["buttons", "ui", "forms"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page", "component"]
+}

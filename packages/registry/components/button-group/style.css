@@ -1,0 +1,50 @@
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.btn:focus {
+  outline: 2px solid #4fc3f7;
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: #4fc3f7;
+  color: #1a1a2e;
+}
+
+.btn-primary:hover {
+  background: #81d4fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #4fc3f7;
+  border: 2px solid #4fc3f7;
+}
+
+.btn-secondary:hover {
+  background: rgba(79, 195, 247, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
