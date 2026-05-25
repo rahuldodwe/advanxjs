@@ -1,0 +1,14 @@
+<div class="login-form">
+  <h2 class="login-form-title">Welcome back</h2>
+  <p class="login-form-subtitle">Sign in to your AdvanxJS account</p>
+  <label class="login-form-field">
+    <span>Email</span>
+    <input type="email" ax-model="email" placeholder="you@example.com" />
+  </label>
+  <label class="login-form-field">
+    <span>Password</span>
+    <input type="password" ax-model="password" placeholder="••••••••" />
+  </label>
+  <button type="button" class="login-form-submit" ax-on:click="login">{{ buttonLabel }}</button>
+  <p class="login-form-success" ax-if="success">✓ Success — you're signed in.</p>
+</div>

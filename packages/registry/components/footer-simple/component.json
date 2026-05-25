@@ -1,0 +1,8 @@
+{
+  "name": "footer-simple",
+  "version": "0.1.0",
+  "description": "Dark slate footer with social links and a live copyright year",
+  "tags": ["footer", "ui", "layout"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}

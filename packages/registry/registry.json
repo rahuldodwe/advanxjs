@@ -18,6 +18,24 @@
       "description": "Reactive primary/secondary button set",
       "tags": ["buttons", "ui", "forms"],
       "tier": "free"
+    },
+    {
+      "name": "footer-simple",
+      "description": "Dark slate footer with social links and a live copyright year",
+      "tags": ["footer", "ui", "layout"],
+      "tier": "free"
+    },
+    {
+      "name": "login-form",
+      "description": "Email/password login form with simulated async submit and success state",
+      "tags": ["forms", "auth", "ui"],
+      "tier": "free"
+    },
+    {
+      "name": "pricing-table",
+      "description": "Three-tier pricing table with reactive monthly/yearly toggle",
+      "tags": ["pricing", "ui", "marketing"],
+      "tier": "free"
     }
   ]
 }

@@ -1,0 +1,183 @@
+.pricing-table {
+  background: #020617;
+  color: #e2e8f0;
+  padding: 3rem 1.5rem;
+}
+
+.pricing-table-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.pricing-table-head h2 {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+.pricing-table-billing {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.pricing-table-toggle {
+  padding: 0.5rem 1rem;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.pricing-table-toggle:hover {
+  background: #334155;
+  border-color: #6366f1;
+  color: #f1f5f9;
+}
+
+.pricing-table-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  max-width: 64rem;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.pricing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 2rem 1.5rem;
+  background: #18181b;
+  border: 1px solid #1e293b;
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(2, 6, 23, 0.5);
+}
+
+.pricing-card h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.pricing-card-price {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.pricing-card-price .amount {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.pricing-card-price .period {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.pricing-card-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  flex: 1;
+}
+
+.pricing-card-features li {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: 0.875rem;
+  color: #cbd5e1;
+}
+
+.pricing-card-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #6366f1;
+  font-weight: 700;
+}
+
+.pricing-card-cta {
+  padding: 0.6875rem 1rem;
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.pricing-card-cta:hover {
+  background: #334155;
+  border-color: #475569;
+}
+
+.pricing-card-cta-primary {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #fff;
+}
+
+.pricing-card-cta-primary:hover {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.pricing-card-popular {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1, 0 12px 32px rgba(99, 102, 241, 0.18);
+  transform: translateY(-6px);
+}
+
+.pricing-card-popular:hover {
+  transform: translateY(-10px);
+}
+
+.pricing-card-badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.75rem;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .pricing-table-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

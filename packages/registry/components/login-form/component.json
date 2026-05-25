@@ -1,0 +1,8 @@
+{
+  "name": "login-form",
+  "version": "0.1.0",
+  "description": "Email/password login form with simulated async submit and success state",
+  "tags": ["forms", "auth", "ui"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page", "component"]
+}

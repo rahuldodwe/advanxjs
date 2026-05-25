@@ -1,0 +1,8 @@
+{
+  "name": "pricing-table",
+  "version": "0.1.0",
+  "description": "Three-tier pricing table with reactive monthly/yearly toggle",
+  "tags": ["pricing", "ui", "marketing"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}
