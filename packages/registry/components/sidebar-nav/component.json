@@ -1,0 +1,8 @@
+{
+  "name": "sidebar-nav",
+  "version": "0.1.0",
+  "description": "Collapsible dashboard sidebar driven by an isCollapsed signal",
+  "tags": ["navigation", "dashboard", "ui", "layout"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}

@@ -1,0 +1,28 @@
+<section class="contact-section">
+  <div class="contact-section-inner">
+    <header class="contact-section-head">
+      <h2>Get in touch</h2>
+      <p>We usually respond within one business day.</p>
+    </header>
+    <div class="contact-section-form" ax-if="notSent">
+      <label class="contact-section-field">
+        <span>Name</span>
+        <input type="text" ax-model="name" placeholder="Jane Doe" />
+      </label>
+      <label class="contact-section-field">
+        <span>Email</span>
+        <input type="email" ax-model="email" placeholder="jane@example.com" />
+      </label>
+      <label class="contact-section-field">
+        <span>Message</span>
+        <textarea ax-model="message" rows="4" placeholder="How can we help?"></textarea>
+      </label>
+      <button type="button" class="contact-section-submit" ax-on:click="submit">Send Message</button>
+    </div>
+    <div class="contact-section-success" ax-if="isSent">
+      <div class="contact-section-check">✓</div>
+      <h3>Message Sent</h3>
+      <p>Thanks — we'll be in touch shortly.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,8 @@
+{
+  "name": "card-product",
+  "version": "0.1.0",
+  "description": "E-commerce product card with reactive Add to Cart / In Cart state",
+  "tags": ["ecommerce", "card", "ui"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page", "component"]
+}

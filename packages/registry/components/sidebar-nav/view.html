@@ -1,0 +1,24 @@
+<aside class="sidebar-nav">
+  <div class="sidebar-nav-head">
+    <span class="sidebar-nav-brand" ax-if="isExpanded">AdvanxJS</span>
+    <button type="button" class="sidebar-nav-toggle" ax-on:click="toggle">{{ toggleIcon }}</button>
+  </div>
+  <nav class="sidebar-nav-menu">
+    <a class="sidebar-nav-link" href="#">
+      <span class="sidebar-nav-icon">◧</span>
+      <span class="sidebar-nav-label" ax-if="isExpanded">Dashboard</span>
+    </a>
+    <a class="sidebar-nav-link" href="#">
+      <span class="sidebar-nav-icon">◴</span>
+      <span class="sidebar-nav-label" ax-if="isExpanded">Analytics</span>
+    </a>
+    <a class="sidebar-nav-link" href="#">
+      <span class="sidebar-nav-icon">▤</span>
+      <span class="sidebar-nav-label" ax-if="isExpanded">Projects</span>
+    </a>
+    <a class="sidebar-nav-link" href="#">
+      <span class="sidebar-nav-icon">⚙</span>
+      <span class="sidebar-nav-label" ax-if="isExpanded">Settings</span>
+    </a>
+  </nav>
+</aside>

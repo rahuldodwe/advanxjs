@@ -1,0 +1,11 @@
+<article class="card-product">
+  <div class="card-product-media" aria-hidden="true"></div>
+  <div class="card-product-body">
+    <h3 class="card-product-title">{{ title }}</h3>
+    <p class="card-product-price">{{ price }}</p>
+    <button type="button" class="card-product-cta" ax-on:click="addToCart">
+      <span ax-if="notAdded">Add to Cart</span>
+      <span ax-if="isAdded">✓ In Cart</span>
+    </button>
+  </div>
+</article>

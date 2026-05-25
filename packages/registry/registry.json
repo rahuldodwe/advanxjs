@@ -36,6 +36,30 @@
       "description": "Three-tier pricing table with reactive monthly/yearly toggle",
       "tags": ["pricing", "ui", "marketing"],
       "tier": "free"
+    },
+    {
+      "name": "faq-accordion",
+      "description": "Accordion FAQ list rendered with ax-for over native details/summary",
+      "tags": ["faq", "ui", "content"],
+      "tier": "free"
+    },
+    {
+      "name": "card-product",
+      "description": "E-commerce product card with reactive Add to Cart / In Cart state",
+      "tags": ["ecommerce", "card", "ui"],
+      "tier": "free"
+    },
+    {
+      "name": "contact-section",
+      "description": "Full-width contact form that swaps to an animated success state on submit",
+      "tags": ["contact", "forms", "ui"],
+      "tier": "free"
+    },
+    {
+      "name": "sidebar-nav",
+      "description": "Collapsible dashboard sidebar driven by an isCollapsed signal",
+      "tags": ["navigation", "dashboard", "ui", "layout"],
+      "tier": "free"
     }
   ]
 }

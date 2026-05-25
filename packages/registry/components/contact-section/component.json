@@ -1,0 +1,8 @@
+{
+  "name": "contact-section",
+  "version": "0.1.0",
+  "description": "Full-width contact form that swaps to an animated success state on submit",
+  "tags": ["contact", "forms", "ui"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}

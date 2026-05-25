@@ -1,0 +1,8 @@
+{
+  "name": "faq-accordion",
+  "version": "0.1.0",
+  "description": "Accordion FAQ list rendered with ax-for over native details/summary",
+  "tags": ["faq", "ui", "content"],
+  "tier": "free",
+  "suggestedFor": ["spa", "multi-page"]
+}

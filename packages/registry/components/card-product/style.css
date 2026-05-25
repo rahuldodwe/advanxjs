@@ -1,0 +1,70 @@
+.card-product {
+  max-width: 20rem;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-product:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.55);
+}
+
+.card-product-media {
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, #6366f1 0%, #1e293b 60%, #020617 100%);
+  position: relative;
+}
+
+.card-product-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.18), transparent 45%);
+}
+
+.card-product-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+}
+
+.card-product-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.card-product-price {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f8fafc;
+}
+
+.card-product-cta {
+  margin-top: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.card-product-cta:hover {
+  background: #4f46e5;
+}
+
+.card-product-cta:active {
+  transform: translateY(1px);
+}
