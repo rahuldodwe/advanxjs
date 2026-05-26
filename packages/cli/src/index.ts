@@ -29,6 +29,11 @@ switch (cmd) {
     await run(rest);
     break;
   }
+  case "dev": {
+    const { run } = await import("./commands/dev.ts");
+    await run(rest);
+    break;
+  }
   case "--help":
   case "-h":
   case undefined:
