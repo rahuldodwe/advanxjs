@@ -14,7 +14,7 @@ Scaffold a new AdvanxJS project in one command — no clone, no install required
 npx advanxjs@latest create my-app
 cd my-app
 bun install
-advanxjs build src/components/counter
+advanxjs dev src/components/counter   # live save-to-refresh loop
 ```
 
 That's it. You get a fully-structured project with a sample counter component, the runtime, the directives engine, and a `CONSTITUTION.md` that AI agents can read to understand the project rules.
@@ -37,9 +37,24 @@ Modern frontend code is a mess of mixed logic and UI (JSX), which causes AI agen
 | Command | Description |
 |---|---|
 | `advanxjs create <name>` | Scaffold a new AdvanxJS project with the sample counter |
+| `advanxjs dev <path>` | Watch + recompile on save and serve with **live browser reload** |
 | `advanxjs build <component-path>` | Compile a component (`logic.ts` + `view.html` + `style.css`) |
+| `advanxjs serve <dir>` | Static dev server with SPA history fallback |
+| `advanxjs add <component>` | Add a component from the registry (`add --list` to browse) |
 | `advanxjs explain <component-path>` | Print the component's contract from `.advanx-meta.json` |
 | `advanxjs --help` | Show help |
+
+---
+
+## Dev Mode (Save-to-Refresh)
+
+```bash
+advanxjs dev src/components/counter
+```
+
+One command starts a file watcher and a local server together. Every time you save a
+`.ts`, `.html`, or `.css` file, the component recompiles (typically in single-digit
+milliseconds) and the browser reloads itself automatically — no manual refresh, no config.
 
 ---
 
