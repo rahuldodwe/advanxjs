@@ -1,4 +1,11 @@
 .button-group {
+  --ax-accent: #6366f1;
+  --ax-border-strong: rgba(99, 102, 241, 0.5);
+  --ax-grad: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --ax-radius: 0.5rem;
+  --ax-glow: 0 8px 24px -6px rgba(99, 102, 241, 0.45);
+  --ax-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
@@ -9,25 +16,25 @@
   font-size: 1rem;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--ax-radius);
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition: background 0.2s var(--ax-ease), transform 0.2s var(--ax-ease),
+    box-shadow 0.2s var(--ax-ease);
 }
 
-.btn:focus {
-  outline: 2px solid #4fc3f7;
-  outline-offset: 2px;
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.45);
 }
 
 .btn-primary {
-  background: #4fc3f7;
-  color: #1a1a2e;
+  background: var(--ax-grad);
+  color: #fff;
 }
 
 .btn-primary:hover {
-  background: #81d4fa;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+  box-shadow: var(--ax-glow);
 }
 
 .btn-primary:active {
@@ -36,12 +43,13 @@
 
 .btn-secondary {
   background: transparent;
-  color: #4fc3f7;
-  border: 2px solid #4fc3f7;
+  color: #a5b4fc;
+  border: 1px solid var(--ax-border-strong);
 }
 
 .btn-secondary:hover {
-  background: rgba(79, 195, 247, 0.1);
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--ax-accent);
   transform: translateY(-1px);
 }
 

@@ -1,7 +1,15 @@
 .footer-simple {
-  background: #020617;
-  color: #94a3b8;
-  border-top: 1px solid #1e293b;
+  --ax-bg: #020617;
+  --ax-border: rgba(148, 163, 184, 0.12);
+  --ax-text: #f1f5f9;
+  --ax-text-dim: #94a3b8;
+  --ax-text-mut: #64748b;
+  --ax-accent: #6366f1;
+  --ax-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: var(--ax-bg);
+  color: var(--ax-text-dim);
+  border-top: 1px solid var(--ax-border);
   padding: 2rem 1.5rem;
 }
 
@@ -19,7 +27,10 @@
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #f1f5f9;
+  background: linear-gradient(135deg, #f1f5f9 30%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .footer-simple-social {
@@ -28,23 +39,37 @@
 }
 
 .footer-simple-social a {
-  color: #94a3b8;
+  position: relative;
+  color: var(--ax-text-dim);
   text-decoration: none;
   font-size: 0.875rem;
-  padding-bottom: 2px;
-  border-bottom: 1px solid transparent;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s var(--ax-ease), transform 0.2s var(--ax-ease);
+}
+
+.footer-simple-social a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 1px;
+  background: var(--ax-accent);
+  transition: width 0.2s var(--ax-ease);
 }
 
 .footer-simple-social a:hover {
-  color: #f1f5f9;
-  border-bottom-color: #6366f1;
+  color: var(--ax-text);
+  transform: translateY(-1px);
+}
+
+.footer-simple-social a:hover::after {
+  width: 100%;
 }
 
 .footer-simple-copy {
   margin: 0;
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--ax-text-mut);
 }
 
 @media (min-width: 640px) {

@@ -1,11 +1,22 @@
 .navbar {
+  --ax-border: rgba(148, 163, 184, 0.12);
+  --ax-border-strong: rgba(99, 102, 241, 0.5);
+  --ax-text: #f1f5f9;
+  --ax-text-dim: #94a3b8;
+  --ax-accent: #6366f1;
+  --ax-radius: 0.5rem;
+  --ax-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
-  background: #1a1a2e;
-  color: #fff;
+  padding: 1rem 1.25rem;
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ax-border);
+  color: var(--ax-text);
   position: relative;
 }
 
@@ -18,12 +29,14 @@
 .navbar-logo {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  letter-spacing: -0.01em;
+  color: var(--ax-text);
   text-decoration: none;
+  transition: color 0.2s var(--ax-ease);
 }
 
 .navbar-logo:hover {
-  color: #4fc3f7;
+  color: var(--ax-accent);
 }
 
 .navbar-toggle {
@@ -33,10 +46,16 @@
   align-items: center;
   width: 2.5rem;
   height: 2.5rem;
-  background: transparent;
-  border: 1px solid #4fc3f7;
-  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid var(--ax-border);
+  border-radius: var(--ax-radius);
   cursor: pointer;
+  transition: background 0.2s var(--ax-ease), border-color 0.2s var(--ax-ease);
+}
+
+.navbar-toggle:hover {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: var(--ax-border-strong);
 }
 
 .navbar-toggle-icon,
@@ -45,7 +64,8 @@
   display: block;
   width: 1.25rem;
   height: 2px;
-  background: #4fc3f7;
+  border-radius: 2px;
+  background: #cbd5e1;
   position: relative;
 }
 
@@ -71,21 +91,22 @@
   list-style: none;
   margin: 1rem 0 0;
   padding: 0;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .navbar-menu li a {
   display: block;
   padding: 0.75rem 1rem;
-  color: #e0e0e0;
+  color: var(--ax-text-dim);
   text-decoration: none;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+  font-weight: 500;
+  border-radius: var(--ax-radius);
+  transition: background 0.2s var(--ax-ease), color 0.2s var(--ax-ease);
 }
 
 .navbar-menu li a:hover {
-  background: #4fc3f7;
-  color: #1a1a2e;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--ax-text);
 }
 
 .navbar-desktop {
