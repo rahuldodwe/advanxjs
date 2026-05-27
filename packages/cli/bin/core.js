@@ -170498,7 +170498,7 @@ async function resolveComponentRemote(name) {
     return null;
   }
 }
-var REGISTRY_BASE = "https://raw.githubusercontent.com/AgnuxVertique/advanxjs/main/packages/registry", REGISTRY_INDEX;
+var REGISTRY_BASE = "https://raw.githubusercontent.com/rahuldodwe/advanxjs/main/packages/registry", REGISTRY_INDEX;
 var init_remote = __esm(() => {
   REGISTRY_INDEX = `${REGISTRY_BASE}/registry.json`;
 });

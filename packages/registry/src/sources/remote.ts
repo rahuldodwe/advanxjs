@@ -3,7 +3,7 @@
  */
 import type { ComponentManifest, ResolvedComponent, ComponentListEntry } from "../manifest.ts";
 
-const REGISTRY_BASE = "https://raw.githubusercontent.com/AgnuxVertique/advanxjs/main/packages/registry";
+const REGISTRY_BASE = "https://raw.githubusercontent.com/rahuldodwe/advanxjs/main/packages/registry";
 const REGISTRY_INDEX = `${REGISTRY_BASE}/registry.json`;
 
 interface RegistryIndex {
