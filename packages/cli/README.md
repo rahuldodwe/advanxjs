@@ -39,6 +39,7 @@ Modern frontend code is a mess of mixed logic and UI (JSX), which causes AI agen
 | `advanxjs create <name>` | Scaffold a new AdvanxJS project with the sample counter |
 | `advanxjs dev <path>` | Watch + recompile on save and serve with **live browser reload** |
 | `advanxjs build <component-path>` | Compile a component (`logic.ts` + `view.html` + `style.css`) |
+| `advanxjs export <path> [--out <dir>]` | Pre-render to static HTML (**Instant-SEO**) — content ships inside the `.html`, JS hydrates after |
 | `advanxjs serve <dir>` | Static dev server with SPA history fallback |
 | `advanxjs add <component>` | Add a component from the registry (`add --list` to browse) |
 | `advanxjs explain <component-path>` | Print the component's contract from `.advanx-meta.json` |
@@ -55,6 +56,31 @@ advanxjs dev src/components/counter
 One command starts a file watcher and a local server together. Every time you save a
 `.ts`, `.html`, or `.css` file, the component recompiles (typically in single-digit
 milliseconds) and the browser reloads itself automatically — no manual refresh, no config.
+
+---
+
+## Static Export (Instant-SEO)
+
+```bash
+advanxjs export src/components/counter      # single component → dist/
+advanxjs export .                            # SPA (auto-detects src/pages) → one .html per route
+advanxjs export . --out public               # custom output directory
+```
+
+`export` is a superset of `build`: it validates the contract and bundles for
+hydration, then **pre-renders the page at build time** by running the real runtime
+against a build-time DOM. The resulting `.html` already contains the resolved content
+— `{{ mustache }}` values filled, `ax-for` loops expanded, `ax-if` conditionals
+decided — so crawlers and first paint see real content with zero client JS required.
+The `bundle.js` still loads afterward to make the page interactive (clicks, inputs).
+
+- **SEO-perfect:** the markup is in the file, not generated in the browser.
+- **Instant first paint:** no blank-then-hydrate flash.
+- **Static by Default (Article III):** a component with zero bindings ships **no JavaScript at all**.
+- **Host anywhere:** the output folder is plain static files — drop it on S3, GitHub Pages, or any CDN.
+
+For SPA projects, each route becomes its own crawlable file (`dist/index.html`,
+`dist/about/index.html`, …) sharing a single `/bundle.js` for client-side navigation.
 
 ---
 

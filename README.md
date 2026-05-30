@@ -15,7 +15,7 @@ Modern frontend code is a mess of mixed logic and UI (JSX), which causes AI agen
 - **🚀 Performance:** No Virtual DOM. Surgical O(1) DOM updates via Signals.
 - **🤖 AI-Native (AX):** Logic, View, and Style are strictly separated so AI never loses context.
 - **⚡ Bun-Native:** Built to leverage the speed of the Bun runtime and bundler.
-- **🔍 SEO-First:** Pure HTML/CSS output. No hydration "jank." 100/100 Lighthouse scores by default.
+- **🔍 SEO-First:** `advanx export` pre-renders pages to pure HTML at build time (Instant-SEO). Content ships inside the `.html`; JS hydrates after. No "jank," 100/100 Lighthouse by default.
 
 ---
 
@@ -43,7 +43,10 @@ cd advanxjs
 bun install
 
 # Build the sample counter
-bun packages/cli/src/index.ts tests/counter
+bun packages/cli/src/index.ts build tests/counter
+
+# Export it to static, SEO-ready HTML (content baked in)
+bun packages/cli/src/index.ts export tests/counter
 ```
 
 
