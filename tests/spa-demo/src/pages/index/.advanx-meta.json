@@ -1,5 +1,6 @@
 {
   "component": "index",
+  "route": "/",
   "signals": [
     "siteName",
     "clicks"
@@ -23,5 +24,5 @@
     "loops": [],
     "models": []
   },
-  "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
+  "tokens_hint": "This page is AdvanxJS compliant. Logic and View are decoupled."
 }

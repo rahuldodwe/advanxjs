@@ -34,6 +34,11 @@ switch (cmd) {
     await run(rest);
     break;
   }
+  case "export": {
+    const { run } = await import("./commands/export.ts");
+    await run(rest);
+    break;
+  }
   case "--help":
   case "-h":
   case undefined:
