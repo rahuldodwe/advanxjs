@@ -17,7 +17,8 @@
     "access": "public"
   },
   "scripts": {
-    "prepublishOnly": "chmod +x bin/index.js"
+    "build": "bun build src/index.ts --outfile bin/core.js --bundle --target bun",
+    "prepublishOnly": "bun run build && chmod +x bin/index.js"
   },
   "author": "Rahul Dodwe",
   "license": "MIT",
