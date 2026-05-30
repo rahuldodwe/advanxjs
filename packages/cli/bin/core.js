@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 // @bun
+import { createRequire } from "node:module";
 var __create = Object.create;
 var __getProtoOf = Object.getPrototypeOf;
 var __defProp = Object.defineProperty;
@@ -27,7 +28,7 @@ var __export = (target, all) => {
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
-var __require = import.meta.require;
+var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 // ../../node_modules/typescript/lib/typescript.js
 var require_typescript = __commonJS((exports, module) => {
@@ -4391,17 +4392,17 @@ m2: ${this.mapper2.__debugToString().split(`
         }
         let BoxCharacter;
         ((BoxCharacter2) => {
-          BoxCharacter2["lr"] = "\u2500";
-          BoxCharacter2["ud"] = "\u2502";
-          BoxCharacter2["dr"] = "\u256D";
-          BoxCharacter2["dl"] = "\u256E";
-          BoxCharacter2["ul"] = "\u256F";
-          BoxCharacter2["ur"] = "\u2570";
-          BoxCharacter2["udr"] = "\u251C";
-          BoxCharacter2["udl"] = "\u2524";
-          BoxCharacter2["dlr"] = "\u252C";
-          BoxCharacter2["ulr"] = "\u2534";
-          BoxCharacter2["udlr"] = "\u256B";
+          BoxCharacter2["lr"] = "─";
+          BoxCharacter2["ud"] = "│";
+          BoxCharacter2["dr"] = "╭";
+          BoxCharacter2["dl"] = "╮";
+          BoxCharacter2["ul"] = "╯";
+          BoxCharacter2["ur"] = "╰";
+          BoxCharacter2["udr"] = "├";
+          BoxCharacter2["udl"] = "┤";
+          BoxCharacter2["dlr"] = "┬";
+          BoxCharacter2["ulr"] = "┴";
+          BoxCharacter2["udlr"] = "╫";
         })(BoxCharacter || (BoxCharacter = {}));
         let Connection;
         ((Connection2) => {
@@ -4652,7 +4653,7 @@ m2: ${this.mapper2.__debugToString().split(`
           for (let column = 0;column < columnCount; column++) {
             for (let lane = 0;lane < lanes.length; lane++) {
               const connector = connectors[column][lane];
-              const fill2 = connector & 4 ? "\u2500" : " ";
+              const fill2 = connector & 4 ? "─" : " ";
               const node = grid[column][lane];
               if (!node) {
                 if (column < columnCount - 1) {
@@ -4666,7 +4667,7 @@ m2: ${this.mapper2.__debugToString().split(`
                 }
               }
               writeLane(lane, getBoxCharacter(connector));
-              writeLane(lane, connector & 8 && column < columnCount - 1 && !grid[column + 1][lane] ? "\u2500" : " ");
+              writeLane(lane, connector & 8 && column < columnCount - 1 && !grid[column + 1][lane] ? "─" : " ");
             }
           }
           return `
@@ -4680,27 +4681,27 @@ ${lanes.join(`
         function getBoxCharacter(connector) {
           switch (connector) {
             case 3:
-              return "\u2502";
+              return "│";
             case 12:
-              return "\u2500";
+              return "─";
             case 5:
-              return "\u256F";
+              return "╯";
             case 9:
-              return "\u2570";
+              return "╰";
             case 6:
-              return "\u256E";
+              return "╮";
             case 10:
-              return "\u256D";
+              return "╭";
             case 7:
-              return "\u2524";
+              return "┤";
             case 11:
-              return "\u251C";
+              return "├";
             case 13:
-              return "\u2534";
+              return "┴";
             case 14:
-              return "\u252C";
+              return "┬";
             case 15:
-              return "\u256B";
+              return "╫";
           }
           return " ";
         }
@@ -11779,7 +11780,7 @@ ${lanes.join(`
         Object.defineProperty(scanner2, "__debugShowCurrentPositionInText", {
           get: () => {
             const text2 = scanner2.getText();
-            return text2.slice(0, scanner2.getTokenFullStart()) + "\u2551" + text2.slice(scanner2.getTokenFullStart());
+            return text2.slice(0, scanner2.getTokenFullStart()) + "║" + text2.slice(scanner2.getTokenFullStart());
           }
         });
       }
@@ -19351,7 +19352,7 @@ ${lanes.join(`
       "`": "\\`",
       "\u2028": "\\u2028",
       "\u2029": "\\u2029",
-      "\x85": "\\u0085",
+      "": "\\u0085",
       "\r\n": "\\r\\n"
     }));
     function encodeUtf16EscapeSequence(charCode) {
@@ -113733,7 +113734,7 @@ ${lanes.join(`
       return contains(screenStartingMessageCodes, diagnostic.code) ? newLine + newLine : newLine;
     }
     function getLocaleTimeString(system) {
-      return !system.now ? (/* @__PURE__ */ new Date()).toLocaleTimeString() : system.now().toLocaleTimeString("en-US", { timeZone: "UTC" }).replace("\u202F", " ");
+      return !system.now ? (/* @__PURE__ */ new Date()).toLocaleTimeString() : system.now().toLocaleTimeString("en-US", { timeZone: "UTC" }).replace(" ", " ");
     }
     function createWatchStatusReporter(system, pretty) {
       return pretty ? (diagnostic, newLine, options) => {
@@ -169534,14 +169535,52 @@ function parseView(html) {
 }
 
 // ../compiler/src/validate.ts
+function splitArgs(s) {
+  const out = [];
+  let buf = "", q = 0;
+  for (let i = 0;i < s.length; i++) {
+    const ch = s.charCodeAt(i);
+    if (q) {
+      if (ch === q)
+        q = 0;
+      buf += s[i];
+    } else if (ch === 34 || ch === 39) {
+      q = ch;
+      buf += s[i];
+    } else if (ch === 44) {
+      out.push(buf);
+      buf = "";
+    } else
+      buf += s[i];
+  }
+  if (buf.trim())
+    out.push(buf);
+  return out;
+}
+function parseHandler(handler) {
+  const m = handler.match(CALL);
+  if (!m)
+    return null;
+  if (m[2] === undefined)
+    return { name: m[1], args: [] };
+  const args = splitArgs(m[2]).map((a) => a.trim());
+  for (const a of args) {
+    if (!LITERAL.test(a) && !PATH.test(a))
+      return null;
+  }
+  return { name: m[1], args };
+}
 function validateBindings(view, logic) {
   for (const name of view.conditionals) {
     if (!IDENT.test(name))
       throw articleI("ax-if", name);
   }
+  const parsedEvents = [];
   for (const { event, handler } of view.events) {
-    if (!IDENT.test(handler))
+    const parsed = parseHandler(handler);
+    if (!parsed)
       throw articleI(`ax-on:${event}`, handler);
+    parsedEvents.push({ event, handler, parsed });
   }
   for (const { alias, source } of view.loops) {
     if (!IDENT.test(alias))
@@ -169568,9 +169607,16 @@ function validateBindings(view, logic) {
     if (!declared.has(n))
       missing.add(n);
   });
-  view.events.forEach(({ handler }) => {
-    if (!declared.has(handler))
-      missing.add(handler);
+  parsedEvents.forEach(({ parsed }) => {
+    if (!declared.has(parsed.name))
+      missing.add(parsed.name);
+    for (const a of parsed.args) {
+      if (LITERAL.test(a))
+        continue;
+      const root = a.split(".")[0];
+      if (!declared.has(root))
+        missing.add(root);
+    }
   });
   view.models.forEach((n) => {
     if (!declared.has(n))
@@ -169579,9 +169625,9 @@ function validateBindings(view, logic) {
   if (missing.size) {
     throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: Missing exports for [${[...missing].join(", ")}]`);
   }
-  for (const { event, handler } of view.events) {
-    if (!actions.has(handler)) {
-      throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ax-on:${event}="${handler}" expects an action (function), ` + `but "${handler}" is a signal/computed.`);
+  for (const { event, handler, parsed } of parsedEvents) {
+    if (!actions.has(parsed.name)) {
+      throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ax-on:${event}="${handler}" expects an action (function), ` + `but "${parsed.name}" is a signal/computed.`);
     }
   }
   for (const { alias, source } of view.loops) {
@@ -169596,11 +169642,14 @@ function validateBindings(view, logic) {
   }
 }
 function articleI(attr, value) {
-  return new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ${attr}="${value}" must be a bare identifier \u2014 ` + `expressions belong in logic.ts (Article I).`);
+  return new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ${attr}="${value}" must be a bare identifier ` + `(handlers may also use "name(arg, ...)" with dot-paths or literals) — ` + `expressions belong in logic.ts (Article I).`);
 }
-var IDENT;
+var IDENT, PATH, LITERAL, CALL;
 var init_validate = __esm(() => {
   IDENT = /^[A-Za-z_$][\w$]*$/;
+  PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
+  LITERAL = /^("[^"]*"|'[^']*'|-?\d+(\.\d+)?|true|false|null)$/;
+  CALL = /^([A-Za-z_$][\w$]*)(?:\((.*)\))?$/;
 });
 
 // ../compiler/src/pages.ts
@@ -169623,7 +169672,7 @@ async function compilePages(rootDir) {
     const stylePath = path.join(pageDir, "style.css");
     for (const [label, p] of [["view.html", viewPath], ["logic.ts", logicPath], ["style.css", stylePath]]) {
       if (!fs.existsSync(p)) {
-        throw new Error(`Page "${name}" is missing ${label} (Article I \u2014 Trinity of Separation).`);
+        throw new Error(`Page "${name}" is missing ${label} (Article I — Trinity of Separation).`);
       }
     }
     const view = fs.readFileSync(viewPath, "utf-8");
@@ -169652,8 +169701,8 @@ async function compilePages(rootDir) {
     pages.push({ name, route, view, style });
   }
   const manifestLines = [
-    "// AUTO-GENERATED by AdvanxJS compiler \u2014 do not edit.",
-    "// Article VIII \u2014 Self-Mapping: this manifest is the Agent's contract for the SPA route table.",
+    "// AUTO-GENERATED by AdvanxJS compiler — do not edit.",
+    "// Article VIII — Self-Mapping: this manifest is the Agent's contract for the SPA route table.",
     "export const routes = {",
     ...pages.map((p) => `  ${JSON.stringify(p.route)}: { logicPath: ${JSON.stringify(`./${p.name}/logic.ts`)}, viewPath: ${JSON.stringify(`./${p.name}/view.html`)}, stylePath: ${JSON.stringify(`./${p.name}/style.css`)} },`),
     "};",
@@ -169696,7 +169745,7 @@ initRouter(routes);
   if (!result.success) {
     for (const log of result.logs)
       console.error(log);
-    throw new Error("Build failed \u2014 see logs above for details.");
+    throw new Error("Build failed — see logs above for details.");
   }
   const html = `<!doctype html>
 <html lang="en">
@@ -169773,7 +169822,7 @@ bootstrap(view, style, logic);
   if (!result.success) {
     for (const log of result.logs)
       console.error(log);
-    throw new Error("Build failed \u2014 see logs above for details.");
+    throw new Error("Build failed — see logs above for details.");
   }
   const html = `<!doctype html>
 <html lang="en">
@@ -169802,14 +169851,14 @@ async function run(args) {
     const pagesDir = path3.join(target, "src", "pages");
     if (fs3.existsSync(pagesDir)) {
       const count = await compilePages(target);
-      console.log(`\u2714 AdvanxJS: Contract Satisfied. ${count} routes wired.`);
+      console.log(`✔ AdvanxJS: Contract Satisfied. ${count} routes wired.`);
     } else {
       if (!args[0]) {
         console.error("Usage: advanx build <component-folder>");
         process.exit(1);
       }
       await compileComponent(target);
-      console.log("\u2714 AdvanxJS: Contract Satisfied. Build successful.");
+      console.log("✔ AdvanxJS: Contract Satisfied. Build successful.");
     }
   } catch (err) {
     console.error(err.message);
@@ -169879,7 +169928,7 @@ function packageJson(name) {
 function readme(name) {
   return `# ${name}
 
-An AdvanxJS project \u2014 built on the Agent-Native (AX) framework.
+An AdvanxJS project — built on the Agent-Native (AX) framework.
 
 ## Quick Start
 
@@ -169951,7 +170000,7 @@ export function increment() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AdvanxJS \u2014 Welcome</title>
+  <title>AdvanxJS — Welcome</title>
   <style>
     :root {
       --advanx-coral: #FF4D2E;
@@ -170035,7 +170084,7 @@ export function increment() {
     }
 
     /* ==========================================================
-       <advanx-logo> \u2014 drop-in animated logo component
+       <advanx-logo> — drop-in animated logo component
        Transparent background. Coral A with 3 orbiting electrons.
        ========================================================== */
     .advanx-logo {
@@ -170194,7 +170243,7 @@ export function wireMustaches(root: Element, logic: any) {
       node.textContent = original.replace(/\\{\\{\\s*([\\w.]+)\\s*\\}\\}/g, (_, p) => {
         const rk = p.split(".")[0];
         if (!logic[rk] || !('value' in logic[rk])) return \`{{ \${p} }}\`;
-        return String(resolvePath(logic, p) ?? "");
+        return String(resolveArg(p, logic) ?? "");
       });
     });
   });
@@ -170275,20 +170324,30 @@ function hydrateClone(template: HTMLElement, alias: string, item: any, logic: an
       return String(cur ?? "");
     });
   }
-  wireEvents(clone, logic);
+  wireEvents(clone, logic, { [alias]: item });
   return clone;
 }
 
-export function wireEvents(root: Element, logic: any) {
+const AX_ON_RE = /^(\\w+)(?:\\((.*)\\))?$/;
+
+export function wireEvents(root: Element, logic: any, scope?: any) {
   const targets: Element[] = [root, ...Array.from(root.querySelectorAll('*'))];
   for (const el of targets) {
     for (const attr of Array.from(el.attributes)) {
       if (!attr.name.startsWith('ax-on:')) continue;
+      const m = attr.value.match(AX_ON_RE);
+      if (!m) continue;
+      const fn = logic[m[1]!];
+      if (typeof fn !== 'function') continue;
       const event = attr.name.slice(6);
-      const method = attr.value;
-      if (typeof logic[method] === 'function') {
-        el.removeAttribute(attr.name);
-        el.addEventListener(event, () => logic[method]());
+      el.removeAttribute(attr.name);
+      if (m[2] === undefined) {
+        el.addEventListener(event, () => fn());
+      } else {
+        const exprs = splitArgs(m[2]);
+        el.addEventListener(event, () =>
+          fn(...exprs.map(a => resolveArg(a, logic, scope)))
+        );
       }
     }
   }
@@ -170311,16 +170370,44 @@ export function wireModels(root: Element, logic: any) {
   });
 }
 
-function resolvePath(logic: any, path: string): any {
-  const parts = path.split(".");
-  const sig = logic[parts[0]];
-  if (!sig || !('value' in sig)) return undefined;
-  let cur = sig.value;
+function resolveArg(expr: string, logic: any, scope?: any): any {
+  const s = expr.trim();
+  if (!s) return undefined;
+  const c = s.charCodeAt(0);
+  if (c === 34 || c === 39) return s.slice(1, -1);
+  if ((c >= 48 && c <= 57) || (c === 45 && s.length > 1)) return Number(s);
+  if (s === "true") return true;
+  if (s === "false") return false;
+  if (s === "null") return null;
+  const parts = s.split(".");
+  const head = parts[0]!;
+  let cur: any;
+  if (scope && head in scope) {
+    cur = scope[head];
+  } else {
+    const sig = logic[head];
+    if (!sig || !("value" in sig)) return undefined;
+    cur = sig.value;
+  }
   for (let i = 1; i < parts.length; i++) {
     if (cur == null) return undefined;
-    cur = cur[parts[i]];
+    cur = cur[parts[i]!];
   }
   return cur;
+}
+
+function splitArgs(s: string): string[] {
+  const out: string[] = [];
+  let buf = "", q = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charCodeAt(i);
+    if (q) { if (ch === q) q = 0; buf += s[i]; }
+    else if (ch === 34 || ch === 39) { q = ch; buf += s[i]; }
+    else if (ch === 44) { out.push(buf); buf = ""; }
+    else buf += s[i];
+  }
+  if (buf.trim()) out.push(buf);
+  return out;
 }
 `;
 var init_directives = () => {};
@@ -170361,7 +170448,7 @@ async function run2(args) {
   write("src/components/counter/style.css", COUNTER_STYLE);
   write("src/lib/advanx/runtime.ts", runtime_default);
   write("src/lib/advanx/directives.ts", directives_default);
-  console.log(`\u2714 Scaffolded AdvanxJS project at ${root}`);
+  console.log(`✔ Scaffolded AdvanxJS project at ${root}`);
   for (const rel of written)
     console.log(`  + ${rel}`);
   console.log("");
@@ -170586,7 +170673,7 @@ function render(m, displayPath) {
   const out = [];
   const heading = `AdvanxJS Component: ${m.component}`;
   out.push(heading);
-  out.push("\u2500".repeat(heading.length));
+  out.push("─".repeat(heading.length));
   out.push(`Path: ${displayPath}`);
   out.push("");
   out.push(`STATE (Signals):     ${list(m.signals)}`);
@@ -170596,17 +170683,17 @@ function render(m, displayPath) {
   out.push("VIEW STRUCTURE:");
   out.push(`  Mustaches:    ${list(m.structure.mustaches)}`);
   out.push(`  Conditionals: ${list(m.structure.conditionals)}`);
-  out.push(`  Events:       ${list(m.structure.events.map((e) => `${e.event} \u2192 ${e.handler}`))}`);
+  out.push(`  Events:       ${list(m.structure.events.map((e) => `${e.event} → ${e.handler}`))}`);
   out.push(`  Loops:        ${list(m.structure.loops.map((l) => `${l.alias} in ${l.source}`))}`);
   out.push(`  Models:       ${list(m.structure.models)}`);
   out.push("");
   out.push("REACTIVITY FLOW:");
   const flows = describeFlow(m);
   if (flows.length === 0)
-    out.push("  (static \u2014 no reactive bindings)");
+    out.push("  (static — no reactive bindings)");
   else
     for (const f of flows)
-      out.push(`  \u2022 ${f}`);
+      out.push(`  • ${f}`);
   if (m.tokens_hint) {
     out.push("");
     out.push(`AGENT NOTES: ${m.tokens_hint}`);
@@ -170619,16 +170706,16 @@ function describeFlow(m) {
   const writableMustaches = m.structure.mustaches.map((x) => x.split(".")[0]).filter((root) => reactive.has(root));
   for (const e of m.structure.events) {
     const targets = writableMustaches.length ? `mustaches [${[...new Set(writableMustaches)].join(", ")}]` : "the DOM";
-    flows.push(`${e.handler}() runs on ${e.event} \u2192 re-renders ${targets}`);
+    flows.push(`${e.handler}() runs on ${e.event} → re-renders ${targets}`);
   }
   for (const name of m.structure.models) {
-    flows.push(`ax-model="${name}" \u2014 input edits write to signal \`${name}\` (two-way)`);
+    flows.push(`ax-model="${name}" — input edits write to signal \`${name}\` (two-way)`);
   }
   for (const l of m.structure.loops) {
-    flows.push(`ax-for="${l.alias} in ${l.source}" \u2014 list re-renders when \`${l.source}\` changes`);
+    flows.push(`ax-for="${l.alias} in ${l.source}" — list re-renders when \`${l.source}\` changes`);
   }
   for (const c of m.structure.conditionals) {
-    flows.push(`ax-if="${c}" \u2014 block toggles when \`${c}\` changes`);
+    flows.push(`ax-if="${c}" — block toggles when \`${c}\` changes`);
   }
   return flows;
 }
@@ -170754,12 +170841,12 @@ async function addComponent(name) {
     const filePath = path7.join(targetDir, file.name);
     fs7.writeFileSync(filePath, file.content, "utf-8");
   }
-  console.log(`\u2714 Added component "${name}" to src/components/${name}/`);
+  console.log(`✔ Added component "${name}" to src/components/${name}/`);
   try {
     await compileComponent(targetDir);
-    console.log(`\u2714 Built component successfully.`);
+    console.log(`✔ Built component successfully.`);
   } catch (err) {
-    console.warn(`\u26A0 Build warning: ${err.message}`);
+    console.warn(`⚠ Build warning: ${err.message}`);
     console.warn("  You may need to run 'advanx build' manually.");
   }
   console.log();
@@ -170819,9 +170906,42 @@ async function run5(args) {
   }
   const port = Number(process.env.PORT ?? 3000);
   Bun.serve({ port, fetch: createStaticHandler(target) });
-  console.log(`\u2714 AdvanxJS dev server: http://localhost:${port} (serving ${target})`);
+  console.log(`✔ AdvanxJS dev server: http://localhost:${port} (serving ${target})`);
 }
 var init_serve = () => {};
+
+// src/commands/serve.ts
+import path9 from "path";
+function createStaticHandler2(target, transformHtml) {
+  const fallback = path9.join(target, "index.html");
+  return async (req) => {
+    const url = new URL(req.url);
+    let pathname = decodeURIComponent(url.pathname);
+    if (pathname.endsWith("/"))
+      pathname += "index.html";
+    const filePath = path9.join(target, pathname);
+    if (!filePath.startsWith(target + path9.sep) && filePath !== target) {
+      return new Response("Forbidden", { status: 403 });
+    }
+    const file = Bun.file(filePath);
+    if (await file.exists()) {
+      if (transformHtml && filePath.endsWith(".html")) {
+        return new Response(transformHtml(await file.text()), {
+          headers: { "Content-Type": "text/html" }
+        });
+      }
+      return new Response(file);
+    }
+    const fb = Bun.file(fallback);
+    if (await fb.exists()) {
+      return transformHtml ? new Response(transformHtml(await fb.text()), {
+        headers: { "Content-Type": "text/html" }
+      }) : new Response(fb);
+    }
+    return new Response("Not found", { status: 404 });
+  };
+}
+var init_serve2 = () => {};
 
 // src/commands/dev.ts
 var exports_dev = {};
@@ -170829,15 +170949,15 @@ __export(exports_dev, {
   run: () => run6
 });
 import fs9 from "fs";
-import path9 from "path";
+import path10 from "path";
 async function run6(args) {
   if (!args[0]) {
     console.error("Usage: advanx dev <path>");
     process.exit(1);
   }
-  const target = path9.resolve(args[0]);
-  const distDir = path9.join(target, "dist");
-  const isPages = fs9.existsSync(path9.join(target, "src", "pages"));
+  const target = path10.resolve(args[0]);
+  const distDir = path10.join(target, "dist");
+  const isPages = fs9.existsSync(path10.join(target, "src", "pages"));
   const port = Number(process.env.PORT ?? 3000);
   const enc = new TextEncoder;
   const clients = new Set;
@@ -170864,10 +170984,10 @@ async function run6(args) {
         await compilePages(target);
       else
         await compileComponent(target);
-      console.log(`\u2714 rebuilt in ${(performance.now() - t0).toFixed(1)}ms`);
+      console.log(`✔ rebuilt in ${(performance.now() - t0).toFixed(1)}ms`);
       broadcast();
     } catch (err) {
-      console.error(`\u2716 ${err.message}`);
+      console.error(`✖ ${err.message}`);
     } finally {
       building = false;
       if (pending) {
@@ -170878,7 +170998,7 @@ async function run6(args) {
   }
   await rebuild();
   const injectReload = (html) => html.includes("</body>") ? html.replace("</body>", RELOAD_SNIPPET + "</body>") : html + RELOAD_SNIPPET;
-  const serveStatic = createStaticHandler(distDir, injectReload);
+  const serveStatic = createStaticHandler2(distDir, injectReload);
   Bun.serve({
     port,
     fetch(req) {
@@ -170908,30 +171028,30 @@ async function run6(args) {
   fs9.watch(target, { recursive: true }, (_event, filename) => {
     if (!filename)
       return;
-    const top = filename.split(path9.sep)[0];
+    const top = filename.split(path10.sep)[0];
     if (top === "dist" || top === "node_modules")
       return;
-    if (![".ts", ".html", ".css"].includes(path9.extname(filename)))
+    if (![".ts", ".html", ".css"].includes(path10.extname(filename)))
       return;
     if (timer)
       clearTimeout(timer);
     timer = setTimeout(rebuild, 30);
   });
-  console.log(`\u2714 AdvanxJS dev server: http://localhost:${port} (serving ${distDir})`);
+  console.log(`✔ AdvanxJS dev server: http://localhost:${port} (serving ${distDir})`);
   console.log("\uD83D\uDE80 Advanx Dev Mode: Watching for changes...");
 }
 var RELOAD_PATH = "/__advanx_reload", RELOAD_SNIPPET;
 var init_dev = __esm(() => {
   init_src();
-  init_serve();
+  init_serve2();
   RELOAD_SNIPPET = `<script>new EventSource("${RELOAD_PATH}").onmessage=()=>location.reload();</script>`;
 });
 
 // src/help.ts
-var HELP = `AdvanxJS \u2014 Agent-Native CLI
+var HELP = `AdvanxJS — Agent-Native CLI
 
 Usage:
-  advanx build <path>                Compile a component, or \u2014 if <path>/src/pages exists \u2014
+  advanx build <path>                Compile a component, or — if <path>/src/pages exists —
                                      compile every subfolder as an SPA route and emit routes.js
   advanx serve <dir>                 Run a dev server with SPA history fallback
                                      (defaults to ./dist; PORT env var overrides 3000)
@@ -170945,7 +171065,7 @@ Usage:
 
 Examples:
   advanx build tests/counter         (single-component mode)
-  advanx build tests/spa-demo        (SPA / pages mode \u2014 auto-detects src/pages)
+  advanx build tests/spa-demo        (SPA / pages mode — auto-detects src/pages)
   advanx serve tests/spa-demo/dist   (serve the SPA build with deep-link refresh support)
   advanx dev tests/counter           (save-to-refresh dev loop with live reload)
   advanx create my-app

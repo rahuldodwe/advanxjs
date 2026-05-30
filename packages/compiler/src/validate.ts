@@ -2,14 +2,49 @@ import type { LogicAnalysis } from "./analyze";
 import type { ViewBindings } from "./parseView";
 
 const IDENT = /^[A-Za-z_$][\w$]*$/;
+const PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
+const LITERAL = /^("[^"]*"|'[^']*'|-?\d+(\.\d+)?|true|false|null)$/;
+const CALL = /^([A-Za-z_$][\w$]*)(?:\((.*)\))?$/;
+
+type ParsedHandler = { name: string; args: string[] };
+
+function splitArgs(s: string): string[] {
+  const out: string[] = [];
+  let buf = "", q = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charCodeAt(i);
+    if (q) { if (ch === q) q = 0; buf += s[i]; }
+    else if (ch === 34 || ch === 39) { q = ch; buf += s[i]; }
+    else if (ch === 44) { out.push(buf); buf = ""; }
+    else buf += s[i];
+  }
+  if (buf.trim()) out.push(buf);
+  return out;
+}
+
+function parseHandler(handler: string): ParsedHandler | null {
+  const m = handler.match(CALL);
+  if (!m) return null;
+  if (m[2] === undefined) return { name: m[1]!, args: [] };
+  const args = splitArgs(m[2]).map(a => a.trim());
+  for (const a of args) {
+    if (!LITERAL.test(a) && !PATH.test(a)) return null;
+  }
+  return { name: m[1]!, args };
+}
 
 export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
-  // Article I — No logic in the View. Directive values must be bare identifiers.
+  // Article I — No logic in the View. Directive values must be bare identifiers
+  // (handlers additionally accept `name(arg1, arg2, ...)` where each arg is a
+  // dot-path or literal — no operators, no nested calls).
   for (const name of view.conditionals) {
     if (!IDENT.test(name)) throw articleI("ax-if", name);
   }
+  const parsedEvents: { event: string; handler: string; parsed: ParsedHandler }[] = [];
   for (const { event, handler } of view.events) {
-    if (!IDENT.test(handler)) throw articleI(`ax-on:${event}`, handler);
+    const parsed = parseHandler(handler);
+    if (!parsed) throw articleI(`ax-on:${event}`, handler);
+    parsedEvents.push({ event, handler, parsed });
   }
   for (const { alias, source } of view.loops) {
     if (!IDENT.test(alias)) throw articleI("ax-for alias", alias);
@@ -27,11 +62,18 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
 
   const missing = new Set<string>();
   view.mustaches.forEach(n => {
-    const root = n.split(".")[0];
+    const root = n.split(".")[0]!;
     if (!declared.has(root)) missing.add(n);
   });
   view.conditionals.forEach(n => { if (!declared.has(n)) missing.add(n); });
-  view.events.forEach(({ handler }) => { if (!declared.has(handler)) missing.add(handler); });
+  parsedEvents.forEach(({ parsed }) => {
+    if (!declared.has(parsed.name)) missing.add(parsed.name);
+    for (const a of parsed.args) {
+      if (LITERAL.test(a)) continue;
+      const root = a.split(".")[0]!;
+      if (!declared.has(root)) missing.add(root);
+    }
+  });
   view.models.forEach(n => { if (!declared.has(n)) missing.add(n); });
 
   if (missing.size) {
@@ -40,11 +82,11 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
     );
   }
 
-  for (const { event, handler } of view.events) {
-    if (!actions.has(handler)) {
+  for (const { event, handler, parsed } of parsedEvents) {
+    if (!actions.has(parsed.name)) {
       throw new Error(
         `🚨 ADVANXJS CONTRACT VIOLATION: ax-on:${event}="${handler}" expects an action (function), ` +
-        `but "${handler}" is a signal/computed.`
+        `but "${parsed.name}" is a signal/computed.`
       );
     }
   }
@@ -70,7 +112,8 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
 
 function articleI(attr: string, value: string): Error {
   return new Error(
-    `🚨 ADVANXJS CONTRACT VIOLATION: ${attr}="${value}" must be a bare identifier — ` +
+    `🚨 ADVANXJS CONTRACT VIOLATION: ${attr}="${value}" must be a bare identifier ` +
+    `(handlers may also use "name(arg, ...)" with dot-paths or literals) — ` +
     `expressions belong in logic.ts (Article I).`
   );
 }

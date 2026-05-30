@@ -20,7 +20,7 @@ export function wireMustaches(root: Element, logic: any) {
       node.textContent = original.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, p) => {
         const rk = p.split(".")[0];
         if (!logic[rk] || !('value' in logic[rk])) return `{{ ${p} }}`;
-        return String(resolvePath(logic, p) ?? "");
+        return String(resolveArg(p, logic) ?? "");
       });
     });
   });
@@ -101,20 +101,30 @@ function hydrateClone(template: HTMLElement, alias: string, item: any, logic: an
       return String(cur ?? "");
     });
   }
-  wireEvents(clone, logic);
+  wireEvents(clone, logic, { [alias]: item });
   return clone;
 }
 
-export function wireEvents(root: Element, logic: any) {
+const AX_ON_RE = /^(\w+)(?:\((.*)\))?$/;
+
+export function wireEvents(root: Element, logic: any, scope?: any) {
   const targets: Element[] = [root, ...Array.from(root.querySelectorAll('*'))];
   for (const el of targets) {
     for (const attr of Array.from(el.attributes)) {
       if (!attr.name.startsWith('ax-on:')) continue;
+      const m = attr.value.match(AX_ON_RE);
+      if (!m) continue;
+      const fn = logic[m[1]!];
+      if (typeof fn !== 'function') continue;
       const event = attr.name.slice(6);
-      const method = attr.value;
-      if (typeof logic[method] === 'function') {
-        el.removeAttribute(attr.name);
-        el.addEventListener(event, () => logic[method]());
+      el.removeAttribute(attr.name);
+      if (m[2] === undefined) {
+        el.addEventListener(event, () => fn());
+      } else {
+        const exprs = splitArgs(m[2]);
+        el.addEventListener(event, () =>
+          fn(...exprs.map(a => resolveArg(a, logic, scope)))
+        );
       }
     }
   }
@@ -137,14 +147,42 @@ export function wireModels(root: Element, logic: any) {
   });
 }
 
-function resolvePath(logic: any, path: string): any {
-  const parts = path.split(".");
-  const sig = logic[parts[0]];
-  if (!sig || !('value' in sig)) return undefined;
-  let cur = sig.value;
+function resolveArg(expr: string, logic: any, scope?: any): any {
+  const s = expr.trim();
+  if (!s) return undefined;
+  const c = s.charCodeAt(0);
+  if (c === 34 || c === 39) return s.slice(1, -1);
+  if ((c >= 48 && c <= 57) || (c === 45 && s.length > 1)) return Number(s);
+  if (s === "true") return true;
+  if (s === "false") return false;
+  if (s === "null") return null;
+  const parts = s.split(".");
+  const head = parts[0]!;
+  let cur: any;
+  if (scope && head in scope) {
+    cur = scope[head];
+  } else {
+    const sig = logic[head];
+    if (!sig || !("value" in sig)) return undefined;
+    cur = sig.value;
+  }
   for (let i = 1; i < parts.length; i++) {
     if (cur == null) return undefined;
-    cur = cur[parts[i]];
+    cur = cur[parts[i]!];
   }
   return cur;
+}
+
+function splitArgs(s: string): string[] {
+  const out: string[] = [];
+  let buf = "", q = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charCodeAt(i);
+    if (q) { if (ch === q) q = 0; buf += s[i]; }
+    else if (ch === 34 || ch === 39) { q = ch; buf += s[i]; }
+    else if (ch === 44) { out.push(buf); buf = ""; }
+    else buf += s[i];
+  }
+  if (buf.trim()) out.push(buf);
+  return out;
 }

@@ -6,21 +6,26 @@
   "computed": [],
   "actions": [
     "addTodo",
-    "removeLast"
+    "removeTask",
+    "setLabel"
   ],
   "structure": {
     "mustaches": [
-      "todo"
+      "todo.text"
     ],
     "conditionals": [],
     "events": [
       {
         "event": "click",
-        "handler": "addTodo"
+        "handler": "removeTask(todo.id)"
       },
       {
         "event": "click",
-        "handler": "removeLast"
+        "handler": "setLabel(todo.id, 'done')"
+      },
+      {
+        "event": "click",
+        "handler": "addTodo"
       }
     ],
     "loops": [
