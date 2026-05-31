@@ -1,6 +1,6 @@
 {
   "name": "advanxjs",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "The first Agent-Native (AX) frontend framework.",
   "type": "module",
   "main": "./src/index.ts",
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "bun build src/index.ts --outfile bin/core.js --bundle --target bun",
-    "prepublishOnly": "bun run build && chmod +x bin/index.js"
+    "prepublishOnly": "chmod +x bin/index.js"
   },
   "author": "Rahul Dodwe",
   "license": "MIT",
