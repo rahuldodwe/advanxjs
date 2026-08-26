@@ -6,13 +6,11 @@
     </button>
   </div>
   <ul class="navbar-menu" ax-if="isMenuOpen">
-    <li ax-for="link in navLinks">
-      <a ax-link="{{ link.path }}" ax-on:click="closeMenu">{{ link.label }}</a>
-    </li>
+    <li><a ax-link="/" ax-on:click="closeMenu">Home</a></li>
+    <li><a ax-link="/about" ax-on:click="closeMenu">About</a></li>
   </ul>
   <ul class="navbar-menu navbar-desktop">
-    <li ax-for="link in navLinks">
-      <a ax-link="{{ link.path }}">{{ link.label }}</a>
-    </li>
+    <li><a ax-link="/">Home</a></li>
+    <li><a ax-link="/about">About</a></li>
   </ul>
 </nav>

@@ -4,4 +4,7 @@ import { signal } from "@preact/signals-core";
 export const heroTitle = signal("Welcome to AdvanxJS");
 export const heroSubtitle = signal("Build reactive, agent-native web applications with ease.");
 export const ctaText = signal("Get Started");
-export const ctaLink = signal("/docs");
+
+// The CTA route is written directly into view.html: the runtime interpolates
+// text nodes only, so an `ax-link="{{ … }}"` never resolves. Attribute
+// bindings are M2.

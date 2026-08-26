@@ -34,6 +34,27 @@ function parseHandler(handler: string): ParsedHandler | null {
 }
 
 export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
+  // The compiler must never green-light syntax the runtime cannot execute. These
+  // two parse cleanly but are inert at runtime — `ax-else` has no handler in
+  // directives.ts, and no attribute is ever interpolated (wireMustaches and
+  // hydrateClone walk text nodes only). Checked first so the specific
+  // "not yet supported" message wins over a generic contract error.
+  if (view.elses > 0) {
+    throw new Error(
+      `🚨 ADVANXJS CONTRACT VIOLATION: 'ax-else' is not yet supported in the runtime. ` +
+      `Use inverted 'ax-if' booleans in logic.ts (Article I/V).`
+    );
+  }
+
+  const attrMustache = view.attributeMustaches[0];
+  if (attrMustache) {
+    throw new Error(
+      `🚨 ADVANXJS CONTRACT VIOLATION: Attribute mustache interpolation is not yet supported. ` +
+      `Use direct element bindings or directives (Article V).` +
+      `\n  Found: ${attrMustache.attribute}="{{ ${attrMustache.expression} }}"`
+    );
+  }
+
   // Article I — No logic in the View. Directive values must be bare identifiers
   // (handlers additionally accept `name(arg1, arg2, ...)` where each arg is a
   // dot-path or literal — no operators, no nested calls).
