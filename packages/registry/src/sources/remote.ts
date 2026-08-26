@@ -3,11 +3,20 @@
  */
 import type { ComponentManifest, ResolvedComponent, ComponentListEntry } from "../manifest.ts";
 
-// Overridable via ADVANX_REGISTRY_BASE so forks/mirrors can point elsewhere.
-const REGISTRY_BASE =
-  process.env.ADVANX_REGISTRY_BASE ??
-  "https://raw.githubusercontent.com/rahuldodwe/advanx-monorepo/main/packages/registry";
-const REGISTRY_INDEX = `${REGISTRY_BASE}/registry.json`;
+/** The registry lives in the repo this package publishes from. Keep in sync with
+ *  the root package.json `repository.url` — remote.test.ts enforces it. */
+export const DEFAULT_REGISTRY_BASE =
+  "https://raw.githubusercontent.com/rahuldodwe/advanxjs/main/packages/registry";
+
+/** Base URL with any trailing slashes stripped, so joins never emit `//`.
+ *  Overridable via ADVANX_REGISTRY_BASE for forks and mirrors. */
+export function registryBase(): string {
+  return (process.env.ADVANX_REGISTRY_BASE ?? DEFAULT_REGISTRY_BASE).replace(/\/+$/, "");
+}
+
+export function registryUrl(...segments: string[]): string {
+  return [registryBase(), ...segments].join("/");
+}
 
 interface RegistryIndex {
   version: string;
@@ -19,7 +28,7 @@ interface RegistryIndex {
  */
 export async function fetchRegistryIndex(): Promise<RegistryIndex | null> {
   try {
-    const response = await fetch(REGISTRY_INDEX);
+    const response = await fetch(registryUrl("registry.json"));
     if (!response.ok) {
       return null;
     }
@@ -55,15 +64,15 @@ export async function componentExistsRemote(name: string): Promise<boolean> {
  * Resolve a component by name from the remote registry
  */
 export async function resolveComponentRemote(name: string): Promise<ResolvedComponent | null> {
-  const componentBase = `${REGISTRY_BASE}/components/${name}`;
+  const file = (f: string) => registryUrl("components", name, f);
 
   try {
     // Fetch all component files in parallel
     const [manifestRes, logicRes, viewRes, styleRes] = await Promise.all([
-      fetch(`${componentBase}/component.json`),
-      fetch(`${componentBase}/logic.ts`),
-      fetch(`${componentBase}/view.html`),
-      fetch(`${componentBase}/style.css`),
+      fetch(file("component.json")),
+      fetch(file("logic.ts")),
+      fetch(file("view.html")),
+      fetch(file("style.css")),
     ]);
 
     // Check if all files exist

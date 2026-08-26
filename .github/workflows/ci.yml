@@ -21,6 +21,9 @@ jobs:
       - name: Test suite
         run: bun test
 
+      - name: Registry reachability (bug 1c regression guard)
+        run: ADVANX_NETWORK_TESTS=1 bun test packages/registry
+
       - name: Article VI — core runtime size budget (< 5KB gzipped)
         run: bun scripts/size-budget.ts
 

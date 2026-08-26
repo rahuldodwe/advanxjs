@@ -22622,14 +22622,14 @@ ${lanes.join(`
       return { value, isSyntacticallyString, resolvedOtherFiles, hasExternalReferences };
     }
     function createEvaluator({ evaluateElementAccessExpression, evaluateEntityNameExpression }) {
-      function evaluate(expr, location2) {
+      function evaluate(expr, location) {
         let isSyntacticallyString = false;
         let resolvedOtherFiles = false;
         let hasExternalReferences = false;
         expr = skipParentheses(expr);
         switch (expr.kind) {
           case 225:
-            const result = evaluate(expr.operand, location2);
+            const result = evaluate(expr.operand, location);
             resolvedOtherFiles = result.resolvedOtherFiles;
             hasExternalReferences = result.hasExternalReferences;
             if (typeof result.value === "number") {
@@ -22644,8 +22644,8 @@ ${lanes.join(`
             }
             break;
           case 227: {
-            const left = evaluate(expr.left, location2);
-            const right = evaluate(expr.right, location2);
+            const left = evaluate(expr.left, location);
+            const right = evaluate(expr.right, location);
             isSyntacticallyString = (left.isSyntacticallyString || right.isSyntacticallyString) && expr.operatorToken.kind === 40;
             resolvedOtherFiles = left.resolvedOtherFiles || right.resolvedOtherFiles;
             hasExternalReferences = left.hasExternalReferences || right.hasExternalReferences;
@@ -22685,27 +22685,27 @@ ${lanes.join(`
           case 15:
             return evaluatorResult(expr.text, true);
           case 229:
-            return evaluateTemplateExpression(expr, location2);
+            return evaluateTemplateExpression(expr, location);
           case 9:
             return evaluatorResult(+expr.text);
           case 80:
-            return evaluateEntityNameExpression(expr, location2);
+            return evaluateEntityNameExpression(expr, location);
           case 212:
             if (isEntityNameExpression(expr)) {
-              return evaluateEntityNameExpression(expr, location2);
+              return evaluateEntityNameExpression(expr, location);
             }
             break;
           case 213:
-            return evaluateElementAccessExpression(expr, location2);
+            return evaluateElementAccessExpression(expr, location);
         }
         return evaluatorResult(undefined, isSyntacticallyString, resolvedOtherFiles, hasExternalReferences);
       }
-      function evaluateTemplateExpression(expr, location2) {
+      function evaluateTemplateExpression(expr, location) {
         let result = expr.head.text;
         let resolvedOtherFiles = false;
         let hasExternalReferences = false;
         for (const span of expr.templateSpans) {
-          const spanResult = evaluate(span.expression, location2);
+          const spanResult = evaluate(span.expression, location);
           if (spanResult.value === undefined) {
             return evaluatorResult(undefined, true);
           }
@@ -22718,8 +22718,8 @@ ${lanes.join(`
       }
       return evaluate;
     }
-    function isConstAssertion(location2) {
-      return isAssertionExpression(location2) && isConstTypeReference(location2.type) || isJSDocTypeTag(location2) && isConstTypeReference(location2.typeExpression);
+    function isConstAssertion(location) {
+      return isAssertionExpression(location) && isConstTypeReference(location.type) || isJSDocTypeTag(location) && isConstTypeReference(location.typeExpression);
     }
     function findConstructorDeclaration(node) {
       const members = node.members;
@@ -22747,9 +22747,9 @@ ${lanes.join(`
       var emitStandardClassFields = getEmitStandardClassFields(compilerOptions);
       var emptySymbols = createSymbolTable();
       return resolveNameHelper;
-      function resolveNameHelper(location2, nameArg, meaning, nameNotFoundMessage, isUse, excludeGlobals) {
+      function resolveNameHelper(location, nameArg, meaning, nameNotFoundMessage, isUse, excludeGlobals) {
         var _a, _b, _c;
-        const originalLocation = location2;
+        const originalLocation = location;
         let result;
         let lastLocation;
         let lastSelfReferenceLocation;
@@ -22759,30 +22759,30 @@ ${lanes.join(`
         let grandparent;
         const name = isString(nameArg) ? nameArg : nameArg.escapedText;
         loop:
-          while (location2) {
-            if (name === "const" && isConstAssertion(location2)) {
+          while (location) {
+            if (name === "const" && isConstAssertion(location)) {
               return;
             }
-            if (isModuleOrEnumDeclaration(location2) && lastLocation && location2.name === lastLocation) {
-              lastLocation = location2;
-              location2 = location2.parent;
+            if (isModuleOrEnumDeclaration(location) && lastLocation && location.name === lastLocation) {
+              lastLocation = location;
+              location = location.parent;
             }
-            if (canHaveLocals(location2) && location2.locals && !isGlobalSourceFile(location2)) {
-              if (result = lookup(location2.locals, name, meaning)) {
+            if (canHaveLocals(location) && location.locals && !isGlobalSourceFile(location)) {
+              if (result = lookup(location.locals, name, meaning)) {
                 let useResult = true;
-                if (isFunctionLike(location2) && lastLocation && lastLocation !== location2.body) {
+                if (isFunctionLike(location) && lastLocation && lastLocation !== location.body) {
                   if (meaning & result.flags & 788968 && lastLocation.kind !== 321) {
-                    useResult = result.flags & 262144 ? !!(lastLocation.flags & 16) || lastLocation === location2.type || lastLocation.kind === 170 || lastLocation.kind === 342 || lastLocation.kind === 343 || lastLocation.kind === 169 : false;
+                    useResult = result.flags & 262144 ? !!(lastLocation.flags & 16) || lastLocation === location.type || lastLocation.kind === 170 || lastLocation.kind === 342 || lastLocation.kind === 343 || lastLocation.kind === 169 : false;
                   }
                   if (meaning & result.flags & 3) {
-                    if (useOuterVariableScopeInParameter(result, location2, lastLocation)) {
+                    if (useOuterVariableScopeInParameter(result, location, lastLocation)) {
                       useResult = false;
                     } else if (result.flags & 1) {
-                      useResult = lastLocation.kind === 170 || !!(lastLocation.flags & 16) || lastLocation === location2.type && !!findAncestor(result.valueDeclaration, isParameter);
+                      useResult = lastLocation.kind === 170 || !!(lastLocation.flags & 16) || lastLocation === location.type && !!findAncestor(result.valueDeclaration, isParameter);
                     }
                   }
-                } else if (location2.kind === 195) {
-                  useResult = lastLocation === location2.trueType;
+                } else if (location.kind === 195) {
+                  useResult = lastLocation === location.trueType;
                 }
                 if (useResult) {
                   break loop;
@@ -22791,14 +22791,14 @@ ${lanes.join(`
                 }
               }
             }
-            withinDeferredContext = withinDeferredContext || getIsDeferredContext(location2, lastLocation);
-            switch (location2.kind) {
+            withinDeferredContext = withinDeferredContext || getIsDeferredContext(location, lastLocation);
+            switch (location.kind) {
               case 308:
-                if (!isExternalOrCommonJsModule(location2))
+                if (!isExternalOrCommonJsModule(location))
                   break;
               case 268:
-                const moduleExports = ((_a = getSymbolOfDeclaration(location2)) == null ? undefined : _a.exports) || emptySymbols;
-                if (location2.kind === 308 || isModuleDeclaration(location2) && location2.flags & 33554432 && !isGlobalScopeAugmentation(location2)) {
+                const moduleExports = ((_a = getSymbolOfDeclaration(location)) == null ? undefined : _a.exports) || emptySymbols;
+                if (location.kind === 308 || isModuleDeclaration(location) && location.flags & 33554432 && !isGlobalScopeAugmentation(location)) {
                   if (result = moduleExports.get("default")) {
                     const localSymbol = getLocalSymbolForExportDefault(result);
                     if (localSymbol && result.flags & meaning && localSymbol.escapedName === name) {
@@ -22812,7 +22812,7 @@ ${lanes.join(`
                   }
                 }
                 if (name !== "default" && (result = lookup(moduleExports, name, meaning & 2623475))) {
-                  if (isSourceFile(location2) && location2.commonJsModuleIndicator && !((_b = result.declarations) == null ? undefined : _b.some(isJSDocTypeAlias))) {
+                  if (isSourceFile(location) && location.commonJsModuleIndicator && !((_b = result.declarations) == null ? undefined : _b.some(isJSDocTypeAlias))) {
                     result = undefined;
                   } else {
                     break loop;
@@ -22820,20 +22820,20 @@ ${lanes.join(`
                 }
                 break;
               case 267:
-                if (result = lookup(((_c = getSymbolOfDeclaration(location2)) == null ? undefined : _c.exports) || emptySymbols, name, meaning & 8)) {
-                  if (nameNotFoundMessage && getIsolatedModules(compilerOptions) && !(location2.flags & 33554432) && getSourceFileOfNode(location2) !== getSourceFileOfNode(result.valueDeclaration)) {
-                    error2(originalLocation, Diagnostics.Cannot_access_0_from_another_file_without_qualification_when_1_is_enabled_Use_2_instead, unescapeLeadingUnderscores(name), isolatedModulesLikeFlagName, `${unescapeLeadingUnderscores(getSymbolOfDeclaration(location2).escapedName)}.${unescapeLeadingUnderscores(name)}`);
+                if (result = lookup(((_c = getSymbolOfDeclaration(location)) == null ? undefined : _c.exports) || emptySymbols, name, meaning & 8)) {
+                  if (nameNotFoundMessage && getIsolatedModules(compilerOptions) && !(location.flags & 33554432) && getSourceFileOfNode(location) !== getSourceFileOfNode(result.valueDeclaration)) {
+                    error2(originalLocation, Diagnostics.Cannot_access_0_from_another_file_without_qualification_when_1_is_enabled_Use_2_instead, unescapeLeadingUnderscores(name), isolatedModulesLikeFlagName, `${unescapeLeadingUnderscores(getSymbolOfDeclaration(location).escapedName)}.${unescapeLeadingUnderscores(name)}`);
                   }
                   break loop;
                 }
                 break;
               case 173:
-                if (!isStatic(location2)) {
-                  const ctor = findConstructorDeclaration(location2.parent);
+                if (!isStatic(location)) {
+                  const ctor = findConstructorDeclaration(location.parent);
                   if (ctor && ctor.locals) {
                     if (lookup(ctor.locals, name, meaning & 111551)) {
-                      Debug.assertNode(location2, isPropertyDeclaration);
-                      propertyWithInvalidInitializer = location2;
+                      Debug.assertNode(location, isPropertyDeclaration);
+                      propertyWithInvalidInitializer = location;
                     }
                   }
                 }
@@ -22841,8 +22841,8 @@ ${lanes.join(`
               case 264:
               case 232:
               case 265:
-                if (result = lookup(getSymbolOfDeclaration(location2).members || emptySymbols, name, meaning & 788968)) {
-                  if (!isTypeParameterSymbolDeclaredInContainer(result, location2)) {
+                if (result = lookup(getSymbolOfDeclaration(location).members || emptySymbols, name, meaning & 788968)) {
+                  if (!isTypeParameterSymbolDeclaredInContainer(result, location)) {
                     result = undefined;
                     break;
                   }
@@ -22854,17 +22854,17 @@ ${lanes.join(`
                   }
                   break loop;
                 }
-                if (isClassExpression(location2) && meaning & 32) {
-                  const className = location2.name;
+                if (isClassExpression(location) && meaning & 32) {
+                  const className = location.name;
                   if (className && name === className.escapedText) {
-                    result = location2.symbol;
+                    result = location.symbol;
                     break loop;
                   }
                 }
                 break;
               case 234:
-                if (lastLocation === location2.expression && location2.parent.token === 96) {
-                  const container = location2.parent.parent;
+                if (lastLocation === location.expression && location.parent.token === 96) {
+                  const container = location.parent.parent;
                   if (isClassLike(container) && (result = lookup(getSymbolOfDeclaration(container).members, name, meaning & 788968))) {
                     if (nameNotFoundMessage) {
                       error2(originalLocation, Diagnostics.Base_class_expressions_cannot_reference_class_type_parameters);
@@ -22874,7 +22874,7 @@ ${lanes.join(`
                 }
                 break;
               case 168:
-                grandparent = location2.parent.parent;
+                grandparent = location.parent.parent;
                 if (isClassLike(grandparent) || grandparent.kind === 265) {
                   if (result = lookup(getSymbolOfDeclaration(grandparent).members, name, meaning & 788968)) {
                     if (nameNotFoundMessage) {
@@ -22904,64 +22904,64 @@ ${lanes.join(`
                   break loop;
                 }
                 if (meaning & 16) {
-                  const functionName = location2.name;
+                  const functionName = location.name;
                   if (functionName && name === functionName.escapedText) {
-                    result = location2.symbol;
+                    result = location.symbol;
                     break loop;
                   }
                 }
                 break;
               case 171:
-                if (location2.parent && location2.parent.kind === 170) {
-                  location2 = location2.parent;
+                if (location.parent && location.parent.kind === 170) {
+                  location = location.parent;
                 }
-                if (location2.parent && (isClassElement(location2.parent) || location2.parent.kind === 264)) {
-                  location2 = location2.parent;
+                if (location.parent && (isClassElement(location.parent) || location.parent.kind === 264)) {
+                  location = location.parent;
                 }
                 break;
               case 347:
               case 339:
               case 341:
               case 352:
-                const root = getJSDocRoot(location2);
+                const root = getJSDocRoot(location);
                 if (root) {
-                  location2 = root.parent;
+                  location = root.parent;
                 }
                 break;
               case 170:
-                if (lastLocation && (lastLocation === location2.initializer || lastLocation === location2.name && isBindingPattern(lastLocation))) {
+                if (lastLocation && (lastLocation === location.initializer || lastLocation === location.name && isBindingPattern(lastLocation))) {
                   if (!associatedDeclarationForContainingInitializerOrBindingName) {
-                    associatedDeclarationForContainingInitializerOrBindingName = location2;
+                    associatedDeclarationForContainingInitializerOrBindingName = location;
                   }
                 }
                 break;
               case 209:
-                if (lastLocation && (lastLocation === location2.initializer || lastLocation === location2.name && isBindingPattern(lastLocation))) {
-                  if (isPartOfParameterDeclaration(location2) && !associatedDeclarationForContainingInitializerOrBindingName) {
-                    associatedDeclarationForContainingInitializerOrBindingName = location2;
+                if (lastLocation && (lastLocation === location.initializer || lastLocation === location.name && isBindingPattern(lastLocation))) {
+                  if (isPartOfParameterDeclaration(location) && !associatedDeclarationForContainingInitializerOrBindingName) {
+                    associatedDeclarationForContainingInitializerOrBindingName = location;
                   }
                 }
                 break;
               case 196:
                 if (meaning & 262144) {
-                  const parameterName = location2.typeParameter.name;
+                  const parameterName = location.typeParameter.name;
                   if (parameterName && name === parameterName.escapedText) {
-                    result = location2.typeParameter.symbol;
+                    result = location.typeParameter.symbol;
                     break loop;
                   }
                 }
                 break;
               case 282:
-                if (lastLocation && lastLocation === location2.propertyName && location2.parent.parent.moduleSpecifier) {
-                  location2 = location2.parent.parent.parent;
+                if (lastLocation && lastLocation === location.propertyName && location.parent.parent.moduleSpecifier) {
+                  location = location.parent.parent.parent;
                 }
                 break;
             }
-            if (isSelfReferenceLocation(location2, lastLocation)) {
-              lastSelfReferenceLocation = location2;
+            if (isSelfReferenceLocation(location, lastLocation)) {
+              lastSelfReferenceLocation = location;
             }
-            lastLocation = location2;
-            location2 = isJSDocTemplateTag(location2) ? getEffectiveContainerForJSDocTemplateTag(location2) || location2.parent : isJSDocParameterTag(location2) || isJSDocReturnTag(location2) ? getHostSignatureFromJSDoc(location2) || location2.parent : location2.parent;
+            lastLocation = location;
+            location = isJSDocTemplateTag(location) ? getEffectiveContainerForJSDocTemplateTag(location) || location.parent : isJSDocParameterTag(location) || isJSDocReturnTag(location) ? getHostSignatureFromJSDoc(location) || location.parent : location.parent;
           }
         if (isUse && result && (!lastSelfReferenceLocation || result !== lastSelfReferenceLocation.symbol)) {
           result.isReferenced |= meaning;
@@ -22996,9 +22996,9 @@ ${lanes.join(`
         }
         return result;
       }
-      function useOuterVariableScopeInParameter(result, location2, lastLocation) {
+      function useOuterVariableScopeInParameter(result, location, lastLocation) {
         const target = getEmitScriptTarget(compilerOptions);
-        const functionLocation = location2;
+        const functionLocation = location;
         if (isParameter(lastLocation) && functionLocation.body && result.valueDeclaration && result.valueDeclaration.pos >= functionLocation.body.pos && result.valueDeclaration.end <= functionLocation.body.end) {
           if (target >= 2) {
             let declarationRequiresScopeChange = getRequiresScopeChangeCache(functionLocation);
@@ -23043,17 +23043,17 @@ ${lanes.join(`
           }
         }
       }
-      function getIsDeferredContext(location2, lastLocation) {
-        if (location2.kind !== 220 && location2.kind !== 219) {
-          return isTypeQueryNode(location2) || (isFunctionLikeDeclaration(location2) || location2.kind === 173 && !isStatic(location2)) && (!lastLocation || lastLocation !== location2.name);
+      function getIsDeferredContext(location, lastLocation) {
+        if (location.kind !== 220 && location.kind !== 219) {
+          return isTypeQueryNode(location) || (isFunctionLikeDeclaration(location) || location.kind === 173 && !isStatic(location)) && (!lastLocation || lastLocation !== location.name);
         }
-        if (lastLocation && lastLocation === location2.name) {
+        if (lastLocation && lastLocation === location.name) {
           return false;
         }
-        if (location2.asteriskToken || hasSyntacticModifier(location2, 1024)) {
+        if (location.asteriskToken || hasSyntacticModifier(location, 1024)) {
           return true;
         }
-        return !getImmediatelyInvokedFunctionExpression(location2);
+        return !getImmediatelyInvokedFunctionExpression(location);
       }
       function isSelfReferenceLocation(node, lastLocation) {
         switch (node.kind) {
@@ -28363,12 +28363,12 @@ ${lanes.join(`
           metadataValue
         ]);
       }
-      function createParamHelper(expression, parameterOffset, location2) {
+      function createParamHelper(expression, parameterOffset, location) {
         context.requestEmitHelper(paramHelper);
         return setTextRange(factory2.createCallExpression(getUnscopedHelperName("__param"), undefined, [
           factory2.createNumericLiteral(parameterOffset + ""),
           expression
-        ]), location2);
+        ]), location);
       }
       function createESDecorateClassContextObject(contextIn) {
         const properties = [
@@ -28463,7 +28463,7 @@ ${lanes.join(`
         context.requestEmitHelper(asyncValues);
         return factory2.createCallExpression(getUnscopedHelperName("__asyncValues"), undefined, [expression]);
       }
-      function createRestHelper(value, elements, computedTempVariables, location2) {
+      function createRestHelper(value, elements, computedTempVariables, location) {
         context.requestEmitHelper(restHelper);
         const propertyNames = [];
         let computedTempVariableOffset = 0;
@@ -28482,7 +28482,7 @@ ${lanes.join(`
         }
         return factory2.createCallExpression(getUnscopedHelperName("__rest"), undefined, [
           value,
-          setTextRange(factory2.createArrayLiteralExpression(propertyNames), location2)
+          setTextRange(factory2.createArrayLiteralExpression(propertyNames), location)
         ]);
       }
       function createAwaiterHelper(hasLexicalThis, argumentsExpression, promiseConstructor, parameters, body) {
@@ -29854,9 +29854,9 @@ ${lanes.join(`
     function createEmptyExports(factory2) {
       return factory2.createExportDeclaration(undefined, false, factory2.createNamedExports([]), undefined);
     }
-    function createMemberAccessForPropertyName(factory2, target, memberName, location2) {
+    function createMemberAccessForPropertyName(factory2, target, memberName, location) {
       if (isComputedPropertyName(memberName)) {
-        return setTextRange(factory2.createElementAccessExpression(target, memberName.expression), location2);
+        return setTextRange(factory2.createElementAccessExpression(target, memberName.expression), location);
       } else {
         const expression = setTextRange(isMemberName(memberName) ? factory2.createPropertyAccessExpression(target, memberName) : factory2.createElementAccessExpression(target, memberName), memberName);
         addEmitFlags(expression, 128);
@@ -29884,7 +29884,7 @@ ${lanes.join(`
     function createJsxFragmentFactoryExpression(factory2, jsxFragmentFactoryEntity, reactNamespace, parent2) {
       return jsxFragmentFactoryEntity ? createJsxFactoryExpressionFromEntityName(factory2, jsxFragmentFactoryEntity, parent2) : factory2.createPropertyAccessExpression(createReactNamespace(reactNamespace, parent2), "Fragment");
     }
-    function createExpressionForJsxElement(factory2, callee, tagName, props, children, location2) {
+    function createExpressionForJsxElement(factory2, callee, tagName, props, children, location) {
       const argumentsList = [tagName];
       if (props) {
         argumentsList.push(props);
@@ -29902,9 +29902,9 @@ ${lanes.join(`
           argumentsList.push(children[0]);
         }
       }
-      return setTextRange(factory2.createCallExpression(callee, undefined, argumentsList), location2);
+      return setTextRange(factory2.createCallExpression(callee, undefined, argumentsList), location);
     }
-    function createExpressionForJsxFragment(factory2, jsxFactoryEntity, jsxFragmentFactoryEntity, reactNamespace, children, parentElement, location2) {
+    function createExpressionForJsxFragment(factory2, jsxFactoryEntity, jsxFragmentFactoryEntity, reactNamespace, children, parentElement, location) {
       const tagName = createJsxFragmentFactoryExpression(factory2, jsxFragmentFactoryEntity, reactNamespace, parentElement);
       const argumentsList = [tagName, factory2.createNull()];
       if (children && children.length > 0) {
@@ -29917,7 +29917,7 @@ ${lanes.join(`
           argumentsList.push(children[0]);
         }
       }
-      return setTextRange(factory2.createCallExpression(createJsxFactoryExpression(factory2, jsxFactoryEntity, reactNamespace, parentElement), undefined, argumentsList), location2);
+      return setTextRange(factory2.createCallExpression(createJsxFactoryExpression(factory2, jsxFactoryEntity, reactNamespace, parentElement), undefined, argumentsList), location);
     }
     function createForOfBindingStatement(factory2, node, boundValue) {
       if (isVariableDeclarationList(node)) {
@@ -30632,8 +30632,8 @@ ${lanes.join(`
       }
       return false;
     }
-    function setTextRange(range, location2) {
-      return location2 ? setTextRangePosEnd(range, location2.pos, location2.end) : range;
+    function setTextRange(range, location) {
+      return location ? setTextRangePosEnd(range, location.pos, location.end) : range;
     }
     function canHaveModifiers(node) {
       const kind = node.kind;
@@ -47032,8 +47032,8 @@ ${lanes.join(`
         getRecursionIdentity,
         getUnmatchedProperties,
         getTypeOfSymbolAtLocation: (symbol, locationIn) => {
-          const location2 = getParseTreeNode(locationIn);
-          return location2 ? getTypeOfSymbolAtLocation(symbol, location2) : errorType;
+          const location = getParseTreeNode(locationIn);
+          return location ? getTypeOfSymbolAtLocation(symbol, location) : errorType;
         },
         getTypeOfSymbol,
         getSymbolsOfParameterPropertyDeclaration: (parameterIn, parameterName) => {
@@ -47046,8 +47046,8 @@ ${lanes.join(`
         getDeclaredTypeOfSymbol,
         getPropertiesOfType,
         getPropertyOfType: (type, name) => getPropertyOfType(type, escapeLeadingUnderscores(name)),
-        getPrivateIdentifierPropertyOfType: (leftType, name, location2) => {
-          const node = getParseTreeNode(location2);
+        getPrivateIdentifierPropertyOfType: (leftType, name, location) => {
+          const node = getParseTreeNode(location);
           if (!node) {
             return;
           }
@@ -47092,8 +47092,8 @@ ${lanes.join(`
         symbolToParameterDeclaration: nodeBuilder.symbolToParameterDeclaration,
         typeParameterToDeclaration: nodeBuilder.typeParameterToDeclaration,
         getSymbolsInScope: (locationIn, meaning) => {
-          const location2 = getParseTreeNode(locationIn);
-          return location2 ? getSymbolsInScope(location2, meaning) : [];
+          const location = getParseTreeNode(locationIn);
+          return location ? getSymbolsInScope(location, meaning) : [];
         },
         getSymbolAtLocation: (nodeIn) => {
           const node = getParseTreeNode(nodeIn);
@@ -47123,8 +47123,8 @@ ${lanes.join(`
           return node && getTypeOfAssignmentPattern(node) || errorType;
         },
         getPropertySymbolOfDestructuringAssignment: (locationIn) => {
-          const location2 = getParseTreeNode(locationIn, isIdentifier);
-          return location2 ? getPropertySymbolOfDestructuringAssignment(location2) : undefined;
+          const location = getParseTreeNode(locationIn, isIdentifier);
+          return location ? getPropertySymbolOfDestructuringAssignment(location) : undefined;
         },
         signatureToString: (signature, enclosingDeclaration, flags, kind) => {
           return signatureToString(signature, getParseTreeNode(enclosingDeclaration), flags, kind);
@@ -47267,13 +47267,13 @@ ${lanes.join(`
         getAllPossiblePropertiesOfTypes,
         getSuggestedSymbolForNonexistentProperty,
         getSuggestedSymbolForNonexistentJSXAttribute,
-        getSuggestedSymbolForNonexistentSymbol: (location2, name, meaning) => getSuggestedSymbolForNonexistentSymbol(location2, escapeLeadingUnderscores(name), meaning),
+        getSuggestedSymbolForNonexistentSymbol: (location, name, meaning) => getSuggestedSymbolForNonexistentSymbol(location, escapeLeadingUnderscores(name), meaning),
         getSuggestedSymbolForNonexistentModule,
         getSuggestedSymbolForNonexistentClassMember,
         getBaseConstraintOfType,
         getDefaultFromTypeParameter: (type) => type && type.flags & 524288 ? getDefaultFromTypeParameter(type) : undefined,
-        resolveName(name, location2, meaning, excludeGlobals) {
-          return resolveName(location2, escapeLeadingUnderscores(name), meaning, undefined, false, excludeGlobals);
+        resolveName(name, location, meaning, excludeGlobals) {
+          return resolveName(location, escapeLeadingUnderscores(name), meaning, undefined, false, excludeGlobals);
         },
         getJsxNamespace: (n) => unescapeLeadingUnderscores(getJsxNamespace(n)),
         getJsxFragmentFactory: (n) => {
@@ -47728,11 +47728,11 @@ ${lanes.join(`
           cachedTypes.set(key, type);
         return type;
       }
-      function getJsxNamespace(location2) {
-        if (location2) {
-          const file = getSourceFileOfNode(location2);
+      function getJsxNamespace(location) {
+        if (location) {
+          const file = getSourceFileOfNode(location);
           if (file) {
-            if (isJsxOpeningFragment(location2)) {
+            if (isJsxOpeningFragment(location)) {
               if (file.localJsxFragmentNamespace) {
                 return file.localJsxFragmentNamespace;
               }
@@ -47745,7 +47745,7 @@ ${lanes.join(`
                   return file.localJsxFragmentNamespace = getFirstIdentifier(file.localJsxFragmentFactory).escapedText;
                 }
               }
-              const entity = getJsxFragmentFactoryEntity(location2);
+              const entity = getJsxFragmentFactoryEntity(location);
               if (entity) {
                 file.localJsxFragmentFactory = entity;
                 return file.localJsxFragmentNamespace = getFirstIdentifier(entity).escapedText;
@@ -47798,8 +47798,8 @@ ${lanes.join(`
           getDiagnostics2(sourceFile, cancellationToken2);
         return emitResolver;
       }
-      function lookupOrIssueError(location2, message, ...args) {
-        const diagnostic = location2 ? createDiagnosticForNode(location2, message, ...args) : createCompilerDiagnostic(message, ...args);
+      function lookupOrIssueError(location, message, ...args) {
+        const diagnostic = location ? createDiagnosticForNode(location, message, ...args) : createCompilerDiagnostic(message, ...args);
         const existing = diagnostics.lookup(diagnostic);
         if (existing) {
           return existing;
@@ -47808,16 +47808,16 @@ ${lanes.join(`
           return diagnostic;
         }
       }
-      function errorSkippedOn(key, location2, message, ...args) {
-        const diagnostic = error2(location2, message, ...args);
+      function errorSkippedOn(key, location, message, ...args) {
+        const diagnostic = error2(location, message, ...args);
         diagnostic.skippedOn = key;
         return diagnostic;
       }
-      function createError(location2, message, ...args) {
-        return location2 ? createDiagnosticForNode(location2, message, ...args) : createCompilerDiagnostic(message, ...args);
+      function createError(location, message, ...args) {
+        return location ? createDiagnosticForNode(location, message, ...args) : createCompilerDiagnostic(message, ...args);
       }
-      function error2(location2, message, ...args) {
-        const diagnostic = createError(location2, message, ...args);
+      function error2(location, message, ...args) {
+        const diagnostic = createError(location, message, ...args);
         diagnostics.add(diagnostic);
         return diagnostic;
       }
@@ -47837,21 +47837,21 @@ ${lanes.join(`
           suggestionDiagnostics.add({ ...diagnostic, category: 2 });
         }
       }
-      function errorOrSuggestion(isError, location2, message, ...args) {
-        if (location2.pos < 0 || location2.end < 0) {
+      function errorOrSuggestion(isError, location, message, ...args) {
+        if (location.pos < 0 || location.end < 0) {
           if (!isError) {
             return;
           }
-          const file = getSourceFileOfNode(location2);
+          const file = getSourceFileOfNode(location);
           addErrorOrSuggestion(isError, "message" in message ? createFileDiagnostic(file, 0, 0, message, ...args) : createDiagnosticForFileFromMessageChain(file, message));
           return;
         }
-        addErrorOrSuggestion(isError, "message" in message ? createDiagnosticForNode(location2, message, ...args) : createDiagnosticForNodeFromMessageChain(getSourceFileOfNode(location2), location2, message));
+        addErrorOrSuggestion(isError, "message" in message ? createDiagnosticForNode(location, message, ...args) : createDiagnosticForNodeFromMessageChain(getSourceFileOfNode(location), location, message));
       }
-      function errorAndMaybeSuggestAwait(location2, maybeMissingAwait, message, ...args) {
-        const diagnostic = error2(location2, message, ...args);
+      function errorAndMaybeSuggestAwait(location, maybeMissingAwait, message, ...args) {
+        const diagnostic = error2(location, message, ...args);
         if (maybeMissingAwait) {
-          const related = createDiagnosticForNode(location2, Diagnostics.Did_you_forget_to_use_await);
+          const related = createDiagnosticForNode(location, Diagnostics.Did_you_forget_to_use_await);
           addRelatedInfo(diagnostic, related);
         }
         return diagnostic;
@@ -47874,12 +47874,12 @@ ${lanes.join(`
       function isDeprecatedDeclaration2(declaration) {
         return !!(getCombinedNodeFlagsCached(declaration) & 536870912);
       }
-      function addDeprecatedSuggestion(location2, declarations, deprecatedEntity) {
-        const diagnostic = createDiagnosticForNode(location2, Diagnostics._0_is_deprecated, deprecatedEntity);
+      function addDeprecatedSuggestion(location, declarations, deprecatedEntity) {
+        const diagnostic = createDiagnosticForNode(location, Diagnostics._0_is_deprecated, deprecatedEntity);
         return addDeprecatedSuggestionWorker(declarations, diagnostic);
       }
-      function addDeprecatedSuggestionWithSignature(location2, declaration, deprecatedEntity, signatureString) {
-        const diagnostic = deprecatedEntity ? createDiagnosticForNode(location2, Diagnostics.The_signature_0_of_1_is_deprecated, signatureString, deprecatedEntity) : createDiagnosticForNode(location2, Diagnostics._0_is_deprecated, signatureString);
+      function addDeprecatedSuggestionWithSignature(location, declaration, deprecatedEntity, signatureString) {
+        const diagnostic = deprecatedEntity ? createDiagnosticForNode(location, Diagnostics.The_signature_0_of_1_is_deprecated, signatureString, deprecatedEntity) : createDiagnosticForNode(location, Diagnostics._0_is_deprecated, signatureString);
         return addDeprecatedSuggestionWorker(declaration, diagnostic);
       }
       function createSymbol(flags, name, checkFlags) {
@@ -48428,10 +48428,10 @@ ${lanes.join(`
           return false;
         }
         const container = getThisContainer(errorLocation, false, false);
-        let location2 = container;
-        while (location2) {
-          if (isClassLike(location2.parent)) {
-            const classSymbol = getSymbolOfDeclaration(location2.parent);
+        let location = container;
+        while (location) {
+          if (isClassLike(location.parent)) {
+            const classSymbol = getSymbolOfDeclaration(location.parent);
             if (!classSymbol) {
               break;
             }
@@ -48440,7 +48440,7 @@ ${lanes.join(`
               error2(errorLocation, Diagnostics.Cannot_find_name_0_Did_you_mean_the_static_member_1_0, diagnosticName(nameArg), symbolToString(classSymbol));
               return true;
             }
-            if (location2 === container && !isStatic(location2)) {
+            if (location === container && !isStatic(location)) {
               const instanceType = getDeclaredTypeOfSymbol(classSymbol).thisType;
               if (getPropertyOfType(instanceType, name)) {
                 error2(errorLocation, Diagnostics.Cannot_find_name_0_Did_you_mean_the_instance_member_this_0, diagnosticName(nameArg));
@@ -48448,7 +48448,7 @@ ${lanes.join(`
               }
             }
           }
-          location2 = location2.parent;
+          location = location.parent;
         }
         return false;
       }
@@ -49215,7 +49215,7 @@ ${lanes.join(`
         }
         return symbol;
       }
-      function resolveEntityName(name, meaning, ignoreErrors, dontResolveAlias, location2) {
+      function resolveEntityName(name, meaning, ignoreErrors, dontResolveAlias, location) {
         if (nodeIsMissing(name)) {
           return;
         }
@@ -49224,14 +49224,14 @@ ${lanes.join(`
         if (name.kind === 80) {
           const message = meaning === namespaceMeaning || nodeIsSynthesized(name) ? Diagnostics.Cannot_find_namespace_0 : getCannotFindNameDiagnosticForName(getFirstIdentifier(name));
           const symbolFromJSPrototype = isInJSFile(name) && !nodeIsSynthesized(name) ? resolveEntityNameFromAssignmentDeclaration(name, meaning) : undefined;
-          symbol = getMergedSymbol(resolveName(location2 || name, name, meaning, ignoreErrors || symbolFromJSPrototype ? undefined : message, true, false));
+          symbol = getMergedSymbol(resolveName(location || name, name, meaning, ignoreErrors || symbolFromJSPrototype ? undefined : message, true, false));
           if (!symbol) {
             return getMergedSymbol(symbolFromJSPrototype);
           }
         } else if (name.kind === 167 || name.kind === 212) {
           const left = name.kind === 167 ? name.left : name.expression;
           const right = name.kind === 167 ? name.right : name.name;
-          let namespace = resolveEntityName(left, namespaceMeaning, ignoreErrors, false, location2);
+          let namespace = resolveEntityName(left, namespaceMeaning, ignoreErrors, false, location);
           if (!namespace || nodeIsMissing(right)) {
             return;
           } else if (namespace === unknownSymbol) {
@@ -49344,15 +49344,15 @@ ${lanes.join(`
           }
         }
       }
-      function resolveExternalModuleName(location2, moduleReferenceExpression, ignoreErrors, errorMessage) {
+      function resolveExternalModuleName(location, moduleReferenceExpression, ignoreErrors, errorMessage) {
         const isClassic = getEmitModuleResolutionKind(compilerOptions) === 1;
         errorMessage ?? (errorMessage = getCannotResolveModuleNameErrorForSpecificModule(moduleReferenceExpression) ?? (isClassic ? Diagnostics.Cannot_find_module_0_Did_you_mean_to_set_the_moduleResolution_option_to_nodenext_or_to_add_aliases_to_the_paths_option : Diagnostics.Cannot_find_module_0_or_its_corresponding_type_declarations));
-        return resolveExternalModuleNameWorker(location2, moduleReferenceExpression, ignoreErrors ? undefined : errorMessage, ignoreErrors);
+        return resolveExternalModuleNameWorker(location, moduleReferenceExpression, ignoreErrors ? undefined : errorMessage, ignoreErrors);
       }
-      function resolveExternalModuleNameWorker(location2, moduleReferenceExpression, moduleNotFoundError, ignoreErrors = false, isForAugmentation = false) {
-        return isStringLiteralLike(moduleReferenceExpression) ? resolveExternalModule(location2, moduleReferenceExpression.text, moduleNotFoundError, !ignoreErrors ? moduleReferenceExpression : undefined, isForAugmentation) : undefined;
+      function resolveExternalModuleNameWorker(location, moduleReferenceExpression, moduleNotFoundError, ignoreErrors = false, isForAugmentation = false) {
+        return isStringLiteralLike(moduleReferenceExpression) ? resolveExternalModule(location, moduleReferenceExpression.text, moduleNotFoundError, !ignoreErrors ? moduleReferenceExpression : undefined, isForAugmentation) : undefined;
       }
-      function resolveExternalModule(location2, moduleReference, moduleNotFoundError, errorNode, isForAugmentation = false) {
+      function resolveExternalModule(location, moduleReference, moduleNotFoundError, errorNode, isForAugmentation = false) {
         var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
         if (errorNode && startsWith(moduleReference, "@types/")) {
           const diag2 = Diagnostics.Cannot_import_type_declaration_files_Consider_importing_0_instead_of_1;
@@ -49363,8 +49363,8 @@ ${lanes.join(`
         if (ambientModule) {
           return ambientModule;
         }
-        const currentSourceFile = getSourceFileOfNode(location2);
-        const contextSpecifier = isStringLiteralLike(location2) ? location2 : ((_a = isModuleDeclaration(location2) ? location2 : location2.parent && isModuleDeclaration(location2.parent) && location2.parent.name === location2 ? location2.parent : undefined) == null ? undefined : _a.name) || ((_b = isLiteralImportTypeNode(location2) ? location2 : undefined) == null ? undefined : _b.argument.literal) || isVariableDeclarationInitializedToBareOrAccessedRequire(location2) && getModuleSpecifierOfBareOrAccessedRequire(location2) || ((_c = findAncestor(location2, isImportCall)) == null ? undefined : _c.arguments[0]) || ((_d = findAncestor(location2, or(isImportDeclaration, isJSDocImportTag, isExportDeclaration))) == null ? undefined : _d.moduleSpecifier) || ((_e = findAncestor(location2, isExternalModuleImportEqualsDeclaration)) == null ? undefined : _e.moduleReference.expression);
+        const currentSourceFile = getSourceFileOfNode(location);
+        const contextSpecifier = isStringLiteralLike(location) ? location : ((_a = isModuleDeclaration(location) ? location : location.parent && isModuleDeclaration(location.parent) && location.parent.name === location ? location.parent : undefined) == null ? undefined : _a.name) || ((_b = isLiteralImportTypeNode(location) ? location : undefined) == null ? undefined : _b.argument.literal) || isVariableDeclarationInitializedToBareOrAccessedRequire(location) && getModuleSpecifierOfBareOrAccessedRequire(location) || ((_c = findAncestor(location, isImportCall)) == null ? undefined : _c.arguments[0]) || ((_d = findAncestor(location, or(isImportDeclaration, isJSDocImportTag, isExportDeclaration))) == null ? undefined : _d.moduleSpecifier) || ((_e = findAncestor(location, isExternalModuleImportEqualsDeclaration)) == null ? undefined : _e.moduleReference.expression);
         const mode = contextSpecifier && isStringLiteralLike(contextSpecifier) ? host.getModeForUsageLocation(currentSourceFile, contextSpecifier) : host.getDefaultResolutionModeForFile(currentSourceFile);
         const moduleResolutionKind = getEmitModuleResolutionKind(compilerOptions);
         const resolvedModule = (_f = host.getResolvedModule(currentSourceFile, moduleReference, mode)) == null ? undefined : _f.resolvedModule;
@@ -49375,17 +49375,17 @@ ${lanes.join(`
             error2(errorNode, resolutionDiagnostic, moduleReference, resolvedModule.resolvedFileName);
           }
           if (resolvedModule.resolvedUsingTsExtension && isDeclarationFileName(moduleReference)) {
-            const importOrExport = ((_g = findAncestor(location2, isImportDeclaration)) == null ? undefined : _g.importClause) || findAncestor(location2, or(isImportEqualsDeclaration, isExportDeclaration));
-            if (errorNode && importOrExport && !importOrExport.isTypeOnly || findAncestor(location2, isImportCall)) {
+            const importOrExport = ((_g = findAncestor(location, isImportDeclaration)) == null ? undefined : _g.importClause) || findAncestor(location, or(isImportEqualsDeclaration, isExportDeclaration));
+            if (errorNode && importOrExport && !importOrExport.isTypeOnly || findAncestor(location, isImportCall)) {
               error2(errorNode, Diagnostics.A_declaration_file_cannot_be_imported_without_import_type_Did_you_mean_to_import_an_implementation_file_0_instead, getSuggestedImportSource(Debug.checkDefined(tryExtractTSExtension(moduleReference))));
             }
           } else if (resolvedModule.resolvedUsingTsExtension && !shouldAllowImportingTsExtension(compilerOptions, currentSourceFile.fileName)) {
-            const importOrExport = ((_h = findAncestor(location2, isImportDeclaration)) == null ? undefined : _h.importClause) || findAncestor(location2, or(isImportEqualsDeclaration, isExportDeclaration));
-            if (errorNode && !((importOrExport == null ? undefined : importOrExport.isTypeOnly) || findAncestor(location2, isImportTypeNode))) {
+            const importOrExport = ((_h = findAncestor(location, isImportDeclaration)) == null ? undefined : _h.importClause) || findAncestor(location, or(isImportEqualsDeclaration, isExportDeclaration));
+            if (errorNode && !((importOrExport == null ? undefined : importOrExport.isTypeOnly) || findAncestor(location, isImportTypeNode))) {
               const tsExtension = Debug.checkDefined(tryExtractTSExtension(moduleReference));
               error2(errorNode, Diagnostics.An_import_path_can_only_end_with_a_0_extension_when_allowImportingTsExtensions_is_enabled, tsExtension);
             }
-          } else if (compilerOptions.rewriteRelativeImportExtensions && !(location2.flags & 33554432) && !isDeclarationFileName(moduleReference) && !isLiteralImportTypeNode(location2) && !isPartOfTypeOnlyImportOrExportDeclaration(location2)) {
+          } else if (compilerOptions.rewriteRelativeImportExtensions && !(location.flags & 33554432) && !isDeclarationFileName(moduleReference) && !isLiteralImportTypeNode(location) && !isPartOfTypeOnlyImportOrExportDeclaration(location)) {
             const shouldRewrite = shouldRewriteModuleSpecifier(moduleReference, compilerOptions);
             if (!resolvedModule.resolvedUsingTsExtension && shouldRewrite) {
               error2(errorNode, Diagnostics.This_relative_import_path_is_unsafe_to_rewrite_because_it_looks_like_a_file_name_but_actually_resolves_to_0, getRelativePathFromFile(getNormalizedAbsolutePath(currentSourceFile.fileName, host.getCurrentDirectory()), resolvedModule.resolvedFileName, hostGetCanonicalFileName(host)));
@@ -49410,10 +49410,10 @@ ${lanes.join(`
               errorOnImplicitAnyModule(false, errorNode, currentSourceFile, mode, resolvedModule, moduleReference);
             }
             if (errorNode && (moduleKind === 100 || moduleKind === 101)) {
-              const isSyncImport = currentSourceFile.impliedNodeFormat === 1 && !findAncestor(location2, isImportCall) || !!findAncestor(location2, isImportEqualsDeclaration);
-              const overrideHost = findAncestor(location2, (l) => isImportTypeNode(l) || isExportDeclaration(l) || isImportDeclaration(l) || isJSDocImportTag(l));
+              const isSyncImport = currentSourceFile.impliedNodeFormat === 1 && !findAncestor(location, isImportCall) || !!findAncestor(location, isImportEqualsDeclaration);
+              const overrideHost = findAncestor(location, (l) => isImportTypeNode(l) || isExportDeclaration(l) || isImportDeclaration(l) || isJSDocImportTag(l));
               if (isSyncImport && sourceFile.impliedNodeFormat === 99 && !hasResolutionModeOverride(overrideHost)) {
-                if (findAncestor(location2, isImportEqualsDeclaration)) {
+                if (findAncestor(location, isImportEqualsDeclaration)) {
                   error2(errorNode, Diagnostics.Module_0_cannot_be_imported_using_this_construct_The_specifier_only_resolves_to_an_ES_module_which_cannot_be_imported_with_require_Use_an_ECMAScript_import_instead, moduleReference);
                 } else {
                   let diagnosticDetails;
@@ -50033,20 +50033,20 @@ ${lanes.join(`
       }
       function forEachSymbolTableInScope(enclosingDeclaration, callback) {
         let result;
-        for (let location2 = enclosingDeclaration;location2; location2 = location2.parent) {
-          if (canHaveLocals(location2) && location2.locals && !isGlobalSourceFile(location2)) {
-            if (result = callback(location2.locals, undefined, true, location2)) {
+        for (let location = enclosingDeclaration;location; location = location.parent) {
+          if (canHaveLocals(location) && location.locals && !isGlobalSourceFile(location)) {
+            if (result = callback(location.locals, undefined, true, location)) {
               return result;
             }
           }
-          switch (location2.kind) {
+          switch (location.kind) {
             case 308:
-              if (!isExternalOrCommonJsModule(location2)) {
+              if (!isExternalOrCommonJsModule(location)) {
                 break;
               }
             case 268:
-              const sym = getSymbolOfDeclaration(location2);
-              if (result = callback((sym == null ? undefined : sym.exports) || emptySymbols, undefined, true, location2)) {
+              const sym = getSymbolOfDeclaration(location);
+              if (result = callback((sym == null ? undefined : sym.exports) || emptySymbols, undefined, true, location)) {
                 return result;
               }
               break;
@@ -50054,12 +50054,12 @@ ${lanes.join(`
             case 232:
             case 265:
               let table;
-              (getSymbolOfDeclaration(location2).members || emptySymbols).forEach((memberSymbol, key) => {
+              (getSymbolOfDeclaration(location).members || emptySymbols).forEach((memberSymbol, key) => {
                 if (memberSymbol.flags & (788968 & ~67108864)) {
                   (table || (table = createSymbolTable())).set(key, memberSymbol);
                 }
               });
-              if (table && (result = callback(table, undefined, false, location2))) {
+              if (table && (result = callback(table, undefined, false, location))) {
                 return result;
               }
               break;
@@ -50528,8 +50528,8 @@ ${lanes.join(`
               return enterNewScope(context, node, undefined, typeParameters);
             }
           },
-          markNodeReuse(context, range, location2) {
-            return setTextRange2(context, range, location2);
+          markNodeReuse(context, range, location) {
+            return setTextRange2(context, range, location);
           },
           trackExistingEntityName(context, node) {
             return trackExistingEntityName(node, context);
@@ -50618,24 +50618,24 @@ ${lanes.join(`
           const mappedType = instantiateType(type, context.mapper);
           return noMappedTypes && mappedType !== type ? undefined : mappedType;
         }
-        function setTextRange2(context, range, location2) {
+        function setTextRange2(context, range, location) {
           if (!nodeIsSynthesized(range) || !(range.flags & 16) || !context.enclosingFile || context.enclosingFile !== getSourceFileOfNode(getOriginalNode(range))) {
             range = factory.cloneNode(range);
           }
-          if (range === location2)
+          if (range === location)
             return range;
-          if (!location2) {
+          if (!location) {
             return range;
           }
           let original = range.original;
-          while (original && original !== location2) {
+          while (original && original !== location) {
             original = original.original;
           }
           if (!original) {
-            setOriginalNode(range, location2);
+            setOriginalNode(range, location);
           }
-          if (context.enclosingFile && context.enclosingFile === getSourceFileOfNode(getOriginalNode(location2))) {
-            return setTextRange(range, location2);
+          if (context.enclosingFile && context.enclosingFile === getSourceFileOfNode(getOriginalNode(location))) {
+            return setTextRange(range, location);
           }
           return range;
         }
@@ -53613,8 +53613,8 @@ ${lanes.join(`
                     questionToken: p.flags & 16777216 ? factory.createToken(58) : undefined,
                     modifiers: flag ? factory.createModifiersFromModifierFlags(flag) : undefined
                   });
-                  const location2 = sig.declaration && isPrototypePropertyAssignment(sig.declaration.parent) ? sig.declaration.parent : sig.declaration;
-                  results2.push(setTextRange2(context, decl, location2));
+                  const location = sig.declaration && isPrototypePropertyAssignment(sig.declaration.parent) ? sig.declaration.parent : sig.declaration;
+                  results2.push(setTextRange2(context, decl, location));
                 }
                 return results2;
               }
@@ -53875,8 +53875,8 @@ ${lanes.join(`
       function isTopLevelInExternalModuleAugmentation(node) {
         return node && node.parent && node.parent.kind === 269 && isExternalModuleAugmentation(node.parent.parent);
       }
-      function isDefaultBindingContext(location2) {
-        return location2.kind === 308 || isAmbientModule(location2);
+      function isDefaultBindingContext(location) {
+        return location.kind === 308 || isAmbientModule(location);
       }
       function getNameOfSymbolFromNameType(symbol, context) {
         const nameType = getSymbolLinks(symbol).nameType;
@@ -55317,15 +55317,15 @@ ${lanes.join(`
         const decl = getClassLikeDeclarationOfSymbol(type.symbol);
         return decl && getEffectiveBaseTypeNode(decl);
       }
-      function getConstructorsForTypeArguments(type, typeArgumentNodes, location2) {
+      function getConstructorsForTypeArguments(type, typeArgumentNodes, location) {
         const typeArgCount = length(typeArgumentNodes);
-        const isJavascript = isInJSFile(location2);
+        const isJavascript = isInJSFile(location);
         return filter(getSignaturesOfType(type, 1), (sig) => (isJavascript || typeArgCount >= getMinTypeArgumentCount(sig.typeParameters)) && typeArgCount <= length(sig.typeParameters));
       }
-      function getInstantiatedConstructorsForTypeArguments(type, typeArgumentNodes, location2) {
-        const signatures = getConstructorsForTypeArguments(type, typeArgumentNodes, location2);
+      function getInstantiatedConstructorsForTypeArguments(type, typeArgumentNodes, location) {
+        const signatures = getConstructorsForTypeArguments(type, typeArgumentNodes, location);
         const typeArguments = map(typeArgumentNodes, getTypeFromTypeNode);
-        return sameMap(signatures, (sig) => some(sig.typeParameters) ? getSignatureInstantiation(sig, typeArguments, isInJSFile(location2)) : sig);
+        return sameMap(signatures, (sig) => some(sig.typeParameters) ? getSignatureInstantiation(sig, typeArguments, isInJSFile(location)) : sig);
       }
       function getBaseConstructorTypeOfClass(type) {
         if (!type.resolvedBaseConstructorType) {
@@ -67827,23 +67827,23 @@ ${lanes.join(`
           return type;
         }
       }
-      function getTypeOfSymbolAtLocation(symbol, location2) {
+      function getTypeOfSymbolAtLocation(symbol, location) {
         symbol = getExportSymbolOfValueSymbolIfExported(symbol);
-        if (location2.kind === 80 || location2.kind === 81) {
-          if (isRightSideOfQualifiedNameOrPropertyAccess(location2)) {
-            location2 = location2.parent;
+        if (location.kind === 80 || location.kind === 81) {
+          if (isRightSideOfQualifiedNameOrPropertyAccess(location)) {
+            location = location.parent;
           }
-          if (isExpressionNode(location2) && (!isAssignmentTarget(location2) || isWriteAccess(location2))) {
-            const type = removeOptionalTypeMarker(isWriteAccess(location2) && location2.kind === 212 ? checkPropertyAccessExpression(location2, undefined, true) : getTypeOfExpression(location2));
-            if (getExportSymbolOfValueSymbolIfExported(getNodeLinks(location2).resolvedSymbol) === symbol) {
+          if (isExpressionNode(location) && (!isAssignmentTarget(location) || isWriteAccess(location))) {
+            const type = removeOptionalTypeMarker(isWriteAccess(location) && location.kind === 212 ? checkPropertyAccessExpression(location, undefined, true) : getTypeOfExpression(location));
+            if (getExportSymbolOfValueSymbolIfExported(getNodeLinks(location).resolvedSymbol) === symbol) {
               return type;
             }
           }
         }
-        if (isDeclarationName(location2) && isSetAccessor(location2.parent) && getAnnotatedAccessorTypeNode(location2.parent)) {
-          return getWriteTypeOfAccessors(location2.parent.symbol);
+        if (isDeclarationName(location) && isSetAccessor(location.parent) && getAnnotatedAccessorTypeNode(location.parent)) {
+          return getWriteTypeOfAccessors(location.parent.symbol);
         }
-        return isRightSideOfAccessExpression(location2) && isWriteAccess(location2.parent) ? getWriteTypeOfSymbol(symbol) : getNonMissingTypeOfSymbol(symbol);
+        return isRightSideOfAccessExpression(location) && isWriteAccess(location.parent) ? getWriteTypeOfSymbol(symbol) : getNonMissingTypeOfSymbol(symbol);
       }
       function getControlFlowContainer(node) {
         return findAncestor(node.parent, (node2) => isFunctionLike(node2) && !getImmediatelyInvokedFunctionExpression(node2) || node2.kind === 269 || node2.kind === 308 || node2.kind === 173);
@@ -67857,7 +67857,7 @@ ${lanes.join(`
       function isSymbolAssigned(symbol) {
         return !isPastLastAssignment(symbol, undefined);
       }
-      function isPastLastAssignment(symbol, location2) {
+      function isPastLastAssignment(symbol, location) {
         const parent2 = findAncestor(symbol.valueDeclaration, isFunctionOrSourceFile);
         if (!parent2) {
           return false;
@@ -67869,7 +67869,7 @@ ${lanes.join(`
             markNodeAssignments(parent2);
           }
         }
-        return !symbol.lastAssignmentPos || location2 && Math.abs(symbol.lastAssignmentPos) < location2.pos;
+        return !symbol.lastAssignmentPos || location && Math.abs(symbol.lastAssignmentPos) < location.pos;
       }
       function isSomeSymbolAssigned(rootDeclaration) {
         Debug.assert(isVariableDeclaration(rootDeclaration) || isParameter(rootDeclaration));
@@ -68000,8 +68000,8 @@ ${lanes.join(`
         const substituteConstraints = !(checkMode && checkMode & 2) && someType(type, isGenericTypeWithUnionConstraint) && (isConstraintPosition(type, reference) || hasContextualTypeWithNoGenericTypes(reference, checkMode));
         return substituteConstraints ? mapType(type, getBaseConstraintOrType) : type;
       }
-      function isExportOrExportExpression(location2) {
-        return !!findAncestor(location2, (n) => {
+      function isExportOrExportExpression(location) {
+        return !!findAncestor(location, (n) => {
           const parent2 = n.parent;
           if (parent2 === undefined) {
             return "quit";
@@ -68015,87 +68015,87 @@ ${lanes.join(`
           return false;
         });
       }
-      function markLinkedReferences(location2, hint, propSymbol, parentType) {
+      function markLinkedReferences(location, hint, propSymbol, parentType) {
         if (!canCollectSymbolAliasAccessabilityData) {
           return;
         }
-        if (location2.flags & 33554432 && !isPropertySignature(location2) && !isPropertyDeclaration(location2)) {
+        if (location.flags & 33554432 && !isPropertySignature(location) && !isPropertyDeclaration(location)) {
           return;
         }
         switch (hint) {
           case 1:
-            return markIdentifierAliasReferenced(location2);
+            return markIdentifierAliasReferenced(location);
           case 2:
-            return markPropertyAliasReferenced(location2, propSymbol, parentType);
+            return markPropertyAliasReferenced(location, propSymbol, parentType);
           case 3:
-            return markExportAssignmentAliasReferenced(location2);
+            return markExportAssignmentAliasReferenced(location);
           case 4:
-            return markJsxAliasReferenced(location2);
+            return markJsxAliasReferenced(location);
           case 5:
-            return markAsyncFunctionAliasReferenced(location2);
+            return markAsyncFunctionAliasReferenced(location);
           case 6:
-            return markImportEqualsAliasReferenced(location2);
+            return markImportEqualsAliasReferenced(location);
           case 7:
-            return markExportSpecifierAliasReferenced(location2);
+            return markExportSpecifierAliasReferenced(location);
           case 8:
-            return markDecoratorAliasReferenced(location2);
+            return markDecoratorAliasReferenced(location);
           case 0: {
-            if (isIdentifier(location2) && (isExpressionNode(location2) || isShorthandPropertyAssignment(location2.parent) || isImportEqualsDeclaration(location2.parent) && location2.parent.moduleReference === location2) && shouldMarkIdentifierAliasReferenced(location2)) {
-              if (isPropertyAccessOrQualifiedName(location2.parent)) {
-                const left = isPropertyAccessExpression(location2.parent) ? location2.parent.expression : location2.parent.left;
-                if (left !== location2)
+            if (isIdentifier(location) && (isExpressionNode(location) || isShorthandPropertyAssignment(location.parent) || isImportEqualsDeclaration(location.parent) && location.parent.moduleReference === location) && shouldMarkIdentifierAliasReferenced(location)) {
+              if (isPropertyAccessOrQualifiedName(location.parent)) {
+                const left = isPropertyAccessExpression(location.parent) ? location.parent.expression : location.parent.left;
+                if (left !== location)
                   return;
               }
-              markIdentifierAliasReferenced(location2);
+              markIdentifierAliasReferenced(location);
               return;
             }
-            if (isPropertyAccessOrQualifiedName(location2)) {
-              let topProp = location2;
+            if (isPropertyAccessOrQualifiedName(location)) {
+              let topProp = location;
               while (isPropertyAccessOrQualifiedName(topProp)) {
                 if (isPartOfTypeNode(topProp))
                   return;
                 topProp = topProp.parent;
               }
-              return markPropertyAliasReferenced(location2);
+              return markPropertyAliasReferenced(location);
             }
-            if (isExportAssignment(location2)) {
-              return markExportAssignmentAliasReferenced(location2);
+            if (isExportAssignment(location)) {
+              return markExportAssignmentAliasReferenced(location);
             }
-            if (isJsxOpeningLikeElement(location2) || isJsxOpeningFragment(location2)) {
-              return markJsxAliasReferenced(location2);
+            if (isJsxOpeningLikeElement(location) || isJsxOpeningFragment(location)) {
+              return markJsxAliasReferenced(location);
             }
-            if (isImportEqualsDeclaration(location2)) {
-              if (isInternalModuleImportEqualsDeclaration(location2) || checkExternalImportOrExportDeclaration(location2)) {
-                return markImportEqualsAliasReferenced(location2);
+            if (isImportEqualsDeclaration(location)) {
+              if (isInternalModuleImportEqualsDeclaration(location) || checkExternalImportOrExportDeclaration(location)) {
+                return markImportEqualsAliasReferenced(location);
               }
               return;
             }
-            if (isExportSpecifier(location2)) {
-              return markExportSpecifierAliasReferenced(location2);
+            if (isExportSpecifier(location)) {
+              return markExportSpecifierAliasReferenced(location);
             }
-            if (isFunctionLikeDeclaration(location2) || isMethodSignature(location2)) {
-              markAsyncFunctionAliasReferenced(location2);
+            if (isFunctionLikeDeclaration(location) || isMethodSignature(location)) {
+              markAsyncFunctionAliasReferenced(location);
             }
             if (!compilerOptions.emitDecoratorMetadata) {
               return;
             }
-            if (!canHaveDecorators(location2) || !hasDecorators(location2) || !location2.modifiers || !nodeCanBeDecorated(legacyDecorators, location2, location2.parent, location2.parent.parent)) {
+            if (!canHaveDecorators(location) || !hasDecorators(location) || !location.modifiers || !nodeCanBeDecorated(legacyDecorators, location, location.parent, location.parent.parent)) {
               return;
             }
-            return markDecoratorAliasReferenced(location2);
+            return markDecoratorAliasReferenced(location);
           }
           default:
             Debug.assertNever(hint, `Unhandled reference hint: ${hint}`);
         }
       }
-      function markIdentifierAliasReferenced(location2) {
-        const symbol = getResolvedSymbol(location2);
-        if (symbol && symbol !== argumentsSymbol && symbol !== unknownSymbol && !isThisInTypeQuery(location2)) {
-          markAliasReferenced(symbol, location2);
+      function markIdentifierAliasReferenced(location) {
+        const symbol = getResolvedSymbol(location);
+        if (symbol && symbol !== argumentsSymbol && symbol !== unknownSymbol && !isThisInTypeQuery(location)) {
+          markAliasReferenced(symbol, location);
         }
       }
-      function markPropertyAliasReferenced(location2, propSymbol, parentType) {
-        const left = isPropertyAccessExpression(location2) ? location2.expression : location2.left;
+      function markPropertyAliasReferenced(location, propSymbol, parentType) {
+        const left = isPropertyAccessExpression(location) ? location.expression : location.left;
         if (isThisIdentifier(left) || !isIdentifier(left)) {
           return;
         }
@@ -68103,32 +68103,32 @@ ${lanes.join(`
         if (!parentSymbol || parentSymbol === unknownSymbol) {
           return;
         }
-        if (getIsolatedModules(compilerOptions) || shouldPreserveConstEnums(compilerOptions) && isExportOrExportExpression(location2)) {
-          markAliasReferenced(parentSymbol, location2);
+        if (getIsolatedModules(compilerOptions) || shouldPreserveConstEnums(compilerOptions) && isExportOrExportExpression(location)) {
+          markAliasReferenced(parentSymbol, location);
           return;
         }
         const leftType = parentType || checkExpressionCached(left);
         if (isTypeAny(leftType) || leftType === silentNeverType) {
-          markAliasReferenced(parentSymbol, location2);
+          markAliasReferenced(parentSymbol, location);
           return;
         }
         let prop = propSymbol;
         if (!prop && !parentType) {
-          const right = isPropertyAccessExpression(location2) ? location2.name : location2.right;
+          const right = isPropertyAccessExpression(location) ? location.name : location.right;
           const lexicallyScopedSymbol = isPrivateIdentifier(right) && lookupSymbolForPrivateIdentifierDeclaration(right.escapedText, right);
-          const assignmentKind = getAssignmentTargetKind(location2);
-          const apparentType = getApparentType(assignmentKind !== 0 || isMethodAccessForCall(location2) ? getWidenedType(leftType) : leftType);
+          const assignmentKind = getAssignmentTargetKind(location);
+          const apparentType = getApparentType(assignmentKind !== 0 || isMethodAccessForCall(location) ? getWidenedType(leftType) : leftType);
           prop = isPrivateIdentifier(right) ? lexicallyScopedSymbol && getPrivateIdentifierPropertyOfType(apparentType, lexicallyScopedSymbol) || undefined : getPropertyOfType(apparentType, right.escapedText);
         }
-        if (!(prop && (isConstEnumOrConstEnumOnlyModule(prop) || prop.flags & 8 && location2.parent.kind === 307))) {
-          markAliasReferenced(parentSymbol, location2);
+        if (!(prop && (isConstEnumOrConstEnumOnlyModule(prop) || prop.flags & 8 && location.parent.kind === 307))) {
+          markAliasReferenced(parentSymbol, location);
         }
         return;
       }
-      function markExportAssignmentAliasReferenced(location2) {
-        if (isIdentifier(location2.expression)) {
-          const id = location2.expression;
-          const sym = getExportSymbolOfValueSymbolIfExported(resolveEntityName(id, -1, true, true, location2));
+      function markExportAssignmentAliasReferenced(location) {
+        if (isIdentifier(location.expression)) {
+          const id = location.expression;
+          const sym = getExportSymbolOfValueSymbolIfExported(resolveEntityName(id, -1, true, true, location));
           if (sym) {
             markAliasReferenced(sym, id);
           }
@@ -68161,22 +68161,22 @@ ${lanes.join(`
         }
         return;
       }
-      function markAsyncFunctionAliasReferenced(location2) {
+      function markAsyncFunctionAliasReferenced(location) {
         if (languageVersion < 2) {
-          if (getFunctionFlags(location2) & 2) {
-            const returnTypeNode = getEffectiveReturnTypeNode(location2);
+          if (getFunctionFlags(location) & 2) {
+            const returnTypeNode = getEffectiveReturnTypeNode(location);
             markTypeNodeAsReferenced(returnTypeNode);
           }
         }
       }
-      function markImportEqualsAliasReferenced(location2) {
-        if (hasSyntacticModifier(location2, 32)) {
-          markExportAsReferenced(location2);
+      function markImportEqualsAliasReferenced(location) {
+        if (hasSyntacticModifier(location, 32)) {
+          markExportAsReferenced(location);
         }
       }
-      function markExportSpecifierAliasReferenced(location2) {
-        if (!location2.parent.parent.moduleSpecifier && !location2.isTypeOnly && !location2.parent.parent.isTypeOnly) {
-          const exportedName = location2.propertyName || location2.name;
+      function markExportSpecifierAliasReferenced(location) {
+        if (!location.parent.parent.moduleSpecifier && !location.isTypeOnly && !location.parent.parent.isTypeOnly) {
+          const exportedName = location.propertyName || location.name;
           if (exportedName.kind === 11) {
             return;
           }
@@ -68184,7 +68184,7 @@ ${lanes.join(`
           if (symbol && (symbol === undefinedSymbol || symbol === globalThisSymbol || symbol.declarations && isGlobalSourceFile(getDeclarationContainer(symbol.declarations[0])))) {} else {
             const target = symbol && (symbol.flags & 2097152 ? resolveAlias(symbol) : symbol);
             if (!target || getSymbolFlags(target) & 111551) {
-              markExportAsReferenced(location2);
+              markExportAsReferenced(location);
               markIdentifierAliasReferenced(exportedName);
             }
           }
@@ -68233,14 +68233,14 @@ ${lanes.join(`
           }
         }
       }
-      function markAliasReferenced(symbol, location2) {
+      function markAliasReferenced(symbol, location) {
         if (!canCollectSymbolAliasAccessabilityData) {
           return;
         }
-        if (isNonLocalAlias(symbol, 111551) && !isInTypeQuery(location2)) {
+        if (isNonLocalAlias(symbol, 111551) && !isInTypeQuery(location)) {
           const target = resolveAlias(symbol);
           if (getSymbolFlags(symbol, true) & (111551 | 1048576)) {
-            if (getIsolatedModules(compilerOptions) || shouldPreserveConstEnums(compilerOptions) && isExportOrExportExpression(location2) || !isConstEnumOrConstEnumOnlyModule(getExportSymbolOfValueSymbolIfExported(target))) {
+            if (getIsolatedModules(compilerOptions) || shouldPreserveConstEnums(compilerOptions) && isExportOrExportExpression(location) || !isConstEnumOrConstEnumOnlyModule(getExportSymbolOfValueSymbolIfExported(target))) {
               markAliasSymbolAsReferenced(symbol);
             }
           }
@@ -68299,7 +68299,7 @@ ${lanes.join(`
           markEntityNameOrEntityExpressionAsReference(entityName, true);
         }
       }
-      function getNarrowedTypeOfSymbol(symbol, location2) {
+      function getNarrowedTypeOfSymbol(symbol, location) {
         var _a;
         const type = getTypeOfSymbol(symbol);
         const declaration = symbol.valueDeclaration;
@@ -68316,7 +68316,7 @@ ${lanes.join(`
                 links.flags &= ~4194304;
                 if (parentTypeConstraint && parentTypeConstraint.flags & 134217728 && !(rootDeclaration.kind === 170 && isSomeSymbolAssigned(rootDeclaration))) {
                   const pattern = declaration.parent;
-                  const narrowedType = getFlowTypeOfReference(pattern, parentTypeConstraint, parentTypeConstraint, undefined, location2.flowNode);
+                  const narrowedType = getFlowTypeOfReference(pattern, parentTypeConstraint, parentTypeConstraint, undefined, location.flowNode);
                   if (narrowedType.flags & 262144) {
                     return neverType;
                   }
@@ -68332,7 +68332,7 @@ ${lanes.join(`
               if (contextualSignature && contextualSignature.parameters.length === 1 && signatureHasRestParameter(contextualSignature)) {
                 const restType = getReducedApparentType(instantiateType(getTypeOfSymbol(contextualSignature.parameters[0]), (_a = getInferenceContext(func)) == null ? undefined : _a.nonFixingMapper));
                 if (restType.flags & 134217728 && everyType(restType, isTupleType) && !some(func.parameters, isSomeSymbolAssigned)) {
-                  const narrowedType = getFlowTypeOfReference(func, restType, restType, undefined, location2.flowNode);
+                  const narrowedType = getFlowTypeOfReference(func, restType, restType, undefined, location.flowNode);
                   const index = func.parameters.indexOf(declaration) - (getThisParameter(func) ? 1 : 0);
                   return getIndexedAccessType(narrowedType, getNumberLiteralType(index));
                 }
@@ -70447,8 +70447,8 @@ ${lanes.join(`
       function checkJsxAttributes(node, checkMode) {
         return createJsxAttributesTypeFromAttributesProperty(node.parent, checkMode);
       }
-      function getJsxType(name, location2) {
-        const namespace = getJsxNamespaceAt(location2);
+      function getJsxType(name, location) {
+        const namespace = getJsxNamespaceAt(location);
         const exports2 = namespace && getExportsOfSymbol(namespace);
         const typeSymbol = exports2 && getSymbol2(exports2, name, 788968);
         return typeSymbol ? getDeclaredTypeOfSymbol(typeSymbol) : errorType;
@@ -70486,8 +70486,8 @@ ${lanes.join(`
         }
         return links.resolvedSymbol;
       }
-      function getJsxNamespaceContainerForImplicitImport(location2) {
-        const file = location2 && getSourceFileOfNode(location2);
+      function getJsxNamespaceContainerForImplicitImport(location) {
+        const file = location && getSourceFileOfNode(location);
         const links = file && getNodeLinks(file);
         if (links && links.jsxImplicitImportContainer === false) {
           return;
@@ -70502,23 +70502,23 @@ ${lanes.join(`
         const isClassic = getEmitModuleResolutionKind(compilerOptions) === 1;
         const errorMessage = isClassic ? Diagnostics.Cannot_find_module_0_Did_you_mean_to_set_the_moduleResolution_option_to_nodenext_or_to_add_aliases_to_the_paths_option : Diagnostics.This_JSX_tag_requires_the_module_path_0_to_exist_but_none_could_be_found_Make_sure_you_have_types_for_the_appropriate_package_installed;
         const specifier = getJSXRuntimeImportSpecifier(file, runtimeImportSpecifier);
-        const mod = resolveExternalModule(specifier || location2, runtimeImportSpecifier, errorMessage, location2);
+        const mod = resolveExternalModule(specifier || location, runtimeImportSpecifier, errorMessage, location);
         const result = mod && mod !== unknownSymbol ? getMergedSymbol(resolveSymbol(mod)) : undefined;
         if (links) {
           links.jsxImplicitImportContainer = result || false;
         }
         return result;
       }
-      function getJsxNamespaceAt(location2) {
-        const links = location2 && getNodeLinks(location2);
+      function getJsxNamespaceAt(location) {
+        const links = location && getNodeLinks(location);
         if (links && links.jsxNamespace) {
           return links.jsxNamespace;
         }
         if (!links || links.jsxNamespace !== false) {
-          let resolvedNamespace = getJsxNamespaceContainerForImplicitImport(location2);
+          let resolvedNamespace = getJsxNamespaceContainerForImplicitImport(location);
           if (!resolvedNamespace || resolvedNamespace === unknownSymbol) {
-            const namespaceName = getJsxNamespace(location2);
-            resolvedNamespace = resolveName(location2, namespaceName, 1920, undefined, false);
+            const namespaceName = getJsxNamespace(location);
+            resolvedNamespace = resolveName(location, namespaceName, 1920, undefined, false);
           }
           if (resolvedNamespace) {
             const candidate = resolveSymbol(getSymbol2(getExportsOfSymbol(resolveSymbol(resolvedNamespace)), JsxNames.JSX, 1920));
@@ -70592,8 +70592,8 @@ ${lanes.join(`
         }
         return signatures;
       }
-      function getIntrinsicAttributesTypeFromStringLiteralType(type, location2) {
-        const intrinsicElementsType = getJsxType(JsxNames.IntrinsicElements, location2);
+      function getIntrinsicAttributesTypeFromStringLiteralType(type, location) {
+        const intrinsicElementsType = getJsxType(JsxNames.IntrinsicElements, location);
         if (!isErrorType(intrinsicElementsType)) {
           const stringLiteralTypeName = type.value;
           const intrinsicProp = getPropertyOfType(intrinsicElementsType, escapeLeadingUnderscores(stringLiteralTypeName));
@@ -70650,29 +70650,29 @@ ${lanes.join(`
         }
         return links.resolvedJsxElementAttributesType;
       }
-      function getJsxElementClassTypeAt(location2) {
-        const type = getJsxType(JsxNames.ElementClass, location2);
+      function getJsxElementClassTypeAt(location) {
+        const type = getJsxType(JsxNames.ElementClass, location);
         if (isErrorType(type))
           return;
         return type;
       }
-      function getJsxElementTypeAt(location2) {
-        return getJsxType(JsxNames.Element, location2);
+      function getJsxElementTypeAt(location) {
+        return getJsxType(JsxNames.Element, location);
       }
-      function getJsxStatelessElementTypeAt(location2) {
-        const jsxElementType = getJsxElementTypeAt(location2);
+      function getJsxStatelessElementTypeAt(location) {
+        const jsxElementType = getJsxElementTypeAt(location);
         if (jsxElementType) {
           return getUnionType([jsxElementType, nullType]);
         }
       }
-      function getJsxElementTypeTypeAt(location2) {
-        const ns = getJsxNamespaceAt(location2);
+      function getJsxElementTypeTypeAt(location) {
+        const ns = getJsxNamespaceAt(location);
         if (!ns)
           return;
         const sym = getJsxElementTypeSymbol(ns);
         if (!sym)
           return;
-        const type = instantiateAliasOrInterfaceWithDefaults(sym, isInJSFile(location2));
+        const type = instantiateAliasOrInterfaceWithDefaults(sym, isInJSFile(location));
         if (!type || isErrorType(type))
           return;
         return type;
@@ -70692,8 +70692,8 @@ ${lanes.join(`
         }
         return;
       }
-      function getJsxIntrinsicTagNamesAt(location2) {
-        const intrinsics = getJsxType(JsxNames.IntrinsicElements, location2);
+      function getJsxIntrinsicTagNamesAt(location) {
+        const intrinsics = getJsxType(JsxNames.IntrinsicElements, location);
         return intrinsics ? getPropertiesOfType(intrinsics) : emptyArray;
       }
       function checkJsxPreconditions(errorNode) {
@@ -70779,7 +70779,7 @@ ${lanes.join(`
         const errorNode = !reportError ? undefined : node.kind === 167 ? node.right : node.kind === 206 ? node : node.kind === 209 && node.propertyName ? node.propertyName : node.name;
         return checkPropertyAccessibilityAtLocation(node, isSuper, writing, type, prop, errorNode);
       }
-      function checkPropertyAccessibilityAtLocation(location2, isSuper, writing, containingType, prop, errorNode) {
+      function checkPropertyAccessibilityAtLocation(location, isSuper, writing, containingType, prop, errorNode) {
         var _a;
         const flags = getDeclarationModifierFlagsFromSymbol(prop, writing);
         if (isSuper) {
@@ -70804,9 +70804,9 @@ ${lanes.join(`
             return false;
           }
         }
-        if (flags & 64 && symbolHasNonMethodDeclaration(prop) && (isThisProperty(location2) || isThisInitializedObjectBindingExpression(location2) || isObjectBindingPattern(location2.parent) && isThisInitializedDeclaration(location2.parent.parent))) {
+        if (flags & 64 && symbolHasNonMethodDeclaration(prop) && (isThisProperty(location) || isThisInitializedObjectBindingExpression(location) || isObjectBindingPattern(location.parent) && isThisInitializedDeclaration(location.parent.parent))) {
           const parentSymbol = getParentOfSymbol(prop);
-          if (parentSymbol && parentSymbol.flags & 32 && isNodeUsedDuringClassInitialization(location2)) {
+          if (parentSymbol && parentSymbol.flags & 32 && isNodeUsedDuringClassInitialization(location)) {
             if (errorNode) {
               error2(errorNode, Diagnostics.Abstract_property_0_in_class_1_cannot_be_accessed_in_the_constructor, symbolToString(prop), symbolToString(parentSymbol));
             }
@@ -70818,7 +70818,7 @@ ${lanes.join(`
         }
         if (flags & 2) {
           const declaringClassDeclaration = getClassLikeDeclarationOfSymbol(getParentOfSymbol(prop));
-          if (!isNodeWithinClass(location2, declaringClassDeclaration)) {
+          if (!isNodeWithinClass(location, declaringClassDeclaration)) {
             if (errorNode) {
               error2(errorNode, Diagnostics.Property_0_is_private_and_only_accessible_within_class_1, symbolToString(prop), typeToString(getDeclaringClass(prop)));
             }
@@ -70829,12 +70829,12 @@ ${lanes.join(`
         if (isSuper) {
           return true;
         }
-        let enclosingClass = forEachEnclosingClass(location2, (enclosingDeclaration) => {
+        let enclosingClass = forEachEnclosingClass(location, (enclosingDeclaration) => {
           const enclosingClass2 = getDeclaredTypeOfSymbol(getSymbolOfDeclaration(enclosingDeclaration));
           return isClassDerivedFromDeclaringClasses(enclosingClass2, prop, writing);
         });
         if (!enclosingClass) {
-          enclosingClass = getEnclosingClassFromThisParameter(location2);
+          enclosingClass = getEnclosingClassFromThisParameter(location);
           enclosingClass = enclosingClass && isClassDerivedFromDeclaringClasses(enclosingClass, prop, writing);
           if (flags & 256 || !enclosingClass) {
             if (errorNode) {
@@ -70969,8 +70969,8 @@ ${lanes.join(`
         }
         return isCallOrNewExpression(node.parent) && node.parent.expression === node;
       }
-      function lookupSymbolForPrivateIdentifierDeclaration(propName, location2) {
-        for (let containingClass = getContainingClassExcludingClassDecorators(location2);containingClass; containingClass = getContainingClass(containingClass)) {
+      function lookupSymbolForPrivateIdentifierDeclaration(propName, location) {
+        for (let containingClass = getContainingClassExcludingClassDecorators(location);containingClass; containingClass = getContainingClass(containingClass)) {
           const { symbol } = containingClass;
           const name = getSymbolNameForPrivateIdentifier(symbol, propName);
           const prop = symbol.members && symbol.members.get(name) || symbol.exports && symbol.exports.get(name);
@@ -71360,9 +71360,9 @@ ${lanes.join(`
         sortSymbolsIfTSGoCompat(candidates);
         return getSpellingSuggestionForName(unescapeLeadingUnderscores(name), candidates, meaning);
       }
-      function getSuggestedSymbolForNonexistentSymbol(location2, outerName, meaning) {
+      function getSuggestedSymbolForNonexistentSymbol(location, outerName, meaning) {
         Debug.assert(outerName !== undefined, "outername should always be defined");
-        const result = resolveNameForSymbolSuggestion(location2, outerName, meaning, undefined, false, false);
+        const result = resolveNameForSymbolSuggestion(location, outerName, meaning, undefined, false, false);
         return result;
       }
       function getSuggestedSymbolForNonexistentModule(name, targetModule) {
@@ -75498,9 +75498,9 @@ ${lanes.join(`
             if (isLeftNaN && isRightNaN)
               return;
             const operatorString = operator2 === 38 || operator2 === 36 ? tokenToString(54) : "";
-            const location2 = isLeftNaN ? right2 : left2;
-            const expression = skipParentheses(location2);
-            addRelatedInfo(err, createDiagnosticForNode(location2, Diagnostics.Did_you_mean_0, `${operatorString}Number.isNaN(${isEntityNameExpression(expression) ? entityNameToString(expression) : "..."})`));
+            const location = isLeftNaN ? right2 : left2;
+            const expression = skipParentheses(location);
+            addRelatedInfo(err, createDiagnosticForNode(location, Diagnostics.Did_you_mean_0, `${operatorString}Number.isNaN(${isEntityNameExpression(expression) ? entityNameToString(expression) : "..."})`));
           }
         }
         function isGlobalNaN(expr) {
@@ -76363,20 +76363,20 @@ ${lanes.join(`
             }
           }
         }
-        function addName(names, location2, name, meaning) {
+        function addName(names, location, name, meaning) {
           const prev = names.get(name);
           if (prev) {
             if ((prev & 16) !== (meaning & 16)) {
-              error2(location2, Diagnostics.Duplicate_identifier_0_Static_and_instance_elements_cannot_share_the_same_private_name, getTextOfNode(location2));
+              error2(location, Diagnostics.Duplicate_identifier_0_Static_and_instance_elements_cannot_share_the_same_private_name, getTextOfNode(location));
             } else {
               const prevIsMethod = !!(prev & 8);
               const isMethod = !!(meaning & 8);
               if (prevIsMethod || isMethod) {
                 if (prevIsMethod !== isMethod) {
-                  error2(location2, Diagnostics.Duplicate_identifier_0, getTextOfNode(location2));
+                  error2(location, Diagnostics.Duplicate_identifier_0, getTextOfNode(location));
                 }
               } else if (prev & meaning & ~16) {
-                error2(location2, Diagnostics.Duplicate_identifier_0, getTextOfNode(location2));
+                error2(location, Diagnostics.Duplicate_identifier_0, getTextOfNode(location));
               } else {
                 names.set(name, prev | meaning);
               }
@@ -78443,20 +78443,20 @@ ${lanes.join(`
           }
         }
         function helper(condExpr2, body2) {
-          const location2 = isLogicalOrCoalescingBinaryExpression(condExpr2) ? skipParentheses(condExpr2.right) : condExpr2;
-          if (isModuleExportsAccessExpression(location2)) {
+          const location = isLogicalOrCoalescingBinaryExpression(condExpr2) ? skipParentheses(condExpr2.right) : condExpr2;
+          if (isModuleExportsAccessExpression(location)) {
             return;
           }
-          if (isLogicalOrCoalescingBinaryExpression(location2)) {
-            bothHelper(location2, body2);
+          if (isLogicalOrCoalescingBinaryExpression(location)) {
+            bothHelper(location, body2);
             return;
           }
-          const type = location2 === condExpr2 ? condType : checkExpression(location2);
-          if (type.flags & 32768 && isPropertyAccessExpression(location2) && (getNodeLinks(location2.expression).resolvedSymbol ?? unknownSymbol).flags & 384) {
-            error2(location2, Diagnostics.This_condition_will_always_return_0, type.value ? "true" : "false");
+          const type = location === condExpr2 ? condType : checkExpression(location);
+          if (type.flags & 32768 && isPropertyAccessExpression(location) && (getNodeLinks(location.expression).resolvedSymbol ?? unknownSymbol).flags & 384) {
+            error2(location, Diagnostics.This_condition_will_always_return_0, type.value ? "true" : "false");
             return;
           }
-          const isPropertyExpressionCast = isPropertyAccessExpression(location2) && isTypeAssertion(location2.expression);
+          const isPropertyExpressionCast = isPropertyAccessExpression(location) && isTypeAssertion(location.expression);
           if (!hasTypeFacts(type, 4194304) || isPropertyExpressionCast)
             return;
           const callSignatures = getSignaturesOfType(type, 0);
@@ -78464,7 +78464,7 @@ ${lanes.join(`
           if (callSignatures.length === 0 && !isPromise) {
             return;
           }
-          const testedNode = isIdentifier(location2) ? location2 : isPropertyAccessExpression(location2) ? location2.name : undefined;
+          const testedNode = isIdentifier(location) ? location : isPropertyAccessExpression(location) ? location.name : undefined;
           const testedSymbol = testedNode && getSymbolAtLocation(testedNode);
           if (!testedSymbol && !isPromise) {
             return;
@@ -78472,9 +78472,9 @@ ${lanes.join(`
           const isUsed = testedSymbol && isBinaryExpression(condExpr2.parent) && isSymbolUsedInBinaryExpressionChain(condExpr2.parent, testedSymbol) || testedSymbol && body2 && isSymbolUsedInConditionBody(condExpr2, body2, testedNode, testedSymbol);
           if (!isUsed) {
             if (isPromise) {
-              errorAndMaybeSuggestAwait(location2, true, Diagnostics.This_condition_will_always_return_true_since_this_0_is_always_defined, getTypeNameForErrorDisplay(type));
+              errorAndMaybeSuggestAwait(location, true, Diagnostics.This_condition_will_always_return_true_since_this_0_is_always_defined, getTypeNameForErrorDisplay(type));
             } else {
-              error2(location2, Diagnostics.This_condition_will_always_return_true_since_this_function_is_always_defined_Did_you_mean_to_call_it_instead);
+              error2(location, Diagnostics.This_condition_will_always_return_true_since_this_function_is_always_defined_Did_you_mean_to_call_it_instead);
             }
           }
         }
@@ -79554,16 +79554,16 @@ ${lanes.join(`
         if (!isNamedEvaluationSource(parent2))
           return;
         const willTransformESDecorators = !legacyDecorators && languageVersion < LanguageFeatureMinimumTarget.ClassAndClassElementDecorators;
-        let location2;
+        let location;
         if (willTransformESDecorators && classOrConstructorParameterIsDecorated(false, node)) {
-          location2 = firstOrUndefined(getDecorators(node)) ?? node;
+          location = firstOrUndefined(getDecorators(node)) ?? node;
         } else {
-          location2 = getFirstTransformableStaticClassElement(node);
+          location = getFirstTransformableStaticClassElement(node);
         }
-        if (location2) {
-          checkExternalEmitHelpers(location2, 4194304);
+        if (location) {
+          checkExternalEmitHelpers(location, 4194304);
           if ((isPropertyAssignment(parent2) || isPropertyDeclaration(parent2) || isBindingElement(parent2)) && isComputedPropertyName(parent2.name)) {
-            checkExternalEmitHelpers(location2, 8388608);
+            checkExternalEmitHelpers(location, 8388608);
           }
         }
       }
@@ -80142,7 +80142,7 @@ ${lanes.join(`
         }
         return result;
       }
-      function evaluateEntityNameExpression(expr, location2) {
+      function evaluateEntityNameExpression(expr, location) {
         const symbol = resolveEntityName(expr, 111551, true);
         if (!symbol)
           return evaluatorResult(undefined);
@@ -80153,13 +80153,13 @@ ${lanes.join(`
           }
         }
         if (symbol.flags & 8) {
-          return location2 ? evaluateEnumMember(expr, symbol, location2) : getEnumMemberValue(symbol.valueDeclaration);
+          return location ? evaluateEnumMember(expr, symbol, location) : getEnumMemberValue(symbol.valueDeclaration);
         }
         if (isConstantVariable(symbol)) {
           const declaration = symbol.valueDeclaration;
-          if (declaration && isVariableDeclaration(declaration) && !declaration.type && declaration.initializer && (!location2 || declaration !== location2 && isBlockScopedNameDeclaredBeforeUse(declaration, location2))) {
+          if (declaration && isVariableDeclaration(declaration) && !declaration.type && declaration.initializer && (!location || declaration !== location && isBlockScopedNameDeclaredBeforeUse(declaration, location))) {
             const result = evaluate(declaration.initializer, declaration);
-            if (location2 && getSourceFileOfNode(location2) !== getSourceFileOfNode(declaration)) {
+            if (location && getSourceFileOfNode(location) !== getSourceFileOfNode(declaration)) {
               return evaluatorResult(result.value, false, true, true);
             }
             return evaluatorResult(result.value, result.isSyntacticallyString, result.resolvedOtherFiles, true);
@@ -80167,7 +80167,7 @@ ${lanes.join(`
         }
         return evaluatorResult(undefined);
       }
-      function evaluateElementAccessExpression(expr, location2) {
+      function evaluateElementAccessExpression(expr, location) {
         const root = expr.expression;
         if (isEntityNameExpression(root) && isStringLiteralLike(expr.argumentExpression)) {
           const rootSymbol = resolveEntityName(root, 111551, true);
@@ -80176,24 +80176,24 @@ ${lanes.join(`
             const member = rootSymbol.exports.get(name);
             if (member) {
               Debug.assert(getSourceFileOfNode(member.valueDeclaration) === getSourceFileOfNode(rootSymbol.valueDeclaration));
-              return location2 ? evaluateEnumMember(expr, member, location2) : getEnumMemberValue(member.valueDeclaration);
+              return location ? evaluateEnumMember(expr, member, location) : getEnumMemberValue(member.valueDeclaration);
             }
           }
         }
         return evaluatorResult(undefined);
       }
-      function evaluateEnumMember(expr, symbol, location2) {
+      function evaluateEnumMember(expr, symbol, location) {
         const declaration = symbol.valueDeclaration;
-        if (!declaration || declaration === location2) {
+        if (!declaration || declaration === location) {
           error2(expr, Diagnostics.Property_0_is_used_before_being_assigned, symbolToString(symbol));
           return evaluatorResult(undefined);
         }
-        if (!isBlockScopedNameDeclaredBeforeUse(declaration, location2)) {
+        if (!isBlockScopedNameDeclaredBeforeUse(declaration, location)) {
           error2(expr, Diagnostics.A_member_initializer_in_a_enum_declaration_cannot_reference_members_declared_after_it_including_members_defined_in_other_enums);
           return evaluatorResult(0);
         }
         const value = getEnumMemberValue(declaration);
-        if (location2.parent !== declaration.parent) {
+        if (location.parent !== declaration.parent) {
           return evaluatorResult(value.value, value.isSyntacticallyString, value.resolvedOtherFiles, true);
         }
         return value;
@@ -80544,7 +80544,7 @@ ${lanes.join(`
           }
         }
       }
-      function resolveAliasWithDeprecationCheck(symbol, location2) {
+      function resolveAliasWithDeprecationCheck(symbol, location) {
         if (!(symbol.flags & 2097152) || isDeprecatedSymbol(symbol) || !getDeclarationOfAliasSymbol(symbol)) {
           return symbol;
         }
@@ -80558,7 +80558,7 @@ ${lanes.join(`
               break;
             if (target.declarations && length(target.declarations)) {
               if (isDeprecatedSymbol(target)) {
-                addDeprecatedSuggestion(location2, target.declarations, target.escapedName);
+                addDeprecatedSuggestion(location, target.declarations, target.escapedName);
                 break;
               } else {
                 if (symbol === targetSymbol)
@@ -81463,8 +81463,8 @@ ${lanes.join(`
         ensurePendingDiagnosticWorkComplete();
         return diagnostics.getGlobalDiagnostics();
       }
-      function getSymbolsInScope(location2, meaning) {
-        if (location2.flags & 67108864) {
+      function getSymbolsInScope(location, meaning) {
+        if (location.flags & 67108864) {
           return [];
         }
         const symbols = createSymbolTable();
@@ -81473,43 +81473,43 @@ ${lanes.join(`
         symbols.delete("this");
         return symbolsToArray(symbols);
         function populateSymbols() {
-          while (location2) {
-            if (canHaveLocals(location2) && location2.locals && !isGlobalSourceFile(location2)) {
-              copySymbols(location2.locals, meaning);
+          while (location) {
+            if (canHaveLocals(location) && location.locals && !isGlobalSourceFile(location)) {
+              copySymbols(location.locals, meaning);
             }
-            switch (location2.kind) {
+            switch (location.kind) {
               case 308:
-                if (!isExternalModule(location2))
+                if (!isExternalModule(location))
                   break;
               case 268:
-                copyLocallyVisibleExportSymbols(getSymbolOfDeclaration(location2).exports, meaning & 2623475);
+                copyLocallyVisibleExportSymbols(getSymbolOfDeclaration(location).exports, meaning & 2623475);
                 break;
               case 267:
-                copySymbols(getSymbolOfDeclaration(location2).exports, meaning & 8);
+                copySymbols(getSymbolOfDeclaration(location).exports, meaning & 8);
                 break;
               case 232:
-                const className = location2.name;
+                const className = location.name;
                 if (className) {
-                  copySymbol(location2.symbol, meaning);
+                  copySymbol(location.symbol, meaning);
                 }
               case 264:
               case 265:
                 if (!isStaticSymbol) {
-                  copySymbols(getMembersOfSymbol(getSymbolOfDeclaration(location2)), meaning & 788968);
+                  copySymbols(getMembersOfSymbol(getSymbolOfDeclaration(location)), meaning & 788968);
                 }
                 break;
               case 219:
-                const funcName = location2.name;
+                const funcName = location.name;
                 if (funcName) {
-                  copySymbol(location2.symbol, meaning);
+                  copySymbol(location.symbol, meaning);
                 }
                 break;
             }
-            if (introducesArgumentsExoticObject(location2)) {
+            if (introducesArgumentsExoticObject(location)) {
               copySymbol(argumentsSymbol, meaning);
             }
-            isStaticSymbol = isStatic(location2);
-            location2 = location2.parent;
+            isStaticSymbol = isStatic(location);
+            location = location.parent;
           }
           copySymbols(globals, meaning);
         }
@@ -81904,9 +81904,9 @@ ${lanes.join(`
         }
         return;
       }
-      function getShorthandAssignmentValueSymbol(location2) {
-        if (location2 && location2.kind === 305) {
-          return resolveEntityName(location2.name, 111551 | 2097152, true);
+      function getShorthandAssignmentValueSymbol(location) {
+        if (location && location.kind === 305) {
+          return resolveEntityName(location.name, 111551 | 2097152, true);
         }
         return;
       }
@@ -81999,9 +81999,9 @@ ${lanes.join(`
         const elementType = checkIteratedTypeOrElementType(65, typeOfArrayLiteral, undefinedType, expr.parent) || errorType;
         return checkArrayLiteralDestructuringElementAssignment(node, typeOfArrayLiteral, node.elements.indexOf(expr), elementType);
       }
-      function getPropertySymbolOfDestructuringAssignment(location2) {
-        const typeOfObjectLiteral = getTypeOfAssignmentPattern(cast(location2.parent.parent, isAssignmentPattern));
-        return typeOfObjectLiteral && getPropertyOfType(typeOfObjectLiteral, location2.escapedText);
+      function getPropertySymbolOfDestructuringAssignment(location) {
+        const typeOfObjectLiteral = getTypeOfAssignmentPattern(cast(location.parent.parent, isAssignmentPattern));
+        return typeOfObjectLiteral && getPropertyOfType(typeOfObjectLiteral, location.escapedText);
       }
       function getRegularTypeOfExpression(expr) {
         if (isRightSideOfQualifiedNameOrPropertyAccess(expr)) {
@@ -82439,25 +82439,25 @@ ${lanes.join(`
       function isFunctionType(type) {
         return !!(type.flags & 1048576) && getSignaturesOfType(type, 0).length > 0;
       }
-      function getTypeReferenceSerializationKind(typeNameIn, location2) {
+      function getTypeReferenceSerializationKind(typeNameIn, location) {
         var _a;
         const typeName = getParseTreeNode(typeNameIn, isEntityName);
         if (!typeName)
           return 0;
-        if (location2) {
-          location2 = getParseTreeNode(location2);
-          if (!location2)
+        if (location) {
+          location = getParseTreeNode(location);
+          if (!location)
             return 0;
         }
         let isTypeOnly = false;
         if (isQualifiedName(typeName)) {
-          const rootValueSymbol = resolveEntityName(getFirstIdentifier(typeName), 111551, true, true, location2);
+          const rootValueSymbol = resolveEntityName(getFirstIdentifier(typeName), 111551, true, true, location);
           isTypeOnly = !!((_a = rootValueSymbol == null ? undefined : rootValueSymbol.declarations) == null ? undefined : _a.every(isTypeOnlyImportOrExportDeclaration));
         }
-        const valueSymbol = resolveEntityName(typeName, 111551, true, true, location2);
+        const valueSymbol = resolveEntityName(typeName, 111551, true, true, location);
         const resolvedValueSymbol = valueSymbol && valueSymbol.flags & 2097152 ? resolveAlias(valueSymbol) : valueSymbol;
         isTypeOnly || (isTypeOnly = !!(valueSymbol && getTypeOnlyAliasDeclaration(valueSymbol, 111551)));
-        const typeSymbol = resolveEntityName(typeName, 788968, true, true, location2);
+        const typeSymbol = resolveEntityName(typeName, 788968, true, true, location);
         const resolvedTypeSymbol = typeSymbol && typeSymbol.flags & 2097152 ? resolveAlias(typeSymbol) : typeSymbol;
         if (!valueSymbol) {
           isTypeOnly || (isTypeOnly = !!(typeSymbol && getTypeOnlyAliasDeclaration(typeSymbol, 788968)));
@@ -82547,14 +82547,14 @@ ${lanes.join(`
         if (resolvedSymbol) {
           return resolvedSymbol;
         }
-        let location2 = reference;
+        let location = reference;
         if (startInDeclarationContainer) {
           const parent2 = reference.parent;
           if (isDeclaration(parent2) && reference === parent2.name) {
-            location2 = getDeclarationContainer(parent2);
+            location = getDeclarationContainer(parent2);
           }
         }
-        return resolveName(location2, reference.escapedText, 111551 | 1048576 | 2097152, undefined, true);
+        return resolveName(location, reference.escapedText, 111551 | 1048576 | 2097152, undefined, true);
       }
       function getReferencedValueOrAliasSymbol(reference) {
         const resolvedSymbol = getNodeLinks(reference).resolvedSymbol;
@@ -82627,12 +82627,12 @@ ${lanes.join(`
         const type = getTypeOfSymbol(getSymbolOfDeclaration(node));
         return literalTypeToNode(type, node, tracker);
       }
-      function getJsxFactoryEntity(location2) {
-        return location2 ? (getJsxNamespace(location2), getSourceFileOfNode(location2).localJsxFactory || _jsxFactoryEntity) : _jsxFactoryEntity;
+      function getJsxFactoryEntity(location) {
+        return location ? (getJsxNamespace(location), getSourceFileOfNode(location).localJsxFactory || _jsxFactoryEntity) : _jsxFactoryEntity;
       }
-      function getJsxFragmentFactoryEntity(location2) {
-        if (location2) {
-          const file = getSourceFileOfNode(location2);
+      function getJsxFragmentFactoryEntity(location) {
+        if (location) {
+          const file = getSourceFileOfNode(location);
           if (file) {
             if (file.localJsxFragmentFactory) {
               return file.localJsxFragmentFactory;
@@ -82928,11 +82928,11 @@ ${lanes.join(`
         });
         amalgamatedDuplicates = undefined;
       }
-      function checkExternalEmitHelpers(location2, helpers) {
+      function checkExternalEmitHelpers(location, helpers) {
         if (compilerOptions.importHelpers) {
-          const sourceFile = getSourceFileOfNode(location2);
-          if (isEffectiveExternalModule(sourceFile, compilerOptions) && !(location2.flags & 33554432)) {
-            const helpersModule = resolveHelpersModule(sourceFile, location2);
+          const sourceFile = getSourceFileOfNode(location);
+          if (isEffectiveExternalModule(sourceFile, compilerOptions) && !(location.flags & 33554432)) {
+            const helpersModule = resolveHelpersModule(sourceFile, location);
             if (helpersModule !== unknownSymbol) {
               const links = getSymbolLinks(helpersModule);
               links.requestedExternalEmitHelpers ?? (links.requestedExternalEmitHelpers = 0);
@@ -82943,18 +82943,18 @@ ${lanes.join(`
                     for (const name of getHelperNames(helper)) {
                       const symbol = resolveSymbol(getSymbol2(getExportsOfModule(helpersModule), escapeLeadingUnderscores(name), 111551));
                       if (!symbol) {
-                        error2(location2, Diagnostics.This_syntax_requires_an_imported_helper_named_1_which_does_not_exist_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name);
+                        error2(location, Diagnostics.This_syntax_requires_an_imported_helper_named_1_which_does_not_exist_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name);
                       } else if (helper & 524288) {
                         if (!some(getSignaturesOfSymbol(symbol), (signature) => getParameterCount(signature) > 3)) {
-                          error2(location2, Diagnostics.This_syntax_requires_an_imported_helper_named_1_with_2_parameters_which_is_not_compatible_with_the_one_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name, 4);
+                          error2(location, Diagnostics.This_syntax_requires_an_imported_helper_named_1_with_2_parameters_which_is_not_compatible_with_the_one_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name, 4);
                         }
                       } else if (helper & 1048576) {
                         if (!some(getSignaturesOfSymbol(symbol), (signature) => getParameterCount(signature) > 4)) {
-                          error2(location2, Diagnostics.This_syntax_requires_an_imported_helper_named_1_with_2_parameters_which_is_not_compatible_with_the_one_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name, 5);
+                          error2(location, Diagnostics.This_syntax_requires_an_imported_helper_named_1_with_2_parameters_which_is_not_compatible_with_the_one_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name, 5);
                         }
                       } else if (helper & 1024) {
                         if (!some(getSignaturesOfSymbol(symbol), (signature) => getParameterCount(signature) > 2)) {
-                          error2(location2, Diagnostics.This_syntax_requires_an_imported_helper_named_1_with_2_parameters_which_is_not_compatible_with_the_one_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name, 3);
+                          error2(location, Diagnostics.This_syntax_requires_an_imported_helper_named_1_with_2_parameters_which_is_not_compatible_with_the_one_in_0_Consider_upgrading_your_version_of_0, externalHelpersModuleNameText, name, 3);
                         }
                       }
                     }
@@ -86693,13 +86693,13 @@ ${lanes.join(`
       return FlattenLevel2;
     })(FlattenLevel || {});
     function flattenDestructuringAssignment(node, visitor, context, level, needsValue, createAssignmentCallback) {
-      let location2 = node;
+      let location = node;
       let value;
       if (isDestructuringAssignment(node)) {
         value = node.right;
         while (isEmptyArrayLiteral(node.left) || isEmptyObjectLiteral(node.left)) {
           if (isDestructuringAssignment(value)) {
-            location2 = node = value;
+            location = node = value;
             value = node.right;
           } else {
             return Debug.checkDefined(visitNode(value, visitor, isExpression));
@@ -86723,14 +86723,14 @@ ${lanes.join(`
         value = visitNode(value, visitor, isExpression);
         Debug.assert(value);
         if (isIdentifier(value) && bindingOrAssignmentElementAssignsToName(node, value.escapedText) || bindingOrAssignmentElementContainsNonLiteralComputedName(node)) {
-          value = ensureIdentifier(flattenContext, value, false, location2);
+          value = ensureIdentifier(flattenContext, value, false, location);
         } else if (needsValue) {
-          value = ensureIdentifier(flattenContext, value, true, location2);
+          value = ensureIdentifier(flattenContext, value, true, location);
         } else if (nodeIsSynthesized(node)) {
-          location2 = value;
+          location = value;
         }
       }
-      flattenBindingOrAssignmentElement(flattenContext, node, value, location2, isDestructuringAssignment(node));
+      flattenBindingOrAssignmentElement(flattenContext, node, value, location, isDestructuringAssignment(node));
       if (value && needsValue) {
         if (!some(expressions)) {
           return value;
@@ -86741,9 +86741,9 @@ ${lanes.join(`
       function emitExpression(expression) {
         expressions = append(expressions, expression);
       }
-      function emitBindingOrAssignment(target, value2, location22, original) {
+      function emitBindingOrAssignment(target, value2, location2, original) {
         Debug.assertNode(target, createAssignmentCallback ? isIdentifier : isExpression);
-        const expression = createAssignmentCallback ? createAssignmentCallback(target, value2, location22) : setTextRange(context.factory.createAssignment(Debug.checkDefined(visitNode(target, visitor, isExpression)), value2), location22);
+        const expression = createAssignmentCallback ? createAssignmentCallback(target, value2, location2) : setTextRange(context.factory.createAssignment(Debug.checkDefined(visitNode(target, visitor, isExpression)), value2), location2);
         expression.original = original;
         emitExpression(expression);
       }
@@ -86815,34 +86815,34 @@ ${lanes.join(`
           pendingDeclaration.value = temp;
         }
       }
-      for (const { pendingExpressions: pendingExpressions2, name, value, location: location2, original } of pendingDeclarations) {
+      for (const { pendingExpressions: pendingExpressions2, name, value, location, original } of pendingDeclarations) {
         const variable = context.factory.createVariableDeclaration(name, undefined, undefined, pendingExpressions2 ? context.factory.inlineExpressions(append(pendingExpressions2, value)) : value);
         variable.original = original;
-        setTextRange(variable, location2);
+        setTextRange(variable, location);
         declarations.push(variable);
       }
       return declarations;
       function emitExpression(value) {
         pendingExpressions = append(pendingExpressions, value);
       }
-      function emitBindingOrAssignment(target, value, location2, original) {
+      function emitBindingOrAssignment(target, value, location, original) {
         Debug.assertNode(target, isBindingName);
         if (pendingExpressions) {
           value = context.factory.inlineExpressions(append(pendingExpressions, value));
           pendingExpressions = undefined;
         }
-        pendingDeclarations.push({ pendingExpressions, name: target, value, location: location2, original });
+        pendingDeclarations.push({ pendingExpressions, name: target, value, location, original });
       }
     }
-    function flattenBindingOrAssignmentElement(flattenContext, element, value, location2, skipInitializer) {
+    function flattenBindingOrAssignmentElement(flattenContext, element, value, location, skipInitializer) {
       const bindingTarget = getTargetOfBindingOrAssignmentElement(element);
       if (!skipInitializer) {
         const initializer = visitNode(getInitializerOfBindingOrAssignmentElement(element), flattenContext.visitor, isExpression);
         if (initializer) {
           if (value) {
-            value = createDefaultValueCheck(flattenContext, value, initializer, location2);
+            value = createDefaultValueCheck(flattenContext, value, initializer, location);
             if (!isSimpleInlineableExpression(initializer) && isBindingOrAssignmentPattern(bindingTarget)) {
-              value = ensureIdentifier(flattenContext, value, true, location2);
+              value = ensureIdentifier(flattenContext, value, true, location);
             }
           } else {
             value = initializer;
@@ -86852,19 +86852,19 @@ ${lanes.join(`
         }
       }
       if (isObjectBindingOrAssignmentPattern(bindingTarget)) {
-        flattenObjectBindingOrAssignmentPattern(flattenContext, element, bindingTarget, value, location2);
+        flattenObjectBindingOrAssignmentPattern(flattenContext, element, bindingTarget, value, location);
       } else if (isArrayBindingOrAssignmentPattern(bindingTarget)) {
-        flattenArrayBindingOrAssignmentPattern(flattenContext, element, bindingTarget, value, location2);
+        flattenArrayBindingOrAssignmentPattern(flattenContext, element, bindingTarget, value, location);
       } else {
-        flattenContext.emitBindingOrAssignment(bindingTarget, value, location2, element);
+        flattenContext.emitBindingOrAssignment(bindingTarget, value, location, element);
       }
     }
-    function flattenObjectBindingOrAssignmentPattern(flattenContext, parent2, pattern, value, location2) {
+    function flattenObjectBindingOrAssignmentPattern(flattenContext, parent2, pattern, value, location) {
       const elements = getElementsOfBindingOrAssignmentPattern(pattern);
       const numElements = elements.length;
       if (numElements !== 1) {
         const reuseIdentifierExpressions = !isDeclarationBindingElement(parent2) || numElements !== 0;
-        value = ensureIdentifier(flattenContext, value, reuseIdentifierExpressions, location2);
+        value = ensureIdentifier(flattenContext, value, reuseIdentifierExpressions, location);
       }
       let bindingElements;
       let computedTempVariables;
@@ -86876,7 +86876,7 @@ ${lanes.join(`
             bindingElements = append(bindingElements, visitNode(element, flattenContext.visitor, isBindingOrAssignmentElement));
           } else {
             if (bindingElements) {
-              flattenContext.emitBindingOrAssignment(flattenContext.createObjectBindingOrAssignmentPattern(bindingElements), value, location2, pattern);
+              flattenContext.emitBindingOrAssignment(flattenContext.createObjectBindingOrAssignmentPattern(bindingElements), value, location, pattern);
               bindingElements = undefined;
             }
             const rhsValue = createDestructuringPropertyAccess(flattenContext, value, propertyName);
@@ -86887,7 +86887,7 @@ ${lanes.join(`
           }
         } else if (i === numElements - 1) {
           if (bindingElements) {
-            flattenContext.emitBindingOrAssignment(flattenContext.createObjectBindingOrAssignmentPattern(bindingElements), value, location2, pattern);
+            flattenContext.emitBindingOrAssignment(flattenContext.createObjectBindingOrAssignmentPattern(bindingElements), value, location, pattern);
             bindingElements = undefined;
           }
           const rhsValue = flattenContext.context.getEmitHelperFactory().createRestHelper(value, elements, computedTempVariables, pattern);
@@ -86895,17 +86895,17 @@ ${lanes.join(`
         }
       }
       if (bindingElements) {
-        flattenContext.emitBindingOrAssignment(flattenContext.createObjectBindingOrAssignmentPattern(bindingElements), value, location2, pattern);
+        flattenContext.emitBindingOrAssignment(flattenContext.createObjectBindingOrAssignmentPattern(bindingElements), value, location, pattern);
       }
     }
-    function flattenArrayBindingOrAssignmentPattern(flattenContext, parent2, pattern, value, location2) {
+    function flattenArrayBindingOrAssignmentPattern(flattenContext, parent2, pattern, value, location) {
       const elements = getElementsOfBindingOrAssignmentPattern(pattern);
       const numElements = elements.length;
       if (flattenContext.level < 1 && flattenContext.downlevelIteration) {
-        value = ensureIdentifier(flattenContext, setTextRange(flattenContext.context.getEmitHelperFactory().createReadHelper(value, numElements > 0 && getRestIndicatorOfBindingOrAssignmentElement(elements[numElements - 1]) ? undefined : numElements), location2), false, location2);
+        value = ensureIdentifier(flattenContext, setTextRange(flattenContext.context.getEmitHelperFactory().createReadHelper(value, numElements > 0 && getRestIndicatorOfBindingOrAssignmentElement(elements[numElements - 1]) ? undefined : numElements), location), false, location);
       } else if (numElements !== 1 && (flattenContext.level < 1 || numElements === 0) || every(elements, isOmittedExpression)) {
         const reuseIdentifierExpressions = !isDeclarationBindingElement(parent2) || numElements !== 0;
-        value = ensureIdentifier(flattenContext, value, reuseIdentifierExpressions, location2);
+        value = ensureIdentifier(flattenContext, value, reuseIdentifierExpressions, location);
       }
       let bindingElements;
       let restContainingElements;
@@ -86934,7 +86934,7 @@ ${lanes.join(`
         }
       }
       if (bindingElements) {
-        flattenContext.emitBindingOrAssignment(flattenContext.createArrayBindingOrAssignmentPattern(bindingElements), value, location2, pattern);
+        flattenContext.emitBindingOrAssignment(flattenContext.createArrayBindingOrAssignmentPattern(bindingElements), value, location, pattern);
       }
       if (restContainingElements) {
         for (const [id, element] of restContainingElements) {
@@ -86956,8 +86956,8 @@ ${lanes.join(`
         return every(getElementsOfBindingOrAssignmentPattern(target), isSimpleBindingOrAssignmentElement);
       return isIdentifier(target);
     }
-    function createDefaultValueCheck(flattenContext, value, defaultValue, location2) {
-      value = ensureIdentifier(flattenContext, value, true, location2);
+    function createDefaultValueCheck(flattenContext, value, defaultValue, location) {
+      value = ensureIdentifier(flattenContext, value, true, location);
       return flattenContext.context.factory.createConditionalExpression(flattenContext.context.factory.createTypeCheck(value, "undefined"), undefined, defaultValue, undefined, value);
     }
     function createDestructuringPropertyAccess(flattenContext, value, propertyName) {
@@ -86973,16 +86973,16 @@ ${lanes.join(`
         return flattenContext.context.factory.createPropertyAccessExpression(value, name);
       }
     }
-    function ensureIdentifier(flattenContext, value, reuseIdentifierExpressions, location2) {
+    function ensureIdentifier(flattenContext, value, reuseIdentifierExpressions, location) {
       if (isIdentifier(value) && reuseIdentifierExpressions) {
         return value;
       } else {
         const temp = flattenContext.context.factory.createTempVariable(undefined);
         if (flattenContext.hoistTempVariables) {
           flattenContext.context.hoistVariableDeclaration(temp);
-          flattenContext.emitExpression(setTextRange(flattenContext.context.factory.createAssignment(temp, value), location2));
+          flattenContext.emitExpression(setTextRange(flattenContext.context.factory.createAssignment(temp, value), location));
         } else {
-          flattenContext.emitBindingOrAssignment(temp, value, location2, undefined);
+          flattenContext.emitBindingOrAssignment(temp, value, location, undefined);
         }
         return temp;
       }
@@ -88349,11 +88349,11 @@ ${lanes.join(`
       function addExportMemberAssignment(statements, node) {
         statements.push(createExportMemberAssignmentStatement(node));
       }
-      function createNamespaceExport(exportName, exportValue, location2) {
-        return setTextRange(factory2.createExpressionStatement(factory2.createAssignment(factory2.getNamespaceMemberName(currentNamespaceContainerName, exportName, false, true), exportValue)), location2);
+      function createNamespaceExport(exportName, exportValue, location) {
+        return setTextRange(factory2.createExpressionStatement(factory2.createAssignment(factory2.getNamespaceMemberName(currentNamespaceContainerName, exportName, false, true), exportValue)), location);
       }
-      function createNamespaceExportExpression(exportName, exportValue, location2) {
-        return setTextRange(factory2.createAssignment(getNamespaceMemberNameWithSourceMapsAndWithoutComments(exportName), exportValue), location2);
+      function createNamespaceExportExpression(exportName, exportValue, location) {
+        return setTextRange(factory2.createAssignment(getNamespaceMemberNameWithSourceMapsAndWithoutComments(exportName), exportValue), location);
       }
       function getNamespaceMemberNameWithSourceMapsAndWithoutComments(name) {
         return factory2.getNamespaceMemberName(currentNamespaceContainerName, name, false, true);
@@ -90571,7 +90571,7 @@ ${lanes.join(`
         const isExport = hasSyntacticModifier(node, 32);
         const isDefault = hasSyntacticModifier(node, 2048);
         const modifiers = visitNodes2(node.modifiers, (node2) => isExportOrDefaultModifier(node2) || isDecorator(node2) ? undefined : node2, isModifierLike);
-        const location2 = moveRangePastModifiers(node);
+        const location = moveRangePastModifiers(node);
         const classAlias = getClassAliasIfNeeded(node);
         const declName = languageVersion < 2 ? factory2.getInternalName(node, false, true) : factory2.getLocalName(node, false, true);
         const heritageClauses = visitNodes2(node.heritageClauses, visitor, isHeritageClause);
@@ -90589,14 +90589,14 @@ ${lanes.join(`
         }
         const classExpression = factory2.createClassExpression(modifiers, name && isGeneratedIdentifier(name) ? undefined : name, undefined, heritageClauses, members);
         setOriginalNode(classExpression, node);
-        setTextRange(classExpression, location2);
+        setTextRange(classExpression, location);
         const varInitializer = classAlias && !assignClassAliasInStaticBlock ? factory2.createAssignment(classAlias, classExpression) : classExpression;
         const varDecl = factory2.createVariableDeclaration(declName, undefined, undefined, varInitializer);
         setOriginalNode(varDecl, node);
         const varDeclList = factory2.createVariableDeclarationList([varDecl], 1);
         const varStatement = factory2.createVariableStatement(undefined, varDeclList);
         setOriginalNode(varStatement, node);
-        setTextRange(varStatement, location2);
+        setTextRange(varStatement, location);
         setCommentRange(varStatement, node);
         const statements = [varStatement];
         addRange(statements, decorationStatements);
@@ -92674,11 +92674,11 @@ ${lanes.join(`
         const kind = node.kind;
         return kind === 264 || kind === 177 || kind === 175 || kind === 178 || kind === 179;
       }
-      function createSuperElementAccessInAsyncMethod(argumentExpression, location2) {
+      function createSuperElementAccessInAsyncMethod(argumentExpression, location) {
         if (enclosingSuperContainerFlags & 256) {
-          return setTextRange(factory2.createPropertyAccessExpression(factory2.createCallExpression(factory2.createUniqueName("_superIndex", 16 | 32), undefined, [argumentExpression]), "value"), location2);
+          return setTextRange(factory2.createPropertyAccessExpression(factory2.createCallExpression(factory2.createUniqueName("_superIndex", 16 | 32), undefined, [argumentExpression]), "value"), location);
         } else {
-          return setTextRange(factory2.createCallExpression(factory2.createUniqueName("_superIndex", 16 | 32), undefined, [argumentExpression]), location2);
+          return setTextRange(factory2.createCallExpression(factory2.createUniqueName("_superIndex", 16 | 32), undefined, [argumentExpression]), location);
         }
       }
     }
@@ -93404,11 +93404,11 @@ ${lanes.join(`
         const kind = node.kind;
         return kind === 264 || kind === 177 || kind === 175 || kind === 178 || kind === 179;
       }
-      function createSuperElementAccessInAsyncMethod(argumentExpression, location2) {
+      function createSuperElementAccessInAsyncMethod(argumentExpression, location) {
         if (enclosingSuperContainerFlags & 256) {
-          return setTextRange(factory2.createPropertyAccessExpression(factory2.createCallExpression(factory2.createIdentifier("_superIndex"), undefined, [argumentExpression]), "value"), location2);
+          return setTextRange(factory2.createPropertyAccessExpression(factory2.createCallExpression(factory2.createIdentifier("_superIndex"), undefined, [argumentExpression]), "value"), location);
         } else {
-          return setTextRange(factory2.createCallExpression(factory2.createIdentifier("_superIndex"), undefined, [argumentExpression]), location2);
+          return setTextRange(factory2.createCallExpression(factory2.createIdentifier("_superIndex"), undefined, [argumentExpression]), location);
         }
       }
     }
@@ -94181,15 +94181,15 @@ ${lanes.join(`
         const result = mapDefined(children, transformJsxChildToExpression);
         return length(result) ? factory2.createPropertyAssignment("children", factory2.createArrayLiteralExpression(result)) : undefined;
       }
-      function visitJsxOpeningLikeElementJSX(node, children, isChild, location2) {
+      function visitJsxOpeningLikeElementJSX(node, children, isChild, location) {
         const tagName = getTagName(node);
         const childrenProp = children && children.length ? convertJsxChildrenToChildrenPropAssignment(children) : undefined;
         const keyAttr = find(node.attributes.properties, (p) => !!p.name && isIdentifier(p.name) && p.name.escapedText === "key");
         const attrs = keyAttr ? filter(node.attributes.properties, (p) => p !== keyAttr) : node.attributes.properties;
         const objectProperties = length(attrs) ? transformJsxAttributesToObjectProps(attrs, childrenProp) : factory2.createObjectLiteralExpression(childrenProp ? [childrenProp] : emptyArray);
-        return visitJsxOpeningLikeElementOrFragmentJSX(tagName, objectProperties, keyAttr, children || emptyArray, isChild, location2);
+        return visitJsxOpeningLikeElementOrFragmentJSX(tagName, objectProperties, keyAttr, children || emptyArray, isChild, location);
       }
-      function visitJsxOpeningLikeElementOrFragmentJSX(tagName, objectProperties, keyAttr, children, isChild, location2) {
+      function visitJsxOpeningLikeElementOrFragmentJSX(tagName, objectProperties, keyAttr, children, isChild, location) {
         var _a;
         const nonWhitespaceChildren = getSemanticJsxChildren(children);
         const isStaticChildren = length(nonWhitespaceChildren) > 1 || !!((_a = nonWhitespaceChildren[0]) == null ? undefined : _a.dotDotDotToken);
@@ -94204,7 +94204,7 @@ ${lanes.join(`
               args.push(factory2.createVoidZero());
             }
             args.push(isStaticChildren ? factory2.createTrue() : factory2.createFalse());
-            const lineCol = getLineAndCharacterOfPosition(originalFile, location2.pos);
+            const lineCol = getLineAndCharacterOfPosition(originalFile, location.pos);
             args.push(factory2.createObjectLiteralExpression([
               factory2.createPropertyAssignment("fileName", getCurrentFileNameExpression()),
               factory2.createPropertyAssignment("lineNumber", factory2.createNumericLiteral(lineCol.line + 1)),
@@ -94213,24 +94213,24 @@ ${lanes.join(`
             args.push(factory2.createThis());
           }
         }
-        const element = setTextRange(factory2.createCallExpression(getJsxFactoryCallee(isStaticChildren), undefined, args), location2);
+        const element = setTextRange(factory2.createCallExpression(getJsxFactoryCallee(isStaticChildren), undefined, args), location);
         if (isChild) {
           startOnNewLine(element);
         }
         return element;
       }
-      function visitJsxOpeningLikeElementCreateElement(node, children, isChild, location2) {
+      function visitJsxOpeningLikeElementCreateElement(node, children, isChild, location) {
         const tagName = getTagName(node);
         const attrs = node.attributes.properties;
         const objectProperties = length(attrs) ? transformJsxAttributesToObjectProps(attrs) : factory2.createNull();
         const callee = currentFileState.importSpecifier === undefined ? createJsxFactoryExpression(factory2, context.getEmitResolver().getJsxFactoryEntity(currentSourceFile), compilerOptions.reactNamespace, node) : getImplicitImportForName("createElement");
-        const element = createExpressionForJsxElement(factory2, callee, tagName, objectProperties, mapDefined(children, transformJsxChildToExpression), location2);
+        const element = createExpressionForJsxElement(factory2, callee, tagName, objectProperties, mapDefined(children, transformJsxChildToExpression), location);
         if (isChild) {
           startOnNewLine(element);
         }
         return element;
       }
-      function visitJsxOpeningFragmentJSX(_node, children, isChild, location2) {
+      function visitJsxOpeningFragmentJSX(_node, children, isChild, location) {
         let childrenProps;
         if (children && children.length) {
           const result = convertJsxChildrenToChildrenPropObject(children);
@@ -94238,10 +94238,10 @@ ${lanes.join(`
             childrenProps = result;
           }
         }
-        return visitJsxOpeningLikeElementOrFragmentJSX(getImplicitJsxFragmentReference(), childrenProps || factory2.createObjectLiteralExpression([]), undefined, children, isChild, location2);
+        return visitJsxOpeningLikeElementOrFragmentJSX(getImplicitJsxFragmentReference(), childrenProps || factory2.createObjectLiteralExpression([]), undefined, children, isChild, location);
       }
-      function visitJsxOpeningFragmentCreateElement(node, children, isChild, location2) {
-        const element = createExpressionForJsxFragment(factory2, context.getEmitResolver().getJsxFactoryEntity(currentSourceFile), context.getEmitResolver().getJsxFragmentFactoryEntity(currentSourceFile), compilerOptions.reactNamespace, mapDefined(children, transformJsxChildToExpression), node, location2);
+      function visitJsxOpeningFragmentCreateElement(node, children, isChild, location) {
+        const element = createExpressionForJsxFragment(factory2, context.getEmitResolver().getJsxFactoryEntity(currentSourceFile), context.getEmitResolver().getJsxFragmentFactoryEntity(currentSourceFile), compilerOptions.reactNamespace, mapDefined(children, transformJsxChildToExpression), node, location);
         if (isChild) {
           startOnNewLine(element);
         }
@@ -95663,7 +95663,7 @@ ${lanes.join(`
         convertedLoopState = savedConvertedLoopState;
         return factory2.updateFunctionDeclaration(node, visitNodes2(node.modifiers, visitor, isModifier), node.asteriskToken, name, undefined, parameters, undefined, body);
       }
-      function transformFunctionLikeToExpression(node, location2, name, container) {
+      function transformFunctionLikeToExpression(node, location, name, container) {
         const savedConvertedLoopState = convertedLoopState;
         convertedLoopState = undefined;
         const ancestorFacts = container && isClassLike(container) && !isStatic(node) ? enterSubtree(32670, 65 | 8) : enterSubtree(32670, 65);
@@ -95674,7 +95674,7 @@ ${lanes.join(`
         }
         exitSubtree(ancestorFacts, 229376, 0);
         convertedLoopState = savedConvertedLoopState;
-        return setOriginalNode(setTextRange(factory2.createFunctionExpression(undefined, node.asteriskToken, name, undefined, parameters, undefined, body), location2), node);
+        return setOriginalNode(setTextRange(factory2.createFunctionExpression(undefined, node.asteriskToken, name, undefined, parameters, undefined, body), location), node);
       }
       function transformFunctionBody2(node) {
         let multiLine = false;
@@ -97196,7 +97196,7 @@ ${lanes.join(`
       function visitArrayLiteralExpression(node) {
         return visitElements(node.elements, undefined, undefined, node.multiLine);
       }
-      function visitElements(elements, leadingElement, location2, multiLine) {
+      function visitElements(elements, leadingElement, location, multiLine) {
         const numInitialElements = countInitialNodesWithoutYield(elements);
         let temp;
         if (numInitialElements > 0) {
@@ -97206,7 +97206,7 @@ ${lanes.join(`
           leadingElement = undefined;
         }
         const expressions = reduceLeft(elements, reduceElement, [], numInitialElements);
-        return temp ? factory2.createArrayConcatCall(temp, [factory2.createArrayLiteralExpression(expressions, multiLine)]) : setTextRange(factory2.createArrayLiteralExpression(leadingElement ? [leadingElement, ...expressions] : expressions, multiLine), location2);
+        return temp ? factory2.createArrayConcatCall(temp, [factory2.createArrayLiteralExpression(expressions, multiLine)]) : setTextRange(factory2.createArrayLiteralExpression(leadingElement ? [leadingElement, ...expressions] : expressions, multiLine), location);
         function reduceElement(expressions2, element) {
           if (containsYield(element) && expressions2.length > 0) {
             const hasAssignedTemp = temp !== undefined;
@@ -98028,18 +98028,18 @@ ${lanes.join(`
         addSyntheticTrailingComment(literal, 3, getInstructionName(instruction));
         return literal;
       }
-      function createInlineBreak(label, location2) {
+      function createInlineBreak(label, location) {
         Debug.assertLessThan(0, label, "Invalid label");
         return setTextRange(factory2.createReturnStatement(factory2.createArrayLiteralExpression([
           createInstruction(3),
           createLabel(label)
-        ])), location2);
+        ])), location);
       }
-      function createInlineReturn(expression, location2) {
-        return setTextRange(factory2.createReturnStatement(factory2.createArrayLiteralExpression(expression ? [createInstruction(2), expression] : [createInstruction(2)])), location2);
+      function createInlineReturn(expression, location) {
+        return setTextRange(factory2.createReturnStatement(factory2.createArrayLiteralExpression(expression ? [createInstruction(2), expression] : [createInstruction(2)])), location);
       }
-      function createGeneratorResume(location2) {
-        return setTextRange(factory2.createCallExpression(factory2.createPropertyAccessExpression(state, "sent"), undefined, []), location2);
+      function createGeneratorResume(location) {
+        return setTextRange(factory2.createCallExpression(factory2.createPropertyAccessExpression(state, "sent"), undefined, []), location);
       }
       function emitNop() {
         emitWorker(0);
@@ -98051,34 +98051,34 @@ ${lanes.join(`
           emitNop();
         }
       }
-      function emitAssignment(left, right, location2) {
-        emitWorker(2, [left, right], location2);
+      function emitAssignment(left, right, location) {
+        emitWorker(2, [left, right], location);
       }
-      function emitBreak(label, location2) {
-        emitWorker(3, [label], location2);
+      function emitBreak(label, location) {
+        emitWorker(3, [label], location);
       }
-      function emitBreakWhenTrue(label, condition, location2) {
-        emitWorker(4, [label, condition], location2);
+      function emitBreakWhenTrue(label, condition, location) {
+        emitWorker(4, [label, condition], location);
       }
-      function emitBreakWhenFalse(label, condition, location2) {
-        emitWorker(5, [label, condition], location2);
+      function emitBreakWhenFalse(label, condition, location) {
+        emitWorker(5, [label, condition], location);
       }
-      function emitYieldStar(expression, location2) {
-        emitWorker(7, [expression], location2);
+      function emitYieldStar(expression, location) {
+        emitWorker(7, [expression], location);
       }
-      function emitYield(expression, location2) {
-        emitWorker(6, [expression], location2);
+      function emitYield(expression, location) {
+        emitWorker(6, [expression], location);
       }
-      function emitReturn(expression, location2) {
-        emitWorker(8, [expression], location2);
+      function emitReturn(expression, location) {
+        emitWorker(8, [expression], location);
       }
-      function emitThrow(expression, location2) {
-        emitWorker(9, [expression], location2);
+      function emitThrow(expression, location) {
+        emitWorker(9, [expression], location);
       }
       function emitEndfinally() {
         emitWorker(10);
       }
-      function emitWorker(code, args, location2) {
+      function emitWorker(code, args, location) {
         if (operations === undefined) {
           operations = [];
           operationArguments = [];
@@ -98090,7 +98090,7 @@ ${lanes.join(`
         const operationIndex = operations.length;
         operations[operationIndex] = code;
         operationArguments[operationIndex] = args;
-        operationLocations[operationIndex] = location2;
+        operationLocations[operationIndex] = location;
       }
       function build2() {
         blockIndex = 0;
@@ -98276,24 +98276,24 @@ ${lanes.join(`
         if (opcode === 1) {
           return writeStatement(args[0]);
         }
-        const location2 = operationLocations[operationIndex];
+        const location = operationLocations[operationIndex];
         switch (opcode) {
           case 2:
-            return writeAssign(args[0], args[1], location2);
+            return writeAssign(args[0], args[1], location);
           case 3:
-            return writeBreak(args[0], location2);
+            return writeBreak(args[0], location);
           case 4:
-            return writeBreakWhenTrue(args[0], args[1], location2);
+            return writeBreakWhenTrue(args[0], args[1], location);
           case 5:
-            return writeBreakWhenFalse(args[0], args[1], location2);
+            return writeBreakWhenFalse(args[0], args[1], location);
           case 6:
-            return writeYield(args[0], location2);
+            return writeYield(args[0], location);
           case 7:
-            return writeYieldStar(args[0], location2);
+            return writeYieldStar(args[0], location);
           case 8:
-            return writeReturn(args[0], location2);
+            return writeReturn(args[0], location);
           case 9:
-            return writeThrow(args[0], location2);
+            return writeThrow(args[0], location);
         }
       }
       function writeStatement(statement) {
@@ -99120,13 +99120,13 @@ ${lanes.join(`
         statements = appendExportsOfVariableStatement(statements, node);
         return singleOrMany(statements);
       }
-      function createAllExportExpressions(name, value, location2) {
+      function createAllExportExpressions(name, value, location) {
         const exportedNames = getExports(name);
         if (exportedNames) {
           let expression = isExportName(name) ? value : factory2.createAssignment(name, value);
           for (const exportName of exportedNames) {
             setEmitFlags(expression, 8);
-            expression = createExportExpression(exportName, expression, location2);
+            expression = createExportExpression(exportName, expression, location);
           }
           return expression;
         }
@@ -99223,14 +99223,14 @@ ${lanes.join(`
         }
         return statements;
       }
-      function appendExportStatement(statements, seen, exportName, expression, location2, allowComments, liveBinding) {
+      function appendExportStatement(statements, seen, exportName, expression, location, allowComments, liveBinding) {
         if (exportName.kind !== 11) {
           if (seen.has(exportName)) {
             return statements;
           }
           seen.set(exportName, true);
         }
-        statements = append(statements, createExportStatement(exportName, expression, location2, allowComments, liveBinding));
+        statements = append(statements, createExportStatement(exportName, expression, location, allowComments, liveBinding));
         return statements;
       }
       function createUnderscoreUnderscoreESModule() {
@@ -99244,15 +99244,15 @@ ${lanes.join(`
         setEmitFlags(statement, 2097152);
         return statement;
       }
-      function createExportStatement(name, value, location2, allowComments, liveBinding) {
-        const statement = setTextRange(factory2.createExpressionStatement(createExportExpression(name, value, undefined, liveBinding)), location2);
+      function createExportStatement(name, value, location, allowComments, liveBinding) {
+        const statement = setTextRange(factory2.createExpressionStatement(createExportExpression(name, value, undefined, liveBinding)), location);
         startOnNewLine(statement);
         if (!allowComments) {
           setEmitFlags(statement, 3072);
         }
         return statement;
       }
-      function createExportExpression(name, value, location2, liveBinding) {
+      function createExportExpression(name, value, location, liveBinding) {
         return setTextRange(liveBinding ? factory2.createCallExpression(factory2.createPropertyAccessExpression(factory2.createIdentifier("Object"), "defineProperty"), undefined, [
           factory2.createIdentifier("exports"),
           factory2.createStringLiteralFromNode(name),
@@ -99260,7 +99260,7 @@ ${lanes.join(`
             factory2.createPropertyAssignment("enumerable", factory2.createTrue()),
             factory2.createPropertyAssignment("get", factory2.createFunctionExpression(undefined, undefined, undefined, undefined, [], undefined, factory2.createBlock([factory2.createReturnStatement(value)])))
           ])
-        ]) : factory2.createAssignment(name.kind === 11 ? factory2.createElementAccessExpression(factory2.createIdentifier("exports"), factory2.cloneNode(name)) : factory2.createPropertyAccessExpression(factory2.createIdentifier("exports"), factory2.cloneNode(name)), value), location2);
+        ]) : factory2.createAssignment(name.kind === 11 ? factory2.createElementAccessExpression(factory2.createIdentifier("exports"), factory2.cloneNode(name)) : factory2.createPropertyAccessExpression(factory2.createIdentifier("exports"), factory2.cloneNode(name)), value), location);
       }
       function modifierVisitor(node) {
         switch (node.kind) {
@@ -99741,15 +99741,15 @@ ${lanes.join(`
         const createAssignment = isExportedDeclaration ? createExportedVariableAssignment : createNonExportedVariableAssignment;
         return isBindingPattern(node.name) ? flattenDestructuringAssignment(node, visitor, context, 0, false, createAssignment) : node.initializer ? createAssignment(node.name, visitNode(node.initializer, visitor, isExpression)) : node.name;
       }
-      function createExportedVariableAssignment(name, value, location2) {
-        return createVariableAssignment(name, value, location2, true);
+      function createExportedVariableAssignment(name, value, location) {
+        return createVariableAssignment(name, value, location, true);
       }
-      function createNonExportedVariableAssignment(name, value, location2) {
-        return createVariableAssignment(name, value, location2, false);
+      function createNonExportedVariableAssignment(name, value, location) {
+        return createVariableAssignment(name, value, location, false);
       }
-      function createVariableAssignment(name, value, location2, isExportedDeclaration) {
+      function createVariableAssignment(name, value, location, isExportedDeclaration) {
         hoistVariableDeclaration(factory2.cloneNode(name));
-        return isExportedDeclaration ? createExportExpression(name, preventSubstitution(setTextRange(factory2.createAssignment(name, value), location2))) : preventSubstitution(setTextRange(factory2.createAssignment(name, value), location2));
+        return isExportedDeclaration ? createExportExpression(name, preventSubstitution(setTextRange(factory2.createAssignment(name, value), location))) : preventSubstitution(setTextRange(factory2.createAssignment(name, value), location));
       }
       function appendExportsOfImportDeclaration(statements, decl) {
         if (moduleInfo.exportEquals) {
@@ -107975,8 +107975,8 @@ ${lanes.join(`
           return false;
       }
     }
-    function isReferenceFileLocation(location2) {
-      return location2.pos !== undefined;
+    function isReferenceFileLocation(location) {
+      return location.pos !== undefined;
     }
     function getReferencedFileLocation(program, ref) {
       var _a, _b, _c, _d;
@@ -110912,8 +110912,8 @@ ${lanes.join(`
           if (!cachedChain.details && !processedExtraReason)
             cachedChain.details = chain.next;
         }
-        const location2 = locationReason && getReferencedFileLocation(program, locationReason);
-        return location2 && isReferenceFileLocation(location2) ? createFileDiagnosticFromMessageChain(location2.file, location2.pos, location2.end - location2.pos, chain, relatedInfo) : createCompilerDiagnosticFromMessageChain(chain, relatedInfo);
+        const location = locationReason && getReferencedFileLocation(program, locationReason);
+        return location && isReferenceFileLocation(location) ? createFileDiagnosticFromMessageChain(location.file, location.pos, location.end - location.pos, chain, relatedInfo) : createCompilerDiagnosticFromMessageChain(chain, relatedInfo);
         function processReason(reason) {
           if (seenReasons == null ? undefined : seenReasons.has(reason))
             return;
@@ -113055,7 +113055,7 @@ ${lanes.join(`
           impliedFormatPackageJsons.forEach((existing, path) => {
             const newFile = newProgram == null ? undefined : newProgram.getSourceFileByPath(path);
             if (!newFile || newFile.resolvedPath !== path) {
-              existing.forEach((location2) => fileWatchesOfAffectingLocations.get(location2).files--);
+              existing.forEach((location) => fileWatchesOfAffectingLocations.get(location).files--);
               impliedFormatPackageJsons.delete(path);
             }
           });
@@ -113615,7 +113615,7 @@ ${lanes.join(`
         let invalidated = false;
         if (affectingPathChecksForFile) {
           (_a = resolutionHost.getCurrentProgram()) == null || _a.getSourceFiles().forEach((f) => {
-            if (some(f.packageJsonLocations, (location2) => affectingPathChecksForFile.has(location2))) {
+            if (some(f.packageJsonLocations, (location) => affectingPathChecksForFile.has(location))) {
               (filesWithInvalidatedResolutions ?? (filesWithInvalidatedResolutions = /* @__PURE__ */ new Set)).add(f.path);
               invalidated = true;
             }
@@ -113640,14 +113640,14 @@ ${lanes.join(`
           return true;
         if (!failedLookupChecks && !startsWithPathChecks && !isInDirectoryChecks)
           return false;
-        return ((_a = resolution.failedLookupLocations) == null ? undefined : _a.some((location2) => isInvalidatedFailedLookup(resolutionHost.toPath(location2)))) || !!resolution.alternateResult && isInvalidatedFailedLookup(resolutionHost.toPath(resolution.alternateResult));
+        return ((_a = resolution.failedLookupLocations) == null ? undefined : _a.some((location) => isInvalidatedFailedLookup(resolutionHost.toPath(location)))) || !!resolution.alternateResult && isInvalidatedFailedLookup(resolutionHost.toPath(resolution.alternateResult));
       }
       function isInvalidatedFailedLookup(locationPath) {
         return (failedLookupChecks == null ? undefined : failedLookupChecks.has(locationPath)) || firstDefinedIterator((startsWithPathChecks == null ? undefined : startsWithPathChecks.keys()) || [], (fileOrDirectoryPath) => startsWith(locationPath, fileOrDirectoryPath) ? true : undefined) || firstDefinedIterator((isInDirectoryChecks == null ? undefined : isInDirectoryChecks.keys()) || [], (dirPath) => locationPath.length > dirPath.length && startsWith(locationPath, dirPath) && (isDiskPathRoot(dirPath) || locationPath[dirPath.length] === directorySeparator) ? true : undefined);
       }
       function canInvalidatedFailedLookupResolutionWithAffectingLocation(resolution) {
         var _a;
-        return !!affectingPathChecks && ((_a = resolution.affectingLocations) == null ? undefined : _a.some((location2) => affectingPathChecks.has(location2)));
+        return !!affectingPathChecks && ((_a = resolution.affectingLocations) == null ? undefined : _a.some((location) => affectingPathChecks.has(location)));
       }
       function closeTypeRootsWatch() {
         clearMap(typeRootsWatches, closeFileWatcher);
@@ -119343,9 +119343,9 @@ ${lanes.join(`
     function getAdjustedLocation(node, forRename) {
       const { parent: parent2 } = node;
       if (isModifier(node) && (forRename || node.kind !== 90) ? canHaveModifiers(parent2) && contains(parent2.modifiers, node) : node.kind === 86 ? isClassDeclaration(parent2) || isClassExpression(node) : node.kind === 100 ? isFunctionDeclaration(parent2) || isFunctionExpression(node) : node.kind === 120 ? isInterfaceDeclaration(parent2) : node.kind === 94 ? isEnumDeclaration(parent2) : node.kind === 156 ? isTypeAliasDeclaration(parent2) : node.kind === 145 || node.kind === 144 ? isModuleDeclaration(parent2) : node.kind === 102 ? isImportEqualsDeclaration(parent2) : node.kind === 139 ? isGetAccessorDeclaration(parent2) : node.kind === 153 && isSetAccessorDeclaration(parent2)) {
-        const location2 = getAdjustedLocationForDeclaration(parent2, forRename);
-        if (location2) {
-          return location2;
+        const location = getAdjustedLocationForDeclaration(parent2, forRename);
+        if (location) {
+          return location;
         }
       }
       if ((node.kind === 115 || node.kind === 87 || node.kind === 121) && isVariableDeclarationList(parent2) && parent2.declarations.length === 1) {
@@ -119356,15 +119356,15 @@ ${lanes.join(`
       }
       if (node.kind === 156) {
         if (isImportClause(parent2) && parent2.isTypeOnly) {
-          const location2 = getAdjustedLocationForImportDeclaration(parent2.parent, forRename);
-          if (location2) {
-            return location2;
+          const location = getAdjustedLocationForImportDeclaration(parent2.parent, forRename);
+          if (location) {
+            return location;
           }
         }
         if (isExportDeclaration(parent2) && parent2.isTypeOnly) {
-          const location2 = getAdjustedLocationForExportDeclaration(parent2, forRename);
-          if (location2) {
-            return location2;
+          const location = getAdjustedLocationForExportDeclaration(parent2, forRename);
+          if (location) {
+            return location;
           }
         }
       }
@@ -119377,16 +119377,16 @@ ${lanes.join(`
         }
       }
       if (node.kind === 102 && isImportDeclaration(parent2)) {
-        const location2 = getAdjustedLocationForImportDeclaration(parent2, forRename);
-        if (location2) {
-          return location2;
+        const location = getAdjustedLocationForImportDeclaration(parent2, forRename);
+        if (location) {
+          return location;
         }
       }
       if (node.kind === 95) {
         if (isExportDeclaration(parent2)) {
-          const location2 = getAdjustedLocationForExportDeclaration(parent2, forRename);
-          if (location2) {
-            return location2;
+          const location = getAdjustedLocationForExportDeclaration(parent2, forRename);
+          if (location) {
+            return location;
           }
         }
         if (isExportAssignment(parent2)) {
@@ -119400,9 +119400,9 @@ ${lanes.join(`
         return parent2.moduleSpecifier;
       }
       if ((node.kind === 96 || node.kind === 119) && isHeritageClause(parent2) && parent2.token === node.kind) {
-        const location2 = getAdjustedLocationForHeritageClause(parent2);
-        if (location2) {
-          return location2;
+        const location = getAdjustedLocationForHeritageClause(parent2);
+        if (location) {
+          return location;
         }
       }
       if (node.kind === 96) {
@@ -120183,8 +120183,8 @@ ${lanes.join(`
       }
       return true;
     }
-    function getMappedLocation(location2, sourceMapper, fileExists) {
-      const mapsTo = sourceMapper.tryGetSourcePosition(location2);
+    function getMappedLocation(location, sourceMapper, fileExists) {
+      const mapsTo = sourceMapper.tryGetSourcePosition(location);
       return mapsTo && (!fileExists || fileExists(normalizePath(mapsTo.fileName)) ? mapsTo : undefined);
     }
     function getMappedDocumentSpan(documentSpan, sourceMapper, fileExists) {
@@ -120493,8 +120493,8 @@ ${lanes.join(`
         typechecker.writeSignature(signature, enclosingDeclaration, flags, undefined, writer, maximumLength, verbosityLevel, out);
       }, maximumLength);
     }
-    function isImportOrExportSpecifierName(location2) {
-      return !!location2.parent && isImportOrExportSpecifier(location2.parent) && location2.parent.propertyName === location2;
+    function isImportOrExportSpecifierName(location) {
+      return !!location.parent && isImportOrExportSpecifier(location.parent) && location.parent.propertyName === location;
     }
     function getScriptKind(fileName, host) {
       return ensureScriptKind(fileName, host.getScriptKind && host.getScriptKind(fileName));
@@ -124007,8 +124007,8 @@ ${lanes.join(`
       }
       possibleMapLocations.push(generatedFileName + ".map");
       const originalMapFileName = mapFileName && getNormalizedAbsolutePath(mapFileName, getDirectoryPath(generatedFileName));
-      for (const location2 of possibleMapLocations) {
-        const mapFileName2 = getNormalizedAbsolutePath(location2, getDirectoryPath(generatedFileName));
+      for (const location of possibleMapLocations) {
+        const mapFileName2 = getNormalizedAbsolutePath(location, getDirectoryPath(generatedFileName));
         const mapFileContents = readMapFile(mapFileName2, originalMapFileName);
         if (isString(mapFileContents)) {
           return convertDocumentToSourceMapper(host, mapFileContents, mapFileName2);
@@ -132629,8 +132629,8 @@ ${newComment.split(`
       return node.kind === 90;
     }
     function getSymbolOfCallHierarchyDeclaration(typeChecker, node) {
-      const location2 = getCallHierarchyDeclarationReferenceNode(node);
-      return location2 && typeChecker.getSymbolAtLocation(location2);
+      const location = getCallHierarchyDeclarationReferenceNode(node);
+      return location && typeChecker.getSymbolAtLocation(location);
     }
     function getCallHierarchyItemName(program, node) {
       if (isSourceFile(node)) {
@@ -132738,52 +132738,52 @@ ${newComment.split(`
       }
       return findAllInitialDeclarations(typeChecker, node) ?? node;
     }
-    function resolveCallHierarchyDeclaration(program, location2) {
+    function resolveCallHierarchyDeclaration(program, location) {
       const typeChecker = program.getTypeChecker();
       let followingSymbol = false;
       while (true) {
-        if (isValidCallHierarchyDeclaration(location2)) {
-          return findImplementationOrAllInitialDeclarations(typeChecker, location2);
+        if (isValidCallHierarchyDeclaration(location)) {
+          return findImplementationOrAllInitialDeclarations(typeChecker, location);
         }
-        if (isPossibleCallHierarchyDeclaration(location2)) {
-          const ancestor = findAncestor(location2, isValidCallHierarchyDeclaration);
+        if (isPossibleCallHierarchyDeclaration(location)) {
+          const ancestor = findAncestor(location, isValidCallHierarchyDeclaration);
           return ancestor && findImplementationOrAllInitialDeclarations(typeChecker, ancestor);
         }
-        if (isDeclarationName(location2)) {
-          if (isValidCallHierarchyDeclaration(location2.parent)) {
-            return findImplementationOrAllInitialDeclarations(typeChecker, location2.parent);
+        if (isDeclarationName(location)) {
+          if (isValidCallHierarchyDeclaration(location.parent)) {
+            return findImplementationOrAllInitialDeclarations(typeChecker, location.parent);
           }
-          if (isPossibleCallHierarchyDeclaration(location2.parent)) {
-            const ancestor = findAncestor(location2.parent, isValidCallHierarchyDeclaration);
+          if (isPossibleCallHierarchyDeclaration(location.parent)) {
+            const ancestor = findAncestor(location.parent, isValidCallHierarchyDeclaration);
             return ancestor && findImplementationOrAllInitialDeclarations(typeChecker, ancestor);
           }
-          if (isVariableLike2(location2.parent) && location2.parent.initializer && isAssignedExpression(location2.parent.initializer)) {
-            return location2.parent.initializer;
+          if (isVariableLike2(location.parent) && location.parent.initializer && isAssignedExpression(location.parent.initializer)) {
+            return location.parent.initializer;
           }
           return;
         }
-        if (isConstructorDeclaration(location2)) {
-          if (isValidCallHierarchyDeclaration(location2.parent)) {
-            return location2.parent;
+        if (isConstructorDeclaration(location)) {
+          if (isValidCallHierarchyDeclaration(location.parent)) {
+            return location.parent;
           }
           return;
         }
-        if (location2.kind === 126 && isClassStaticBlockDeclaration(location2.parent)) {
-          location2 = location2.parent;
+        if (location.kind === 126 && isClassStaticBlockDeclaration(location.parent)) {
+          location = location.parent;
           continue;
         }
-        if (isVariableDeclaration(location2) && location2.initializer && isAssignedExpression(location2.initializer)) {
-          return location2.initializer;
+        if (isVariableDeclaration(location) && location.initializer && isAssignedExpression(location.initializer)) {
+          return location.initializer;
         }
         if (!followingSymbol) {
-          let symbol = typeChecker.getSymbolAtLocation(location2);
+          let symbol = typeChecker.getSymbolAtLocation(location);
           if (symbol) {
             if (symbol.flags & 2097152) {
               symbol = typeChecker.getAliasedSymbol(symbol);
             }
             if (symbol.valueDeclaration) {
               followingSymbol = true;
-              location2 = symbol.valueDeclaration;
+              location = symbol.valueDeclaration;
               continue;
             }
           }
@@ -132827,8 +132827,8 @@ ${newComment.split(`
       if (isSourceFile(declaration) || isModuleDeclaration(declaration) || isClassStaticBlockDeclaration(declaration)) {
         return [];
       }
-      const location2 = getCallHierarchyDeclarationReferenceNode(declaration);
-      const calls = filter(ts_FindAllReferences_exports.findReferenceOrRenameEntries(program, cancellationToken, program.getSourceFiles(), location2, 0, { use: ts_FindAllReferences_exports.FindReferencesUse.References }, convertEntryToCallSite), isDefined);
+      const location = getCallHierarchyDeclarationReferenceNode(declaration);
+      const calls = filter(ts_FindAllReferences_exports.findReferenceOrRenameEntries(program, cancellationToken, program.getSourceFiles(), location, 0, { use: ts_FindAllReferences_exports.FindReferencesUse.References }, convertEntryToCallSite), isDefined);
       return calls ? group(calls, getCallSiteGroupKey, (entries) => convertCallSiteGroupToIncomingCall(program, entries)) : [];
     }
     function createCallSiteCollector(program, callSites) {
@@ -139657,8 +139657,8 @@ ${newComment.split(`
           }
         }
       }
-      function isConstAssertion2(location2) {
-        return isAssertionExpression(location2) && isConstTypeReference(location2.type);
+      function isConstAssertion2(location) {
+        return isAssertionExpression(location) && isConstTypeReference(location.type);
       }
       function relativeType(node) {
         if (isParameter(node)) {
@@ -142448,14 +142448,14 @@ ${newComment.split(`
     function completionEntryDataIsResolved(data) {
       return !!(data == null ? undefined : data.moduleSpecifier);
     }
-    function continuePreviousIncompleteResponse(cache, file, location2, program, host, preferences, cancellationToken, position) {
+    function continuePreviousIncompleteResponse(cache, file, location, program, host, preferences, cancellationToken, position) {
       const previousResponse = cache.get();
       if (!previousResponse)
         return;
       const touchNode = getTouchingPropertyName(file, position);
-      const lowerCaseTokenText = location2.text.toLowerCase();
+      const lowerCaseTokenText = location.text.toLowerCase();
       const exportMap = getExportInfoMap(file, host, program, preferences, cancellationToken);
-      const newEntries = resolvingModuleSpecifiers("continuePreviousIncompleteResponse", host, ts_codefix_exports.createImportSpecifierResolver(file, program, host, preferences), program, location2.getStart(), preferences, false, isValidTypeOnlyAliasUseSite(location2), (context) => {
+      const newEntries = resolvingModuleSpecifiers("continuePreviousIncompleteResponse", host, ts_codefix_exports.createImportSpecifierResolver(file, program, host, preferences), program, location.getStart(), preferences, false, isValidTypeOnlyAliasUseSite(location), (context) => {
         const entries = mapDefined(previousResponse.entries, (entry) => {
           var _a;
           if (!entry.hasAction || !entry.source || !entry.data || completionEntryDataIsResolved(entry.data)) {
@@ -142700,8 +142700,8 @@ ${newComment.split(`
           Debug.fail("Unknown mapping from SyntaxKind to KeywordCompletionFilters");
       }
     }
-    function getOptionalReplacementSpan(location2) {
-      return (location2 == null ? undefined : location2.kind) === 80 ? createTextSpanFromNode(location2) : undefined;
+    function getOptionalReplacementSpan(location) {
+      return (location == null ? undefined : location.kind) === 80 ? createTextSpanFromNode(location) : undefined;
     }
     function completionInfoFromData(sourceFile, host, program, compilerOptions, log, completionData, preferences, formatContext, position, includeSymbol) {
       const {
@@ -142710,7 +142710,7 @@ ${newComment.split(`
         completionKind,
         isInSnippetScope,
         isNewIdentifierLocation,
-        location: location2,
+        location,
         propertyAccessToConvert,
         keywordFilters,
         symbolToOriginInfoMap,
@@ -142729,7 +142729,7 @@ ${newComment.split(`
       let literals = completionData.literals;
       const checker = program.getTypeChecker();
       if (getLanguageVariant(sourceFile.scriptKind) === 1) {
-        const completionInfo = getJsxClosingTagCompletion(location2, sourceFile);
+        const completionInfo = getJsxClosingTagCompletion(location, sourceFile);
         if (completionInfo) {
           return completionInfo;
         }
@@ -142752,7 +142752,7 @@ ${newComment.split(`
       if (isChecked && !isNewIdentifierLocation && (!symbols || symbols.length === 0) && keywordFilters === 0) {
         return;
       }
-      const uniqueNames = getCompletionEntriesFromSymbols(symbols, entries, undefined, contextToken, location2, position, sourceFile, host, program, getEmitScriptTarget(compilerOptions), log, completionKind, preferences, compilerOptions, formatContext, isTypeOnlyLocation, propertyAccessToConvert, isJsxIdentifierExpected, isJsxInitializer, importStatementCompletion, recommendedCompletion, symbolToOriginInfoMap, symbolToSortTextMap, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol);
+      const uniqueNames = getCompletionEntriesFromSymbols(symbols, entries, undefined, contextToken, location, position, sourceFile, host, program, getEmitScriptTarget(compilerOptions), log, completionKind, preferences, compilerOptions, formatContext, isTypeOnlyLocation, propertyAccessToConvert, isJsxIdentifierExpected, isJsxInitializer, importStatementCompletion, recommendedCompletion, symbolToOriginInfoMap, symbolToSortTextMap, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol);
       if (keywordFilters !== 0) {
         for (const keywordEntry of getKeywordCompletions(keywordFilters, !insideJsDocTagTypeExpression && isSourceFileJS(sourceFile))) {
           if (isTypeOnlyLocation && isTypeKeyword(stringToToken(keywordEntry.name)) || !isTypeOnlyLocation && isContextualKeywordInAutoImportableExpressionSpace(keywordEntry.name) || !uniqueNames.has(keywordEntry.name)) {
@@ -142773,7 +142773,7 @@ ${newComment.split(`
         insertSorted(entries, literalEntry, compareCompletionEntries, undefined, true);
       }
       if (!isChecked) {
-        getJSCompletionEntries(sourceFile, location2.pos, uniqueNames, getEmitScriptTarget(compilerOptions), entries);
+        getJSCompletionEntries(sourceFile, location.pos, uniqueNames, getEmitScriptTarget(compilerOptions), entries);
       }
       let caseBlock;
       if (preferences.includeCompletionsWithInsertText && contextToken && !isRightOfOpenTag && !isRightOfDotOrQuestionDot && (caseBlock = findAncestor(contextToken, isCaseBlock))) {
@@ -142788,7 +142788,7 @@ ${newComment.split(`
         isIncomplete: preferences.allowIncompleteCompletions && hasUnresolvedAutoImports ? true : undefined,
         isMemberCompletion: isMemberCompletionKind(completionKind),
         isNewIdentifierLocation,
-        optionalReplacementSpan: getOptionalReplacementSpan(location2),
+        optionalReplacementSpan: getOptionalReplacementSpan(location),
         entries,
         defaultCommitCharacters: defaultCommitCharacters ?? getDefaultCommitCharacters(isNewIdentifierLocation)
       };
@@ -142924,8 +142924,8 @@ ${newComment.split(`
           return false;
       }
     }
-    function getJsxClosingTagCompletion(location2, sourceFile) {
-      const jsxClosingElement = findAncestor(location2, (node) => {
+    function getJsxClosingTagCompletion(location, sourceFile) {
+      const jsxClosingElement = findAncestor(location, (node) => {
         switch (node.kind) {
           case 288:
             return true;
@@ -142992,7 +142992,7 @@ ${newComment.split(`
         commitCharacters: []
       };
     }
-    function createCompletionEntry(symbol, sortText, replacementToken, contextToken, location2, position, sourceFile, host, program, name, needsConvertPropertyAccess, origin, recommendedCompletion, propertyAccessToConvert, isJsxInitializer, importStatementCompletion, useSemicolons, options, preferences, completionKind, formatContext, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol) {
+    function createCompletionEntry(symbol, sortText, replacementToken, contextToken, location, position, sourceFile, host, program, name, needsConvertPropertyAccess, origin, recommendedCompletion, propertyAccessToConvert, isJsxInitializer, importStatementCompletion, useSemicolons, options, preferences, completionKind, formatContext, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol) {
       var _a, _b;
       let insertText;
       let filterText;
@@ -143058,9 +143058,9 @@ ${newComment.split(`
           hasAction = true;
         }
       }
-      if (preferences.includeCompletionsWithClassMemberSnippets && preferences.includeCompletionsWithInsertText && completionKind === 3 && isClassLikeMemberCompletion(symbol, location2, sourceFile)) {
+      if (preferences.includeCompletionsWithClassMemberSnippets && preferences.includeCompletionsWithInsertText && completionKind === 3 && isClassLikeMemberCompletion(symbol, location, sourceFile)) {
         let importAdder;
-        const memberCompletionEntry = getEntryForMemberCompletion(host, program, options, preferences, name, symbol, location2, position, contextToken, formatContext);
+        const memberCompletionEntry = getEntryForMemberCompletion(host, program, options, preferences, name, symbol, location, position, contextToken, formatContext);
         if (memberCompletionEntry) {
           ({ insertText, filterText, isSnippet, importAdder } = memberCompletionEntry);
           if ((importAdder == null ? undefined : importAdder.hasFixes()) || memberCompletionEntry.eraseRange) {
@@ -143080,9 +143080,9 @@ ${newComment.split(`
         source = "ObjectLiteralMethodSnippet/";
         sortText = SortText.SortBelow(sortText);
       }
-      if (isJsxIdentifierExpected && !isRightOfOpenTag && preferences.includeCompletionsWithSnippetText && preferences.jsxAttributeCompletionStyle && preferences.jsxAttributeCompletionStyle !== "none" && !(isJsxAttribute(location2.parent) && location2.parent.initializer)) {
+      if (isJsxIdentifierExpected && !isRightOfOpenTag && preferences.includeCompletionsWithSnippetText && preferences.jsxAttributeCompletionStyle && preferences.jsxAttributeCompletionStyle !== "none" && !(isJsxAttribute(location.parent) && location.parent.initializer)) {
         let useBraces2 = preferences.jsxAttributeCompletionStyle === "braces";
-        const type = typeChecker.getTypeOfSymbolAtLocation(symbol, location2);
+        const type = typeChecker.getTypeOfSymbolAtLocation(symbol, location);
         if (preferences.jsxAttributeCompletionStyle === "auto" && !(type.flags & 8448) && !(type.flags & 134217728 && find(type.types, (type2) => !!(type2.flags & 8448)))) {
           if (type.flags & 12583968 || type.flags & 134217728 && every(type.types, (type2) => !!(type2.flags & (12583968 | 4) || isStringAndEmptyAnonymousObjectIntersection(type2)))) {
             insertText = `${escapeSnippetText(name)}=${quote(sourceFile, preferences, "$1")}`;
@@ -143103,7 +143103,7 @@ ${newComment.split(`
         data = originToCompletionEntryData(origin);
         hasAction = !importStatementCompletion;
       }
-      const parentNamedImportOrExport = findAncestor(location2, isNamedImportsOrExports);
+      const parentNamedImportOrExport = findAncestor(location, isNamedImportsOrExports);
       if (parentNamedImportOrExport) {
         const languageVersion = getEmitScriptTarget(host.getCompilationSettings());
         if (!isIdentifierText(name, languageVersion)) {
@@ -143122,7 +143122,7 @@ ${newComment.split(`
           }
         }
       }
-      const kind = ts_SymbolDisplay_exports.getSymbolKind(typeChecker, symbol, location2);
+      const kind = ts_SymbolDisplay_exports.getSymbolKind(typeChecker, symbol, location);
       const commitCharacters = kind === "warning" || kind === "string" ? [] : undefined;
       return {
         name,
@@ -143164,15 +143164,15 @@ ${newComment.split(`
         identifier += "_";
       return identifier || "_";
     }
-    function isClassLikeMemberCompletion(symbol, location2, sourceFile) {
-      if (isInJSFile(location2)) {
+    function isClassLikeMemberCompletion(symbol, location, sourceFile) {
+      if (isInJSFile(location)) {
         return false;
       }
       const memberFlags = 106500 & 900095;
-      return !!(symbol.flags & memberFlags) && (isClassLike(location2) || location2.parent && location2.parent.parent && isClassElement(location2.parent) && location2 === location2.parent.name && location2.parent.getLastToken(sourceFile) === location2.parent.name && isClassLike(location2.parent.parent) || location2.parent && isSyntaxList(location2) && isClassLike(location2.parent));
+      return !!(symbol.flags & memberFlags) && (isClassLike(location) || location.parent && location.parent.parent && isClassElement(location.parent) && location === location.parent.name && location.parent.getLastToken(sourceFile) === location.parent.name && isClassLike(location.parent.parent) || location.parent && isSyntaxList(location) && isClassLike(location.parent));
     }
-    function getEntryForMemberCompletion(host, program, options, preferences, name, symbol, location2, position, contextToken, formatContext) {
-      const classLikeDeclaration = findAncestor(location2, isClassLike);
+    function getEntryForMemberCompletion(host, program, options, preferences, name, symbol, location, position, contextToken, formatContext) {
+      const classLikeDeclaration = findAncestor(location, isClassLike);
       if (!classLikeDeclaration) {
         return;
       }
@@ -143180,7 +143180,7 @@ ${newComment.split(`
       let insertText = name;
       const filterText = name;
       const checker = program.getTypeChecker();
-      const sourceFile = location2.getSourceFile();
+      const sourceFile = location.getSourceFile();
       const printer = createSnippetPrinter({
         removeComments: true,
         module: options.module,
@@ -143546,9 +143546,9 @@ ${newComment.split(`
         return "TypeOnlyAlias/";
       }
     }
-    function getCompletionEntriesFromSymbols(symbols, entries, replacementToken, contextToken, location2, position, sourceFile, host, program, target, log, kind, preferences, compilerOptions, formatContext, isTypeOnlyLocation, propertyAccessToConvert, jsxIdentifierExpected, isJsxInitializer, importStatementCompletion, recommendedCompletion, symbolToOriginInfoMap, symbolToSortTextMap, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol = false) {
+    function getCompletionEntriesFromSymbols(symbols, entries, replacementToken, contextToken, location, position, sourceFile, host, program, target, log, kind, preferences, compilerOptions, formatContext, isTypeOnlyLocation, propertyAccessToConvert, jsxIdentifierExpected, isJsxInitializer, importStatementCompletion, recommendedCompletion, symbolToOriginInfoMap, symbolToSortTextMap, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol = false) {
       const start = timestamp();
-      const closestSymbolDeclaration = getClosestSymbolDeclaration(contextToken, location2);
+      const closestSymbolDeclaration = getClosestSymbolDeclaration(contextToken, location);
       const useSemicolons = probablyUsesSemicolons(sourceFile);
       const typeChecker = program.getTypeChecker();
       const uniques = /* @__PURE__ */ new Map;
@@ -143565,11 +143565,11 @@ ${newComment.split(`
         const { name, needsConvertPropertyAccess } = info;
         const originalSortText = (symbolToSortTextMap == null ? undefined : symbolToSortTextMap[getSymbolId(symbol)]) ?? SortText.LocationPriority;
         const sortText = isDeprecated(symbol, typeChecker) ? SortText.Deprecated(originalSortText) : originalSortText;
-        const entry = createCompletionEntry(symbol, sortText, replacementToken, contextToken, location2, position, sourceFile, host, program, name, needsConvertPropertyAccess, origin, recommendedCompletion, propertyAccessToConvert, isJsxInitializer, importStatementCompletion, useSemicolons, compilerOptions, preferences, kind, formatContext, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol);
+        const entry = createCompletionEntry(symbol, sortText, replacementToken, contextToken, location, position, sourceFile, host, program, name, needsConvertPropertyAccess, origin, recommendedCompletion, propertyAccessToConvert, isJsxInitializer, importStatementCompletion, useSemicolons, compilerOptions, preferences, kind, formatContext, isJsxIdentifierExpected, isRightOfOpenTag, includeSymbol);
         if (!entry) {
           continue;
         }
-        const shouldShadowLaterSymbols = (!origin || originIsTypeOnlyAlias(origin)) && !(symbol.parent === undefined && !some(symbol.declarations, (d) => d.getSourceFile() === location2.getSourceFile()));
+        const shouldShadowLaterSymbols = (!origin || originIsTypeOnlyAlias(origin)) && !(symbol.parent === undefined && !some(symbol.declarations, (d) => d.getSourceFile() === location.getSourceFile()));
         uniques.set(name, shouldShadowLaterSymbols);
         insertSorted(entries, entry, compareCompletionEntries, undefined, true);
       }
@@ -143581,7 +143581,7 @@ ${newComment.split(`
       function shouldIncludeSymbol(symbol, symbolToSortTextMap2) {
         var _a;
         let allFlags = symbol.flags;
-        if (location2.parent && isExportAssignment(location2.parent)) {
+        if (location.parent && isExportAssignment(location.parent)) {
           return true;
         }
         if (closestSymbolDeclaration && tryCast(closestSymbolDeclaration, isVariableDeclaration)) {
@@ -143616,7 +143616,7 @@ ${newComment.split(`
           return false;
         }
         allFlags |= getCombinedLocalAndExportSymbolFlags(symbolOrigin);
-        if (isInRightSideOfInternalImportEqualsDeclaration(location2)) {
+        if (isInRightSideOfInternalImportEqualsDeclaration(location)) {
           return !!(allFlags & 1920);
         }
         if (isTypeOnlyLocation) {
@@ -143694,14 +143694,14 @@ ${newComment.split(`
       if (completionData.kind !== 0) {
         return { type: "request", request: completionData };
       }
-      const { symbols, literals, location: location2, completionKind, symbolToOriginInfoMap, contextToken, previousToken, isJsxInitializer, isTypeOnlyLocation } = completionData;
+      const { symbols, literals, location, completionKind, symbolToOriginInfoMap, contextToken, previousToken, isJsxInitializer, isTypeOnlyLocation } = completionData;
       const literal = find(literals, (l) => completionNameForLiteral(sourceFile, preferences, l) === entryId.name);
       if (literal !== undefined)
         return { type: "literal", literal };
       return firstDefined(symbols, (symbol, index) => {
         const origin = symbolToOriginInfoMap[index];
         const info = getCompletionEntryDisplayNameForSymbol(symbol, getEmitScriptTarget(compilerOptions), origin, completionKind, completionData.isJsxIdentifierExpected);
-        return info && info.name === entryId.name && (entryId.source === "ClassMemberSnippet/" && symbol.flags & 106500 || entryId.source === "ObjectLiteralMethodSnippet/" && symbol.flags & (4 | 8192) || getSourceFromOrigin(origin) === entryId.source || entryId.source === "ObjectLiteralMemberWithComma/") ? { type: "symbol", symbol, location: location2, origin, contextToken, previousToken, isJsxInitializer, isTypeOnlyLocation } : undefined;
+        return info && info.name === entryId.name && (entryId.source === "ClassMemberSnippet/" && symbol.flags & 106500 || entryId.source === "ObjectLiteralMethodSnippet/" && symbol.flags & (4 | 8192) || getSourceFromOrigin(origin) === entryId.source || entryId.source === "ObjectLiteralMemberWithComma/") ? { type: "symbol", symbol, location, origin, contextToken, previousToken, isJsxInitializer, isTypeOnlyLocation } : undefined;
       }) || { type: "none" };
     }
     function getCompletionEntryDetails(program, log, sourceFile, position, entryId, host, formatContext, preferences, cancellationToken) {
@@ -143730,10 +143730,10 @@ ${newComment.split(`
           }
         }
         case "symbol": {
-          const { symbol, location: location2, contextToken: contextToken2, origin, previousToken: previousToken2 } = symbolCompletion;
-          const { codeActions, sourceDisplay } = getCompletionEntryCodeActionsAndSourceDisplay(name, location2, contextToken2, origin, symbol, program, host, compilerOptions, sourceFile, position, previousToken2, formatContext, preferences, data, source, cancellationToken);
+          const { symbol, location, contextToken: contextToken2, origin, previousToken: previousToken2 } = symbolCompletion;
+          const { codeActions, sourceDisplay } = getCompletionEntryCodeActionsAndSourceDisplay(name, location, contextToken2, origin, symbol, program, host, compilerOptions, sourceFile, position, previousToken2, formatContext, preferences, data, source, cancellationToken);
           const symbolName2 = originIsComputedPropertyName(origin) ? origin.symbolName : symbol.name;
-          return createCompletionDetailsForSymbol(symbol, symbolName2, typeChecker, sourceFile, location2, cancellationToken, codeActions, sourceDisplay);
+          return createCompletionDetailsForSymbol(symbol, symbolName2, typeChecker, sourceFile, location, cancellationToken, codeActions, sourceDisplay);
         }
         case "literal": {
           const { literal } = symbolCompletion;
@@ -143773,21 +143773,21 @@ ${newComment.split(`
     function createSimpleDetails(name, kind, kind2) {
       return createCompletionDetails(name, "", kind, [displayPart(name, kind2)]);
     }
-    function createCompletionDetailsForSymbol(symbol, name, checker, sourceFile, location2, cancellationToken, codeActions, sourceDisplay) {
-      const { displayParts, documentation, symbolKind, tags } = checker.runWithCancellationToken(cancellationToken, (checker2) => ts_SymbolDisplay_exports.getSymbolDisplayPartsDocumentationAndSymbolKind(checker2, symbol, sourceFile, location2, location2, 7));
+    function createCompletionDetailsForSymbol(symbol, name, checker, sourceFile, location, cancellationToken, codeActions, sourceDisplay) {
+      const { displayParts, documentation, symbolKind, tags } = checker.runWithCancellationToken(cancellationToken, (checker2) => ts_SymbolDisplay_exports.getSymbolDisplayPartsDocumentationAndSymbolKind(checker2, symbol, sourceFile, location, location, 7));
       return createCompletionDetails(name, ts_SymbolDisplay_exports.getSymbolModifiers(checker, symbol), symbolKind, displayParts, documentation, tags, codeActions, sourceDisplay);
     }
     function createCompletionDetails(name, kindModifiers, kind, displayParts, documentation, tags, codeActions, source) {
       return { name, kindModifiers, kind, displayParts, documentation, tags, codeActions, source, sourceDisplay: source };
     }
-    function getCompletionEntryCodeActionsAndSourceDisplay(name, location2, contextToken, origin, symbol, program, host, compilerOptions, sourceFile, position, previousToken, formatContext, preferences, data, source, cancellationToken) {
+    function getCompletionEntryCodeActionsAndSourceDisplay(name, location, contextToken, origin, symbol, program, host, compilerOptions, sourceFile, position, previousToken, formatContext, preferences, data, source, cancellationToken) {
       if (data == null ? undefined : data.moduleSpecifier) {
         if (previousToken && getImportStatementCompletionInfo(contextToken || previousToken, sourceFile).replacementSpan) {
           return { codeActions: undefined, sourceDisplay: [textPart(data.moduleSpecifier)] };
         }
       }
       if (source === "ClassMemberSnippet/") {
-        const { importAdder, eraseRange } = getEntryForMemberCompletion(host, program, compilerOptions, preferences, name, symbol, location2, position, contextToken, formatContext);
+        const { importAdder, eraseRange } = getEntryForMemberCompletion(host, program, compilerOptions, preferences, name, symbol, location, position, contextToken, formatContext);
         if ((importAdder == null ? undefined : importAdder.hasFixes()) || eraseRange) {
           const changes = ts_textChanges_exports.ChangeTracker.with({ host, formatContext, preferences }, (tracker) => {
             if (importAdder) {
@@ -143954,7 +143954,7 @@ ${newComment.split(`
       let isJsxInitializer = false;
       let isJsxIdentifierExpected = false;
       let importStatementCompletion;
-      let location2 = getTouchingPropertyName(sourceFile, position);
+      let location = getTouchingPropertyName(sourceFile, position);
       let keywordFilters = 0;
       let isNewIdentifierLocation = false;
       let flags = 0;
@@ -144014,16 +144014,16 @@ ${newComment.split(`
             contextToken = parent2;
             parent2 = parent2.parent;
           }
-          if (currentToken.parent === location2) {
+          if (currentToken.parent === location) {
             switch (currentToken.kind) {
               case 32:
                 if (currentToken.parent.kind === 285 || currentToken.parent.kind === 287) {
-                  location2 = currentToken;
+                  location = currentToken;
                 }
                 break;
               case 44:
                 if (currentToken.parent.kind === 286) {
-                  location2 = currentToken;
+                  location = currentToken;
                 }
                 break;
             }
@@ -144032,7 +144032,7 @@ ${newComment.split(`
             case 288:
               if (contextToken.kind === 44) {
                 isStartingCloseTag = true;
-                location2 = contextToken;
+                location = contextToken;
               }
               break;
             case 227:
@@ -144045,7 +144045,7 @@ ${newComment.split(`
               isJsxIdentifierExpected = true;
               if (contextToken.kind === 30) {
                 isRightOfOpenTag = true;
-                location2 = contextToken;
+                location = contextToken;
               }
               break;
             case 295:
@@ -144088,7 +144088,7 @@ ${newComment.split(`
       if (isRightOfDot || isRightOfQuestionDot) {
         getTypeScriptMemberSymbols();
       } else if (isRightOfOpenTag) {
-        symbols = typeChecker.getJsxIntrinsicTagNamesAt(location2);
+        symbols = typeChecker.getJsxIntrinsicTagNamesAt(location);
         Debug.assertEachIsDefined(symbols, "getJsxIntrinsicTagNames() should all be defined");
         tryGetGlobalSymbols();
         completionKind = 1;
@@ -144118,7 +144118,7 @@ ${newComment.split(`
         isInSnippetScope,
         propertyAccessToConvert,
         isNewIdentifierLocation,
-        location: location2,
+        location,
         keywordFilters,
         literals,
         symbolToOriginInfoMap,
@@ -144283,7 +144283,7 @@ ${newComment.split(`
                 moduleSymbol,
                 symbol: firstAccessibleSymbol,
                 targetFlags: skipAlias(firstAccessibleSymbol, typeChecker).flags
-              }], position, isValidTypeOnlyAliasUseSite(location2)) || {};
+              }], position, isValidTypeOnlyAliasUseSite(location)) || {};
               if (moduleSpecifier) {
                 const origin = {
                   kind: getNullableSymbolOriginInfoKind(34),
@@ -144428,7 +144428,7 @@ ${newComment.split(`
         }
       }
       function isTypeOnlyCompletion() {
-        return insideJsDocTagTypeExpression || insideJsDocImportTag || !!importStatementCompletion && isTypeOnlyImportOrExportDeclaration(location2.parent) || !isContextTokenValueLocation(contextToken) && (isPossiblyTypeArgumentPosition(contextToken, sourceFile, typeChecker) || isPartOfTypeNode(location2) || isContextTokenTypeLocation(contextToken));
+        return insideJsDocTagTypeExpression || insideJsDocImportTag || !!importStatementCompletion && isTypeOnlyImportOrExportDeclaration(location.parent) || !isContextTokenValueLocation(contextToken) && (isPossiblyTypeArgumentPosition(contextToken, sourceFile, typeChecker) || isPartOfTypeNode(location) || isContextTokenTypeLocation(contextToken));
       }
       function isContextTokenValueLocation(contextToken2) {
         return contextToken2 && (contextToken2.kind === 114 && (contextToken2.parent.kind === 187 || isTypeOfExpression(contextToken2.parent)) || contextToken2.kind === 131 && contextToken2.parent.kind === 183);
@@ -144468,7 +144468,7 @@ ${newComment.split(`
         const exportInfo = getExportInfoMap(sourceFile, host, program, preferences, cancellationToken);
         const packageJsonAutoImportProvider = (_b = host.getPackageJsonAutoImportProvider) == null ? undefined : _b.call(host);
         const packageJsonFilter = detailsEntryId ? undefined : createPackageJsonImportFilter(sourceFile, preferences, host);
-        resolvingModuleSpecifiers("collectAutoImports", host, importSpecifierResolver || (importSpecifierResolver = ts_codefix_exports.createImportSpecifierResolver(sourceFile, program, host, preferences)), program, position, preferences, !!importStatementCompletion, isValidTypeOnlyAliasUseSite(location2), (context) => {
+        resolvingModuleSpecifiers("collectAutoImports", host, importSpecifierResolver || (importSpecifierResolver = ts_codefix_exports.createImportSpecifierResolver(sourceFile, program, host, preferences)), program, position, preferences, !!importStatementCompletion, isValidTypeOnlyAliasUseSite(location), (context) => {
           exportInfo.search(sourceFile.path, isRightOfOpenTag, (symbolName2, targetFlags) => {
             if (!isIdentifierText(symbolName2, getEmitScriptTarget(host.getCompilationSettings())))
               return false;
@@ -144531,7 +144531,7 @@ ${newComment.split(`
         symbols.push(symbol);
       }
       function collectObjectLiteralMethodSymbols(members, enclosingDeclaration) {
-        if (isInJSFile(location2)) {
+        if (isInJSFile(location)) {
           return;
         }
         members.forEach((member) => {
@@ -144577,11 +144577,11 @@ ${newComment.split(`
           return true;
         }
         if (contextToken2.kind === 32 && contextToken2.parent) {
-          if (location2 === contextToken2.parent && (location2.kind === 287 || location2.kind === 286)) {
+          if (location === contextToken2.parent && (location.kind === 287 || location.kind === 286)) {
             return false;
           }
           if (contextToken2.parent.kind === 287) {
-            return location2.parent.kind !== 287;
+            return location.parent.kind !== 287;
           }
           if (contextToken2.parent.kind === 288 || contextToken2.parent.kind === 286) {
             return !!contextToken2.parent.parent && contextToken2.parent.parent.kind === 285;
@@ -144836,7 +144836,7 @@ ${newComment.split(`
         return 1;
       }
       function tryGetClassLikeCompletionSymbols() {
-        const decl = tryGetObjectTypeDeclarationCompletionContainer(sourceFile, contextToken, location2, position);
+        const decl = tryGetObjectTypeDeclarationCompletionContainer(sourceFile, contextToken, location, position);
         if (!decl)
           return 0;
         completionKind = 3;
@@ -145431,37 +145431,37 @@ ${newComment.split(`
     function getPropertiesForCompletion(type, checker) {
       return type.isUnion() ? Debug.checkEachDefined(checker.getAllPossiblePropertiesOfTypes(type.types), "getAllPossiblePropertiesOfTypes() should all be defined") : Debug.checkEachDefined(type.getApparentProperties(), "getApparentProperties() should all be defined");
     }
-    function tryGetObjectTypeDeclarationCompletionContainer(sourceFile, contextToken, location2, position) {
-      switch (location2.kind) {
+    function tryGetObjectTypeDeclarationCompletionContainer(sourceFile, contextToken, location, position) {
+      switch (location.kind) {
         case 353:
-          return tryCast(location2.parent, isObjectTypeDeclaration);
+          return tryCast(location.parent, isObjectTypeDeclaration);
         case 1:
-          const cls = tryCast(lastOrUndefined(cast(location2.parent, isSourceFile).statements), isObjectTypeDeclaration);
+          const cls = tryCast(lastOrUndefined(cast(location.parent, isSourceFile).statements), isObjectTypeDeclaration);
           if (cls && !findChildOfKind(cls, 20, sourceFile)) {
             return cls;
           }
           break;
         case 81:
-          if (tryCast(location2.parent, isPropertyDeclaration)) {
-            return findAncestor(location2, isClassLike);
+          if (tryCast(location.parent, isPropertyDeclaration)) {
+            return findAncestor(location, isClassLike);
           }
           break;
         case 80: {
-          const originalKeywordKind = identifierToKeywordKind(location2);
+          const originalKeywordKind = identifierToKeywordKind(location);
           if (originalKeywordKind) {
             return;
           }
-          if (isPropertyDeclaration(location2.parent) && location2.parent.initializer === location2) {
+          if (isPropertyDeclaration(location.parent) && location.parent.initializer === location) {
             return;
           }
-          if (isFromObjectTypeDeclaration(location2)) {
-            return findAncestor(location2, isObjectTypeDeclaration);
+          if (isFromObjectTypeDeclaration(location)) {
+            return findAncestor(location, isObjectTypeDeclaration);
           }
         }
       }
       if (!contextToken)
         return;
-      if (location2.kind === 137 || isIdentifier(contextToken) && isPropertyDeclaration(contextToken.parent) && isClassLike(location2)) {
+      if (location.kind === 137 || isIdentifier(contextToken) && isPropertyDeclaration(contextToken.parent) && isClassLike(location)) {
         return findAncestor(contextToken, isClassLike);
       }
       switch (contextToken.kind) {
@@ -145469,14 +145469,14 @@ ${newComment.split(`
           return;
         case 27:
         case 20:
-          return isFromObjectTypeDeclaration(location2) && location2.parent.name === location2 ? location2.parent.parent : tryCast(location2, isObjectTypeDeclaration);
+          return isFromObjectTypeDeclaration(location) && location.parent.name === location ? location.parent.parent : tryCast(location, isObjectTypeDeclaration);
         case 19:
         case 28:
           return tryCast(contextToken.parent, isObjectTypeDeclaration);
         default:
-          if (isObjectTypeDeclaration(location2)) {
+          if (isObjectTypeDeclaration(location)) {
             if (getLineAndCharacterOfPosition(sourceFile, contextToken.getEnd()).line !== getLineAndCharacterOfPosition(sourceFile, position).line) {
-              return location2;
+              return location;
             }
             const isValidKeyword = isClassLike(contextToken.parent.parent) ? isClassMemberCompletionKeyword : isInterfaceOrTypeLiteralCompletionKeyword;
             return isValidKeyword(contextToken.kind) || contextToken.kind === 42 || isIdentifier(contextToken) && isValidKeyword(identifierToKeywordKind(contextToken) ?? 0) ? contextToken.parent.parent : undefined;
@@ -145694,12 +145694,12 @@ ${newComment.split(`
         return true;
       return !((_a = tryCast(isExternalModuleReference(specifier) ? specifier.expression : specifier, isStringLiteralLike)) == null ? undefined : _a.text);
     }
-    function getClosestSymbolDeclaration(contextToken, location2) {
+    function getClosestSymbolDeclaration(contextToken, location) {
       if (!contextToken)
         return;
       let closestDeclaration = findAncestor(contextToken, (node) => isFunctionBlock(node) || isArrowFunctionBody(node) || isBindingPattern(node) ? "quit" : (isParameter(node) || isTypeParameterDeclaration(node)) && !isIndexSignatureDeclaration(node.parent));
       if (!closestDeclaration) {
-        closestDeclaration = findAncestor(location2, (node) => isFunctionBlock(node) || isArrowFunctionBody(node) || isBindingPattern(node) ? "quit" : isVariableDeclaration(node));
+        closestDeclaration = findAncestor(location, (node) => isFunctionBlock(node) || isArrowFunctionBody(node) || isBindingPattern(node) ? "quit" : isVariableDeclaration(node));
       }
       return closestDeclaration;
     }
@@ -145849,7 +145849,7 @@ ${newComment.split(`
       const completions = getStringLiteralCompletionEntries(sourceFile, contextToken, position, program, host, preferences);
       return completions && stringLiteralCompletionDetails(name, contextToken, completions, sourceFile, program.getTypeChecker(), cancellationToken);
     }
-    function stringLiteralCompletionDetails(name, location2, completion, sourceFile, checker, cancellationToken) {
+    function stringLiteralCompletionDetails(name, location, completion, sourceFile, checker, cancellationToken) {
       switch (completion.kind) {
         case 0: {
           const match = find(completion.paths, (p) => p.name === name);
@@ -145857,7 +145857,7 @@ ${newComment.split(`
         }
         case 1: {
           const match = find(completion.symbols, (s) => s.name === name);
-          return match && createCompletionDetailsForSymbol(match, match.name, checker, sourceFile, location2, cancellationToken);
+          return match && createCompletionDetailsForSymbol(match, match.name, checker, sourceFile, location, cancellationToken);
         }
         case 2:
           return find(completion.types, (t) => t.value === name) ? createCompletionDetails(name, "", "string", [textPart(name)]) : undefined;
@@ -146776,8 +146776,8 @@ ${newComment.split(`
     function getSearchesFromDirectImports(directImports, exportSymbol, exportKind, checker, isForRename) {
       const importSearches = [];
       const singleReferences = [];
-      function addSearch(location2, symbol) {
-        importSearches.push([location2, symbol]);
+      function addSearch(location, symbol) {
+        importSearches.push([location, symbol]);
       }
       if (directImports) {
         for (const decl of directImports) {
@@ -147653,12 +147653,12 @@ ${newComment.split(`
         for (const ref of references) {
           if (isReferencedFile(ref)) {
             const referencingFile = program.getSourceFileByPath(ref.file);
-            const location2 = getReferencedFileLocation(program, ref);
-            if (isReferenceFileLocation(location2)) {
+            const location = getReferencedFileLocation(program, ref);
+            if (isReferenceFileLocation(location)) {
               entries = append(entries, {
                 kind: 0,
                 fileName: referencingFile.fileName,
-                textSpan: createTextSpanFromRange(location2)
+                textSpan: createTextSpanFromRange(location)
               });
             }
           }
@@ -147905,13 +147905,13 @@ ${newComment.split(`
             this.importTracker = createImportTracker(this.sourceFiles, this.sourceFilesSet, this.checker, this.cancellationToken);
           return this.importTracker(exportSymbol, exportInfo, this.options.use === 2);
         }
-        createSearch(location2, symbol, comingFrom, searchOptions = {}) {
+        createSearch(location, symbol, comingFrom, searchOptions = {}) {
           const {
             text = stripQuotes(symbolName(getLocalSymbolForExportDefault(symbol) || getNonModuleSymbolOfMergedModuleSymbol(symbol) || symbol)),
             allSearchSymbols = [symbol]
           } = searchOptions;
           const escapedText = escapeLeadingUnderscores(text);
-          const parents = this.options.implementations && location2 ? getParentSymbolsOfPropertyAccess(location2, symbol, this.checker) : undefined;
+          const parents = this.options.implementations && location ? getParentSymbolsOfPropertyAccess(location, symbol, this.checker) : undefined;
           return { symbol, comingFrom, text, escapedText, parents, allSearchSymbols, includes: (sym) => contains(allSearchSymbols, sym) };
         }
         referenceAdder(searchSymbol) {
@@ -148014,8 +148014,8 @@ ${newComment.split(`
           getReferencesInSourceFile(sourceFile, search, state);
         }
       }
-      function getPropertySymbolOfDestructuringAssignment(location2, checker) {
-        return isArrayLiteralOrObjectLiteralDestructuringPattern(location2.parent.parent) ? checker.getPropertySymbolOfDestructuringAssignment(location2) : undefined;
+      function getPropertySymbolOfDestructuringAssignment(location, checker) {
+        return isArrayLiteralOrObjectLiteralDestructuringPattern(location.parent.parent) ? checker.getPropertySymbolOfDestructuringAssignment(location) : undefined;
       }
       function getSymbolScope(symbol) {
         const { declarations, flags, parent: parent2, valueDeclaration } = symbol;
@@ -148649,9 +148649,9 @@ ${newComment.split(`
           return checker.getPropertyOfType(checker.getTypeAtLocation(node.parent.parent), node.text);
         }
       }
-      function populateSearchSymbolSet(symbol, location2, checker, isForRename, providePrefixAndSuffixText, implementations) {
+      function populateSearchSymbolSet(symbol, location, checker, isForRename, providePrefixAndSuffixText, implementations) {
         const result = [];
-        forEachRelatedSymbol(symbol, location2, checker, isForRename, !(isForRename && providePrefixAndSuffixText), (sym, root, base) => {
+        forEachRelatedSymbol(symbol, location, checker, isForRename, !(isForRename && providePrefixAndSuffixText), (sym, root, base) => {
           if (base) {
             if (isStaticSymbol(symbol) !== isStaticSymbol(base)) {
               base = undefined;
@@ -148661,10 +148661,10 @@ ${newComment.split(`
         }, () => !implementations);
         return result;
       }
-      function forEachRelatedSymbol(symbol, location2, checker, isForRenamePopulateSearchSymbolSet, onlyIncludeBindingElementAtReferenceLocation, cbSymbol, allowBaseTypes) {
-        const containingObjectLiteralElement = getContainingObjectLiteralElement(location2);
+      function forEachRelatedSymbol(symbol, location, checker, isForRenamePopulateSearchSymbolSet, onlyIncludeBindingElementAtReferenceLocation, cbSymbol, allowBaseTypes) {
+        const containingObjectLiteralElement = getContainingObjectLiteralElement(location);
         if (containingObjectLiteralElement) {
-          const shorthandValueSymbol = checker.getShorthandAssignmentValueSymbol(location2.parent);
+          const shorthandValueSymbol = checker.getShorthandAssignmentValueSymbol(location.parent);
           if (shorthandValueSymbol && isForRenamePopulateSearchSymbolSet) {
             return cbSymbol(shorthandValueSymbol, undefined, undefined, 3);
           }
@@ -148672,7 +148672,7 @@ ${newComment.split(`
           const res2 = contextualType && firstDefined(getPropertySymbolsFromContextualType(containingObjectLiteralElement, checker, contextualType, true), (sym) => fromRoot(sym, 4));
           if (res2)
             return res2;
-          const propertySymbol = getPropertySymbolOfDestructuringAssignment(location2, checker);
+          const propertySymbol = getPropertySymbolOfDestructuringAssignment(location, checker);
           const res1 = propertySymbol && cbSymbol(propertySymbol, undefined, undefined, 4);
           if (res1)
             return res1;
@@ -148680,7 +148680,7 @@ ${newComment.split(`
           if (res22)
             return res22;
         }
-        const aliasedSymbol = getMergedAliasedSymbolOfNamespaceExportDeclaration(location2, symbol, checker);
+        const aliasedSymbol = getMergedAliasedSymbolOfNamespaceExportDeclaration(location, symbol, checker);
         if (aliasedSymbol) {
           const res2 = cbSymbol(aliasedSymbol, undefined, undefined, 1);
           if (res2)
@@ -148706,7 +148706,7 @@ ${newComment.split(`
         if (!isForRenamePopulateSearchSymbolSet) {
           let bindingElementPropertySymbol;
           if (onlyIncludeBindingElementAtReferenceLocation) {
-            bindingElementPropertySymbol = isObjectBindingElementWithoutPropertyName(location2.parent) ? getPropertySymbolFromBindingElement(checker, location2.parent) : undefined;
+            bindingElementPropertySymbol = isObjectBindingElementWithoutPropertyName(location.parent) ? getPropertySymbolFromBindingElement(checker, location.parent) : undefined;
           } else {
             bindingElementPropertySymbol = getPropertySymbolOfObjectBindingPatternWithoutPropertyName(symbol, checker);
           }
@@ -148802,8 +148802,8 @@ ${newComment.split(`
       function tryGetClassByExtendingIdentifier(node) {
         return tryGetClassExtendingExpressionWithTypeArguments(climbPastPropertyAccess(node).parent);
       }
-      function getParentSymbolsOfPropertyAccess(location2, symbol, checker) {
-        const propertyAccessExpression = isRightSideOfPropertyAccess(location2) ? location2.parent : undefined;
+      function getParentSymbolsOfPropertyAccess(location, symbol, checker) {
+        const propertyAccessExpression = isRightSideOfPropertyAccess(location) ? location.parent : undefined;
         const lhsType = propertyAccessExpression && checker.getTypeAtLocation(propertyAccessExpression.expression);
         const res = mapDefined(lhsType && (lhsType.isUnionOrIntersection() ? lhsType.types : lhsType.symbol === symbol.parent ? undefined : [lhsType]), (t) => t.symbol && t.symbol.flags & (32 | 64) ? t.symbol : undefined);
         return res.length === 0 ? undefined : res;
@@ -150542,7 +150542,7 @@ ${content}
       if (!focusLocations || !focusLocations.length) {
         classOrInterface = find(originalFile.statements, or(isClassLike, isInterfaceDeclaration));
       } else {
-        classOrInterface = forEach(focusLocations, (location2) => findAncestor(getTokenAtPosition(originalFile, location2.start), or(isClassLike, isInterfaceDeclaration)));
+        classOrInterface = forEach(focusLocations, (location) => findAncestor(getTokenAtPosition(originalFile, location.start), or(isClassLike, isInterfaceDeclaration)));
       }
       if (!classOrInterface) {
         return;
@@ -150562,8 +150562,8 @@ ${content}
         changeTracker.insertNodesAtEndOfFile(originalFile, changes, false);
         return;
       }
-      for (const location2 of focusLocations) {
-        const scope = findAncestor(getTokenAtPosition(originalFile, location2.start), (block) => or(isBlock, isSourceFile)(block) && some(block.statements, (origStmt) => changes.some((newStmt) => matchNode(newStmt, origStmt))));
+      for (const location of focusLocations) {
+        const scope = findAncestor(getTokenAtPosition(originalFile, location.start), (block) => or(isBlock, isSourceFile)(block) && some(block.statements, (origStmt) => changes.some((newStmt) => matchNode(newStmt, origStmt))));
         if (scope) {
           const start = scope.statements.find((stmt) => changes.some((node) => matchNode(node, stmt)));
           if (start) {
@@ -150575,8 +150575,8 @@ ${content}
         }
       }
       let scopeStatements = originalFile.statements;
-      for (const location2 of focusLocations) {
-        const block = findAncestor(getTokenAtPosition(originalFile, location2.start), isBlock);
+      for (const location of focusLocations) {
+        const block = findAncestor(getTokenAtPosition(originalFile, location.start), isBlock);
         if (block) {
           scopeStatements = block.statements;
           break;
@@ -152353,8 +152353,8 @@ ${content}
       getSymbolModifiers: () => getSymbolModifiers
     });
     var symbolDisplayNodeBuilderFlags = 8192 | 70221824 | 16384;
-    function getSymbolKind(typeChecker, symbol, location2) {
-      const result = getSymbolKindOfConstructorPropertyMethodAccessorFunctionOrVar(typeChecker, symbol, location2);
+    function getSymbolKind(typeChecker, symbol, location) {
+      const result = getSymbolKindOfConstructorPropertyMethodAccessorFunctionOrVar(typeChecker, symbol, location);
       if (result !== "") {
         return result;
       }
@@ -152378,9 +152378,9 @@ ${content}
         return "module";
       return result;
     }
-    function getSymbolKindOfConstructorPropertyMethodAccessorFunctionOrVar(typeChecker, symbol, location2) {
+    function getSymbolKindOfConstructorPropertyMethodAccessorFunctionOrVar(typeChecker, symbol, location) {
       const roots = typeChecker.getRootSymbols(symbol);
-      if (roots.length === 1 && first(roots).flags & 8192 && typeChecker.getTypeOfSymbolAtLocation(symbol, location2).getNonNullableType().getCallSignatures().length !== 0) {
+      if (roots.length === 1 && first(roots).flags & 8192 && typeChecker.getTypeOfSymbolAtLocation(symbol, location).getNonNullableType().getCallSignatures().length !== 0) {
         return "method";
       }
       if (typeChecker.isUndefinedSymbol(symbol)) {
@@ -152389,7 +152389,7 @@ ${content}
       if (typeChecker.isArgumentsSymbol(symbol)) {
         return "local var";
       }
-      if (location2.kind === 110 && isExpression(location2) || isThisInTypeQuery(location2)) {
+      if (location.kind === 110 && isExpression(location) || isThisInTypeQuery(location)) {
         return "parameter";
       }
       const flags = getCombinedLocalAndExportSymbolFlags(symbol);
@@ -152428,7 +152428,7 @@ ${content}
             }
           });
           if (!unionPropertyKind) {
-            const typeOfUnionProperty = typeChecker.getTypeOfSymbolAtLocation(symbol, location2);
+            const typeOfUnionProperty = typeChecker.getTypeOfSymbolAtLocation(symbol, location);
             if (typeOfUnionProperty.getCallSignatures().length) {
               return "method";
             }
@@ -152469,26 +152469,26 @@ ${content}
       }
       return modifiers.size > 0 ? arrayFrom(modifiers.values()).join(",") : "";
     }
-    function getSymbolDisplayPartsDocumentationAndSymbolKindWorker(typeChecker, symbol, sourceFile, enclosingDeclaration, location2, type, semanticMeaning, alias, maximumLength, verbosityLevel) {
+    function getSymbolDisplayPartsDocumentationAndSymbolKindWorker(typeChecker, symbol, sourceFile, enclosingDeclaration, location, type, semanticMeaning, alias, maximumLength, verbosityLevel) {
       var _a;
       const displayParts = [];
       let documentation = [];
       let tags = [];
       const symbolFlags = getCombinedLocalAndExportSymbolFlags(symbol);
-      let symbolKind = semanticMeaning & 1 ? getSymbolKindOfConstructorPropertyMethodAccessorFunctionOrVar(typeChecker, symbol, location2) : "";
+      let symbolKind = semanticMeaning & 1 ? getSymbolKindOfConstructorPropertyMethodAccessorFunctionOrVar(typeChecker, symbol, location) : "";
       let hasAddedSymbolInfo = false;
-      const isThisExpression = location2.kind === 110 && isInExpressionContext(location2) || isThisInTypeQuery(location2);
+      const isThisExpression = location.kind === 110 && isInExpressionContext(location) || isThisInTypeQuery(location);
       let documentationFromAlias;
       let tagsFromAlias;
       let hasMultipleSignatures = false;
       const typeWriterOut = { canIncreaseExpansionDepth: false, truncated: false };
       let symbolWasExpanded = false;
-      if (location2.kind === 110 && !isThisExpression) {
+      if (location.kind === 110 && !isThisExpression) {
         return { displayParts: [keywordPart(110)], documentation: [], symbolKind: "primitive type", tags: undefined };
       }
       if (symbolKind !== "" || symbolFlags & 32 || symbolFlags & 2097152) {
         if (symbolKind === "getter" || symbolKind === "setter") {
-          const declaration = find(symbol.declarations, (declaration2) => declaration2.name === location2 && declaration2.kind !== 212);
+          const declaration = find(symbol.declarations, (declaration2) => declaration2.name === location && declaration2.kind !== 212);
           if (declaration) {
             switch (declaration.kind) {
               case 178:
@@ -152508,20 +152508,20 @@ ${content}
           }
         }
         let signature;
-        type ?? (type = isThisExpression ? typeChecker.getTypeAtLocation(location2) : typeChecker.getTypeOfSymbolAtLocation(symbol, location2));
-        if (location2.parent && location2.parent.kind === 212) {
-          const right = location2.parent.name;
-          if (right === location2 || right && right.getFullWidth() === 0) {
-            location2 = location2.parent;
+        type ?? (type = isThisExpression ? typeChecker.getTypeAtLocation(location) : typeChecker.getTypeOfSymbolAtLocation(symbol, location));
+        if (location.parent && location.parent.kind === 212) {
+          const right = location.parent.name;
+          if (right === location || right && right.getFullWidth() === 0) {
+            location = location.parent;
           }
         }
         let callExpressionLike;
-        if (isCallOrNewExpression(location2)) {
-          callExpressionLike = location2;
-        } else if (isCallExpressionTarget(location2) || isNewExpressionTarget(location2)) {
-          callExpressionLike = location2.parent;
-        } else if (location2.parent && (isJsxOpeningLikeElement(location2.parent) || isTaggedTemplateExpression(location2.parent)) && isFunctionLike(symbol.valueDeclaration)) {
-          callExpressionLike = location2.parent;
+        if (isCallOrNewExpression(location)) {
+          callExpressionLike = location;
+        } else if (isCallExpressionTarget(location) || isNewExpressionTarget(location)) {
+          callExpressionLike = location.parent;
+        } else if (location.parent && (isJsxOpeningLikeElement(location.parent) || isTaggedTemplateExpression(location.parent)) && isFunctionLike(symbol.valueDeclaration)) {
+          callExpressionLike = location.parent;
         }
         if (callExpressionLike) {
           signature = typeChecker.getResolvedSignature(callExpressionLike);
@@ -152580,9 +152580,9 @@ ${content}
             hasAddedSymbolInfo = true;
             hasMultipleSignatures = allSignatures.length > 1;
           }
-        } else if (isNameOfFunctionDeclaration(location2) && !(symbolFlags & 98304) || location2.kind === 137 && location2.parent.kind === 177) {
-          const functionDeclaration = location2.parent;
-          const locationIsSymbolDeclaration = symbol.declarations && find(symbol.declarations, (declaration) => declaration === (location2.kind === 137 ? functionDeclaration.parent : functionDeclaration));
+        } else if (isNameOfFunctionDeclaration(location) && !(symbolFlags & 98304) || location.kind === 137 && location.parent.kind === 177) {
+          const functionDeclaration = location.parent;
+          const locationIsSymbolDeclaration = symbol.declarations && find(symbol.declarations, (declaration) => declaration === (location.kind === 137 ? functionDeclaration.parent : functionDeclaration));
           if (locationIsSymbolDeclaration) {
             const allSignatures = functionDeclaration.kind === 177 ? type.getNonNullableType().getConstructSignatures() : type.getNonNullableType().getCallSignatures();
             if (!typeChecker.isImplementationOfOverload(functionDeclaration)) {
@@ -152638,7 +152638,7 @@ ${content}
         displayParts.push(spacePart());
         displayParts.push(operatorPart(64));
         displayParts.push(spacePart());
-        addRange(displayParts, typeToDisplayParts(typeChecker, location2.parent && isConstTypeReference(location2.parent) ? typeChecker.getTypeAtLocation(location2.parent) : typeChecker.getDeclaredTypeOfSymbol(symbol), enclosingDeclaration, 8388608, maximumLength, verbosityLevel, typeWriterOut));
+        addRange(displayParts, typeToDisplayParts(typeChecker, location.parent && isConstTypeReference(location.parent) ? typeChecker.getTypeAtLocation(location.parent) : typeChecker.getDeclaredTypeOfSymbol(symbol), enclosingDeclaration, 8388608, maximumLength, verbosityLevel, typeWriterOut));
       }
       if (symbolFlags & 384) {
         prefixNextMeaning();
@@ -152820,7 +152820,7 @@ ${content}
             }
           }
         } else {
-          symbolKind = getSymbolKind(typeChecker, symbol, location2);
+          symbolKind = getSymbolKind(typeChecker, symbol, location);
         }
       }
       if (documentation.length === 0 && !hasMultipleSignatures) {
@@ -152844,7 +152844,7 @@ ${content}
           }
         }
       }
-      if (documentation.length === 0 && isIdentifier(location2) && symbol.valueDeclaration && isBindingElement(symbol.valueDeclaration)) {
+      if (documentation.length === 0 && isIdentifier(location) && symbol.valueDeclaration && isBindingElement(symbol.valueDeclaration)) {
         const declaration = symbol.valueDeclaration;
         const parent2 = declaration.parent;
         const name = declaration.propertyName || declaration.name;
@@ -152857,7 +152857,7 @@ ${content}
           }) || emptyArray;
         }
       }
-      if (tags.length === 0 && !hasMultipleSignatures && !isInJSDoc(location2)) {
+      if (tags.length === 0 && !hasMultipleSignatures && !isInJSDoc(location)) {
         tags = symbol.getContextualJsDocTags(enclosingDeclaration, typeChecker);
       }
       if (documentation.length === 0 && documentationFromAlias) {
@@ -152898,7 +152898,7 @@ ${content}
         if (verbosityLevel === undefined) {
           return false;
         }
-        const type2 = symbol2.flags & (32 | 64) ? typeChecker.getDeclaredTypeOfSymbol(symbol2) : typeChecker.getTypeOfSymbolAtLocation(symbol2, location2);
+        const type2 = symbol2.flags & (32 | 64) ? typeChecker.getDeclaredTypeOfSymbol(symbol2) : typeChecker.getTypeOfSymbolAtLocation(symbol2, location);
         if (!type2 || typeChecker.isLibType(type2)) {
           return false;
         }
@@ -153030,8 +153030,8 @@ ${content}
         addRange(displayParts, typeParameterParts);
       }
     }
-    function getSymbolDisplayPartsDocumentationAndSymbolKind(typeChecker, symbol, sourceFile, enclosingDeclaration, location2, semanticMeaning = getMeaningFromLocation(location2), alias, maximumLength, verbosityLevel) {
-      return getSymbolDisplayPartsDocumentationAndSymbolKindWorker(typeChecker, symbol, sourceFile, enclosingDeclaration, location2, undefined, semanticMeaning, alias, maximumLength, verbosityLevel);
+    function getSymbolDisplayPartsDocumentationAndSymbolKind(typeChecker, symbol, sourceFile, enclosingDeclaration, location, semanticMeaning = getMeaningFromLocation(location), alias, maximumLength, verbosityLevel) {
+      return getSymbolDisplayPartsDocumentationAndSymbolKindWorker(typeChecker, symbol, sourceFile, enclosingDeclaration, location, undefined, semanticMeaning, alias, maximumLength, verbosityLevel);
     }
     function isLocalVariableOrFunction(symbol) {
       if (symbol.parent) {
@@ -156719,10 +156719,10 @@ ${options.prefix}` : `
             formatContext
           };
           let offset = 0;
-          pasteLocations.forEach((location2, i) => {
-            const oldTextLength = location2.end - location2.pos;
+          pasteLocations.forEach((location, i) => {
+            const oldTextLength = location.end - location.pos;
             const textToBePasted = actualPastedText ?? pastedText[i];
-            const startPos = location2.pos + offset;
+            const startPos = location.pos + offset;
             const endPos = startPos + textToBePasted.length;
             const range = { pos: startPos, end: endPos };
             offset += textToBePasted.length - oldTextLength;
@@ -160374,9 +160374,9 @@ ${options.prefix}` : `
       }
       positionToLineOffset(position) {
         failIfInvalidPosition(position);
-        const location2 = this.textStorage.positionToLineOffset(position);
-        failIfInvalidLocation(location2);
-        return location2;
+        const location = this.textStorage.positionToLineOffset(position);
+        failIfInvalidLocation(location);
+        return location;
       }
       isJavaScript() {
         return this.scriptKind === 1 || this.scriptKind === 2;
@@ -160392,11 +160392,11 @@ ${options.prefix}` : `
       Debug.assert(typeof position === "number", `Expected position ${position} to be a number.`);
       Debug.assert(position >= 0, `Expected position to be non-negative.`);
     }
-    function failIfInvalidLocation(location2) {
-      Debug.assert(typeof location2.line === "number", `Expected line ${location2.line} to be a number.`);
-      Debug.assert(typeof location2.offset === "number", `Expected offset ${location2.offset} to be a number.`);
-      Debug.assert(location2.line > 0, `Expected line to be non-${location2.line === 0 ? "zero" : "negative"}`);
-      Debug.assert(location2.offset > 0, `Expected offset to be non-${location2.offset === 0 ? "zero" : "negative"}`);
+    function failIfInvalidLocation(location) {
+      Debug.assert(typeof location.line === "number", `Expected line ${location.line} to be a number.`);
+      Debug.assert(typeof location.offset === "number", `Expected offset ${location.offset} to be a number.`);
+      Debug.assert(location.line > 0, `Expected line to be non-${location.line === 0 ? "zero" : "negative"}`);
+      Debug.assert(location.offset > 0, `Expected offset to be non-${location.offset === 0 ? "zero" : "negative"}`);
     }
     function scriptInfoIsContainedByBackgroundProject(info) {
       return some(info.containingProjects, isBackgroundProject);
@@ -164581,9 +164581,9 @@ Dynamic files must always be opened with service's current directory or service 
       openClientFile(fileName, fileContent, scriptKind, projectRootPath) {
         return this.openClientFileWithNormalizedPath(toNormalizedPath(fileName), fileContent, scriptKind, false, projectRootPath ? toNormalizedPath(projectRootPath) : undefined);
       }
-      getOriginalLocationEnsuringConfiguredProject(project, location2) {
-        const isSourceOfProjectReferenceRedirect = project.isSourceOfProjectReferenceRedirect(location2.fileName);
-        const originalLocation = isSourceOfProjectReferenceRedirect ? location2 : project.getSourceMapper().tryGetSourcePosition(location2);
+      getOriginalLocationEnsuringConfiguredProject(project, location) {
+        const isSourceOfProjectReferenceRedirect = project.isSourceOfProjectReferenceRedirect(location.fileName);
+        const originalLocation = isSourceOfProjectReferenceRedirect ? location : project.getSourceMapper().tryGetSourcePosition(location);
         if (!originalLocation)
           return;
         const { fileName } = originalLocation;
@@ -164598,13 +164598,13 @@ Dynamic files must always be opened with service's current directory or service 
         if (!configuredProject) {
           if (project.getCompilerOptions().disableReferencedProjectLoad) {
             if (isSourceOfProjectReferenceRedirect) {
-              return location2;
+              return location;
             }
-            return (scriptInfo == null ? undefined : scriptInfo.containingProjects.length) ? originalLocation : location2;
+            return (scriptInfo == null ? undefined : scriptInfo.containingProjects.length) ? originalLocation : location;
           }
-          configuredProject = this.createConfiguredProject(configFileName, `Creating project for original file: ${originalFileInfo.fileName}${location2 !== originalLocation ? " for location: " + location2.fileName : ""}`);
+          configuredProject = this.createConfiguredProject(configFileName, `Creating project for original file: ${originalFileInfo.fileName}${location !== originalLocation ? " for location: " + location.fileName : ""}`);
         }
-        const result = this.tryFindDefaultConfiguredProjectForOpenScriptInfoOrClosedFileInfo(originalFileInfo, 5, updateProjectFoundUsingFind(configuredProject, 4), (project2) => `Creating project referenced in solution ${project2.projectName} to find possible configured project for original file: ${originalFileInfo.fileName}${location2 !== originalLocation ? " for location: " + location2.fileName : ""}`);
+        const result = this.tryFindDefaultConfiguredProjectForOpenScriptInfoOrClosedFileInfo(originalFileInfo, 5, updateProjectFoundUsingFind(configuredProject, 4), (project2) => `Creating project referenced in solution ${project2.projectName} to find possible configured project for original file: ${originalFileInfo.fileName}${location !== originalLocation ? " for location: " + location.fileName : ""}`);
         if (!result.defaultProject)
           return;
         if (result.defaultProject === project)
@@ -165905,8 +165905,8 @@ ${json}${newLine}`;
       const queue = createQueue();
       queue.enqueue({ project: defaultProject, location: initialLocation });
       forEachProjectInProjects(projects, initialLocation.fileName, (project, path) => {
-        const location2 = { fileName: path, pos: initialLocation.pos };
-        queue.enqueue({ project, location: location2 });
+        const location = { fileName: path, pos: initialLocation.pos };
+        queue.enqueue({ project, location });
       });
       const projectService = defaultProject.projectService;
       const cancellationToken = defaultProject.getCancellationToken();
@@ -165918,16 +165918,16 @@ ${json}${newLine}`;
           while (!queue.isEmpty()) {
             if (cancellationToken.isCancellationRequested())
               break onCancellation;
-            const { project, location: location2 } = queue.dequeue();
+            const { project, location } = queue.dequeue();
             if (resultsMap.has(project))
               continue;
-            if (isLocationProjectReferenceRedirect(project, location2))
+            if (isLocationProjectReferenceRedirect(project, location))
               continue;
             updateProjectIfDirty(project);
-            if (!project.containsFile(toNormalizedPath(location2.fileName))) {
+            if (!project.containsFile(toNormalizedPath(location.fileName))) {
               continue;
             }
-            const projectResults = searchPosition(project, location2);
+            const projectResults = searchPosition(project, location);
             resultsMap.set(project, projectResults ?? emptyArray2);
             searchedProjectKeys.add(getProjectKey(project));
           }
@@ -165938,9 +165938,9 @@ ${json}${newLine}`;
                 return;
               if (resultsMap.has(project))
                 return;
-              const location2 = mapDefinitionInProject2(defaultDefinition, project, getGeneratedDefinition, getSourceDefinition);
-              if (location2) {
-                queue.enqueue({ project, location: location2 });
+              const location = mapDefinitionInProject2(defaultDefinition, project, getGeneratedDefinition, getSourceDefinition);
+              if (location) {
+                queue.enqueue({ project, location });
               }
             });
           }
@@ -165949,8 +165949,8 @@ ${json}${newLine}`;
         return firstIterator(resultsMap.values());
       }
       return resultsMap;
-      function searchPosition(project, location2) {
-        const projectResults = getResultsForPosition(project, location2);
+      function searchPosition(project, location) {
+        const projectResults = getResultsForPosition(project, location);
         if (!projectResults || !forPositionInResult)
           return projectResults;
         for (const result of projectResults) {
@@ -165994,14 +165994,14 @@ ${json}${newLine}`;
       const sourceDefinition = getSourceDefinition();
       return sourceDefinition && project.containsFile(toNormalizedPath(sourceDefinition.fileName)) ? sourceDefinition : undefined;
     }
-    function isLocationProjectReferenceRedirect(project, location2) {
-      if (!location2)
+    function isLocationProjectReferenceRedirect(project, location) {
+      if (!location)
         return false;
       const program = project.getLanguageService().getProgram();
       if (!program)
         return false;
-      const sourceFile = program.getSourceFile(location2.fileName);
-      return !!sourceFile && sourceFile.resolvedPath !== sourceFile.path && sourceFile.resolvedPath !== project.toPath(location2.fileName);
+      const sourceFile = program.getSourceFile(location.fileName);
+      return !!sourceFile && sourceFile.resolvedPath !== sourceFile.path && sourceFile.resolvedPath !== project.toPath(location.fileName);
     }
     function getProjectKey(project) {
       return isConfiguredProject(project) ? project.canonicalConfigFilePath : project.getProjectName();
@@ -166009,8 +166009,8 @@ ${json}${newLine}`;
     function documentSpanLocation({ fileName, textSpan }) {
       return { fileName, pos: textSpan.start };
     }
-    function getMappedLocationForProject(location2, project) {
-      return getMappedLocation(location2, project.getSourceMapper(), (p) => project.projectService.fileExists(p));
+    function getMappedLocationForProject(location, project) {
+      return getMappedLocation(location, project.getSourceMapper(), (p) => project.projectService.fileExists(p));
     }
     function getMappedDocumentSpanForProject(documentSpan, project) {
       return getMappedDocumentSpan(documentSpan, project.getSourceMapper(), (p) => project.projectService.fileExists(p));
@@ -168192,8 +168192,8 @@ Additional information: BADCLIENT: Bad error code, ${badCode} not found in range
         const { locations } = args;
         const { file, languageService } = this.getFileAndLanguageServiceForSyntacticOperation(args);
         const scriptInfo = Debug.checkDefined(this.projectService.getScriptInfo(file));
-        return map(locations, (location2) => {
-          const pos = this.getPosition(location2, scriptInfo);
+        return map(locations, (location) => {
+          const pos = this.getPosition(location, scriptInfo);
           const selectionRange = languageService.getSmartSelectionRange(file, pos);
           return simplifiedResult ? this.mapSelectionRange(selectionRange, scriptInfo) : selectionRange;
         });
@@ -169712,8 +169712,8 @@ async function compilePages(rootDir) {
   const dist = path.join(rootDir, "dist");
   if (!fs.existsSync(dist))
     fs.mkdirSync(dist, { recursive: true });
-  const scaffoldedRuntime = path.join(rootDir, "lib", "advanx", "runtime.ts");
-  const runtimeImport = fs.existsSync(scaffoldedRuntime) ? "../lib/advanx/runtime.ts" : "../../../packages/core/src/runtime.ts";
+  const scaffoldedRuntime = path.join(rootDir, "src", "lib", "advanx", "runtime.ts");
+  const runtimeImport = fs.existsSync(scaffoldedRuntime) ? "../src/lib/advanx/runtime.ts" : "../../../packages/core/src/runtime.ts";
   const imports = pages.map((p, i) => `import * as p${i} from "../src/pages/${p.name}/logic.ts";`).join(`
 `);
   const routesEntries = pages.map((p, i) => `  ${JSON.stringify(p.route)}: { view: ${JSON.stringify(p.view)}, style: ${JSON.stringify(p.style)}, logic: p${i} },`).join(`
@@ -169933,15 +169933,22 @@ An AdvanxJS project \u2014 built on the Agent-Native (AX) framework.
 
 \`\`\`bash
 bun install
-advanx build tests/counter
-open tests/counter/dist/index.html
+advanx build src/components/counter
+open src/components/counter/dist/index.html
+\`\`\`
+
+## Pages (file-system SPA)
+
+\`\`\`bash
+advanx build      # bundles every route under src/pages/
+advanx export     # pre-renders each route to static, SEO-ready HTML
 \`\`\`
 
 ## Add a component
 
-1. Create \`tests/<name>/{logic.ts,view.html,style.css}\`.
-2. Run \`advanx build tests/<name>\`.
-3. Inspect the contract: \`advanx explain tests/<name>\`.
+1. Create \`src/components/<name>/{logic.ts,view.html,style.css}\`.
+2. Run \`advanx build src/components/<name>\`.
+3. Inspect the contract: \`advanx explain src/components/<name>\`.
 
 See \`CONSTITUTION.md\` for the eight laws every component must follow.
 `;
@@ -170176,7 +170183,7 @@ export function increment() {
 
     <ul class="next-steps">
       <li>Edit <code>src/components/counter/view.html</code> to change the UI.</li>
-      <li>Run <code>advanxjs explain src/components/counter</code> to inspect the contract.</li>
+      <li>Run <code>advanx explain src/components/counter</code> to inspect the contract.</li>
       <li>Read <code>CONSTITUTION.md</code> for the eight laws every component follows.</li>
     </ul>
   </main>
@@ -170184,6 +170191,45 @@ export function increment() {
   <script src="./src/components/counter/dist/bundle.js"></script>
 </body>
 </html>
+`;
+
+// src/templates/pages.ts
+var PAGE_INDEX_LOGIC = `import { signal } from "../../lib/advanx/runtime.ts";
+
+export const siteName = signal("AdvanxJS");
+export const clicks = signal(0);
+
+export function bump() {
+  clicks.value++;
+}
+`, PAGE_INDEX_VIEW = `<section class="page">
+  <h1>Welcome to {{ siteName }}</h1>
+  <p>Clicks so far: {{ clicks }}</p>
+  <button ax-on:click="bump">Click me</button>
+  <nav>
+    <a ax-link="/about">Go to About \u2192</a>
+  </nav>
+</section>
+`, PAGE_INDEX_STYLE = `.page { font-family: system-ui, sans-serif; max-width: 640px; margin: 4rem auto; padding: 2rem; }
+.page h1 { color: #5b21b6; }
+.page nav a { color: #2563eb; text-decoration: none; }
+.page nav a:hover { text-decoration: underline; }
+.page button { padding: 0.5rem 1rem; cursor: pointer; }
+`, PAGE_ABOUT_LOGIC = `import { signal } from "../../lib/advanx/runtime.ts";
+
+export const siteName = signal("AdvanxJS");
+export const blurb = signal("A file-system-based, agent-native SPA.");
+`, PAGE_ABOUT_VIEW = `<section class="page">
+  <h1>About {{ siteName }}</h1>
+  <p>{{ blurb }}</p>
+  <nav>
+    <a ax-link="/">\u2190 Back home</a>
+  </nav>
+</section>
+`, PAGE_ABOUT_STYLE = `.page { font-family: system-ui, sans-serif; max-width: 640px; margin: 4rem auto; padding: 2rem; }
+.page h1 { color: #5b21b6; }
+.page nav a { color: #2563eb; text-decoration: none; }
+.page nav a:hover { text-decoration: underline; }
 `;
 
 // src/templates/core/runtime.ts
@@ -170197,6 +170243,7 @@ import {
 } from "./directives";
 
 export { signal, computed, effect };
+export { initRouter } from "./router";
 
 export function mount(root: HTMLElement, logic: any) {
   processLoops(root, logic);
@@ -170411,6 +170458,41 @@ function splitArgs(s: string): string[] {
 `;
 var init_directives = () => {};
 
+// src/templates/core/router.ts
+var router_default = `import { mount } from "./runtime";
+
+type Route = { view: string; style: string; logic: any };
+
+export function initRouter(routes: Record<string, Route>) {
+  const host = document.getElementById("router-view");
+  if (!host) return;
+
+  const styleTag = document.createElement("style");
+  styleTag.innerHTML = Object.values(routes).map(r => r.style).join("\\n");
+  document.head.appendChild(styleTag);
+
+  const render = (path: string) => {
+    const r = routes[path] || routes["/"];
+    if (!r) return;
+    host.innerHTML = r.view;
+    mount(host, r.logic);
+  };
+
+  document.addEventListener("click", (e) => {
+    const a = (e.target as Element).closest?.("a[ax-link]") as HTMLAnchorElement | null;
+    if (!a) return;
+    e.preventDefault();
+    const path = a.getAttribute("ax-link")!;
+    if (location.pathname !== path) history.pushState({}, "", path);
+    render(path);
+  });
+
+  window.addEventListener("popstate", () => render(location.pathname));
+  render(location.pathname);
+}
+`;
+var init_router = () => {};
+
 // src/commands/create.ts
 var exports_create = {};
 __export(exports_create, {
@@ -170447,6 +170529,13 @@ async function run2(args) {
   write("src/components/counter/style.css", COUNTER_STYLE);
   write("src/lib/advanx/runtime.ts", runtime_default);
   write("src/lib/advanx/directives.ts", directives_default);
+  write("src/lib/advanx/router.ts", router_default);
+  write("src/pages/index/logic.ts", PAGE_INDEX_LOGIC);
+  write("src/pages/index/view.html", PAGE_INDEX_VIEW);
+  write("src/pages/index/style.css", PAGE_INDEX_STYLE);
+  write("src/pages/about/logic.ts", PAGE_ABOUT_LOGIC);
+  write("src/pages/about/view.html", PAGE_ABOUT_VIEW);
+  write("src/pages/about/style.css", PAGE_ABOUT_STYLE);
   console.log(`\u2714 Scaffolded AdvanxJS project at ${root}`);
   for (const rel of written)
     console.log(`  + ${rel}`);
@@ -170454,12 +170543,19 @@ async function run2(args) {
   console.log("Next steps:");
   console.log(`  cd ${name}`);
   console.log("  bun install");
+  console.log("");
+  console.log("  # Component mode \u2014 build a single component:");
   console.log("  advanx build src/components/counter");
   console.log("  advanx explain src/components/counter");
+  console.log("");
+  console.log("  # Pages mode \u2014 build the file-system SPA + static export:");
+  console.log("  advanx build");
+  console.log("  advanx export");
 }
 var init_create = __esm(() => {
   init_runtime();
   init_directives();
+  init_router();
 });
 
 // ../registry/src/sources/local.ts
@@ -170529,9 +170625,15 @@ var init_local = __esm(() => {
 });
 
 // ../registry/src/sources/remote.ts
+function registryBase() {
+  return (process.env.ADVANX_REGISTRY_BASE ?? DEFAULT_REGISTRY_BASE).replace(/\/+$/, "");
+}
+function registryUrl(...segments) {
+  return [registryBase(), ...segments].join("/");
+}
 async function fetchRegistryIndex() {
   try {
-    const response = await fetch(REGISTRY_INDEX);
+    const response = await fetch(registryUrl("registry.json"));
     if (!response.ok) {
       return null;
     }
@@ -170555,13 +170657,13 @@ async function componentExistsRemote(name) {
   return index.components.some((c) => c.name === name);
 }
 async function resolveComponentRemote(name) {
-  const componentBase = `${REGISTRY_BASE}/components/${name}`;
+  const file = (f) => registryUrl("components", name, f);
   try {
     const [manifestRes, logicRes, viewRes, styleRes] = await Promise.all([
-      fetch(`${componentBase}/component.json`),
-      fetch(`${componentBase}/logic.ts`),
-      fetch(`${componentBase}/view.html`),
-      fetch(`${componentBase}/style.css`)
+      fetch(file("component.json")),
+      fetch(file("logic.ts")),
+      fetch(file("view.html")),
+      fetch(file("style.css"))
     ]);
     if (!manifestRes.ok || !logicRes.ok || !viewRes.ok || !styleRes.ok) {
       return null;
@@ -170584,10 +170686,7 @@ async function resolveComponentRemote(name) {
     return null;
   }
 }
-var REGISTRY_BASE = "https://raw.githubusercontent.com/rahuldodwe/advanxjs/main/packages/registry", REGISTRY_INDEX;
-var init_remote = __esm(() => {
-  REGISTRY_INDEX = `${REGISTRY_BASE}/registry.json`;
-});
+var DEFAULT_REGISTRY_BASE = "https://raw.githubusercontent.com/rahuldodwe/advanxjs/main/packages/registry";
 
 // ../registry/src/index.ts
 async function listComponentsWithFallback() {
@@ -170626,9 +170725,7 @@ async function componentExistsWithFallback(name) {
 }
 var init_src2 = __esm(() => {
   init_local();
-  init_remote();
   init_local();
-  init_remote();
 });
 
 // src/commands/explain.ts
@@ -171028,7 +171125,7 @@ __export(exports_PropertySymbol, {
   x: () => x,
   windowResizeListener: () => windowResizeListener,
   windowInternalId: () => windowInternalId,
-  window: () => window2,
+  window: () => window,
   width: () => width,
   webSocket: () => webSocket,
   w: () => w,
@@ -171243,7 +171340,7 @@ __export(exports_PropertySymbol, {
   m13: () => m13,
   m12: () => m12,
   m11: () => m11,
-  location: () => location2,
+  location: () => location,
   localStorage: () => localStorage,
   localName: () => localName,
   loading: () => loading,
@@ -171280,7 +171377,7 @@ __export(exports_PropertySymbol, {
   id: () => id,
   href: () => href,
   host: () => host,
-  history: () => history2,
+  history: () => history,
   height: () => height,
   headers: () => headers,
   gradientUnits: () => gradientUnits,
@@ -171430,7 +171527,7 @@ __export(exports_PropertySymbol, {
   aborted: () => aborted,
   abort: () => abort
 });
-var abort, activeElement, asyncTaskManager, bodyBuffer, buffer, cachedResponse, callbacks, checked, childNodes, children, classList, connectedToNode, disconnectedFromNode, connectedToDocument, disconnectedFromDocument, contentLength, contentType, cssText, currentScript, currentTarget, data, defaultView, destroy, dirtyness, end, entries, evaluateCSS, evaluateScript, exceptionObserver, formNode, internalId, height, immediatePropagationStopped, indeterminate, isFirstWrite, isFirstWriteAfterOpen, isInPassiveEventListener, isValue, listenerOptions, listeners, itemsByName, nextActiveElement, observeMutations, mutationListeners, ownerDocument, ownerElement, propagationStopped, readyStateManager, referrer, registry, relList, resetSelection, rootNode, selectNode, selectedness, selection, setupVMContext, shadowRoot, start, style, target, textAreaNode, unobserveMutations, reportMutation, updateSelectedness, url, value, width, window2, windowResizeListener, mutationObservers, openerFrame, openerWindow, pointerCaptures, popup, isConnected, parentNode, nodeType, tagName, prefix, scrollHeight, scrollWidth, scrollTop, scrollLeft, attributes, attributesProxy, namespaceURI, accessKey, accessKeyLabel, offsetHeight, offsetWidth, offsetLeft, offsetTop, clientHeight, clientWidth, clientLeft, clientTop, name, specified, adoptedStyleSheets, implementation, readyState, publicId, systemId, validationMessage, validity, returnValue, elements, length, complete, naturalHeight, naturalWidth, loading, x, y, defaultChecked, files, sheet, volume, paused, currentTime, playbackRate, defaultPlaybackRate, muted, defaultMuted, preservesPitch, buffered, duration, error, ended, networkState, textTracks, seeking, seekable, played, options, content, mode, host, setURL, localName, classRegistry, nodeStream, location2, history2, navigator, screen, sessionStorage, localStorage, sandbox, cloneNode, appendChild, removeChild, insertBefore, replaceChild, tracks, constraints, capabilities, settings, clone, removeNamedItem, items, selectedOptions, styleNode, updateSheet, clearCache, onSetAttribute, onRemoveAttribute, nodeArray, elementArray, cache, affectsCache, forms, affectsComputedStyleCache, query, computedStyle, getFormControlItems, getFormControlNamedItem, dataset, getNamespaceItemKey, getNamedItemKey, itemsByNamespaceURI, proxy, setNamedItem, getTokenList, attributeName, selectedIndex, self, parent, top, areas, defaultValue, elementIdMap, clonable, delegatesFocus, serializable, slotAssignment, assignedNodes, assignedToSlot, cells, rows, headers, tBodies, track, controlsList, mediaKeys, remote, sinkId, srcObject, cues, activeCues, kind, label, language, id, illegalConstructor, state, canvas, popoverTargetElement, composed, bubbles, cancelable, defaultPrevented, eventPhase, timeStamp, type, detail, globalObject, destroyed, aborted, browserFrames, windowInternalId, getItemList, requiredExtensions, systemLanguage, transform, baseVal, animVal, pathLength, unitType, viewBox, markerUnits, markerWidth, markerHeight, values, orientType, orientAngle, refX, refY, readOnly, preserveAspectRatio, animatedPoints, points, rx, ry, cx, cy, r, clipPathUnits, maskUnits, maskContentUnits, filterUnits, primitiveUnits, href, x1, y1, x2, y2, gradientUnits, gradientTransform, spreadMethod, patternUnits, patternContentUnits, patternTransform, fx, fy, offset, disabled, textLength, lengthAdjust, getAttribute, setAttribute, z, w, toArray, fromString, fromArray, angle, m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44, setMatrixValue, translateSelf, rotateSelf, rotateAxisAngleSelf, scaleSelf, scale3dSelf, scaleNonUniformSelf, skewXSelf, skewYSelf, multiplySelf, matrix, domMatrix, getDOMMatrix, setDOMMatrix, attributeValue, startOffset, method, spacing, in1, in2, result, bias, divisor, edgeMode, kernelMatrix, kernelUnitLengthX, kernelUnitLengthY, orderX, orderY, preserveAlpha, targetX, targetY, diffuseConstant, surfaceScale, scale, xChannelSelector, yChannelSelector, azimuth, elevation, dx, dy, stdDeviationX, stdDeviationY, tableValues, slope, intercept, amplitude, exponent, crossOrigin, operator, radiusX, radiusY, specularConstant, specularExponent, pointsAtX, pointsAtY, pointsAtZ, limitingConeAngle, baseFrequencyX, baseFrequencyY, numOctaves, seed, stitchTiles, rotateFromVectorSelf, flipXSelf, flipYSelf, invertSelf, getLength, currentScale, rotate, bindMethods, xmlProcessingInstruction, root, filterNode, customElementReactionStack, dispatching, modules, preloads, body, redirect, referrerPolicy, signal, bodyUsed, credentials, blocking, moduleImportMap, dispatchError, supports, reason, propertyEventListeners, cssRules, parentRule, parentStyleSheet, conditionText, keyText, media, styleMap, selectorText, cssParser, cssRule, rulePrefix, virtualServerFile, frames, disableEvaluation, validateJavaScriptExecutionEnvironment, currentNode, openWebSockets, webSocket, moduleCache;
+var abort, activeElement, asyncTaskManager, bodyBuffer, buffer, cachedResponse, callbacks, checked, childNodes, children, classList, connectedToNode, disconnectedFromNode, connectedToDocument, disconnectedFromDocument, contentLength, contentType, cssText, currentScript, currentTarget, data, defaultView, destroy, dirtyness, end, entries, evaluateCSS, evaluateScript, exceptionObserver, formNode, internalId, height, immediatePropagationStopped, indeterminate, isFirstWrite, isFirstWriteAfterOpen, isInPassiveEventListener, isValue, listenerOptions, listeners, itemsByName, nextActiveElement, observeMutations, mutationListeners, ownerDocument, ownerElement, propagationStopped, readyStateManager, referrer, registry, relList, resetSelection, rootNode, selectNode, selectedness, selection, setupVMContext, shadowRoot, start, style, target, textAreaNode, unobserveMutations, reportMutation, updateSelectedness, url, value, width, window, windowResizeListener, mutationObservers, openerFrame, openerWindow, pointerCaptures, popup, isConnected, parentNode, nodeType, tagName, prefix, scrollHeight, scrollWidth, scrollTop, scrollLeft, attributes, attributesProxy, namespaceURI, accessKey, accessKeyLabel, offsetHeight, offsetWidth, offsetLeft, offsetTop, clientHeight, clientWidth, clientLeft, clientTop, name, specified, adoptedStyleSheets, implementation, readyState, publicId, systemId, validationMessage, validity, returnValue, elements, length, complete, naturalHeight, naturalWidth, loading, x, y, defaultChecked, files, sheet, volume, paused, currentTime, playbackRate, defaultPlaybackRate, muted, defaultMuted, preservesPitch, buffered, duration, error, ended, networkState, textTracks, seeking, seekable, played, options, content, mode, host, setURL, localName, classRegistry, nodeStream, location, history, navigator, screen, sessionStorage, localStorage, sandbox, cloneNode, appendChild, removeChild, insertBefore, replaceChild, tracks, constraints, capabilities, settings, clone, removeNamedItem, items, selectedOptions, styleNode, updateSheet, clearCache, onSetAttribute, onRemoveAttribute, nodeArray, elementArray, cache, affectsCache, forms, affectsComputedStyleCache, query, computedStyle, getFormControlItems, getFormControlNamedItem, dataset, getNamespaceItemKey, getNamedItemKey, itemsByNamespaceURI, proxy, setNamedItem, getTokenList, attributeName, selectedIndex, self, parent, top, areas, defaultValue, elementIdMap, clonable, delegatesFocus, serializable, slotAssignment, assignedNodes, assignedToSlot, cells, rows, headers, tBodies, track, controlsList, mediaKeys, remote, sinkId, srcObject, cues, activeCues, kind, label, language, id, illegalConstructor, state, canvas, popoverTargetElement, composed, bubbles, cancelable, defaultPrevented, eventPhase, timeStamp, type, detail, globalObject, destroyed, aborted, browserFrames, windowInternalId, getItemList, requiredExtensions, systemLanguage, transform, baseVal, animVal, pathLength, unitType, viewBox, markerUnits, markerWidth, markerHeight, values, orientType, orientAngle, refX, refY, readOnly, preserveAspectRatio, animatedPoints, points, rx, ry, cx, cy, r, clipPathUnits, maskUnits, maskContentUnits, filterUnits, primitiveUnits, href, x1, y1, x2, y2, gradientUnits, gradientTransform, spreadMethod, patternUnits, patternContentUnits, patternTransform, fx, fy, offset, disabled, textLength, lengthAdjust, getAttribute, setAttribute, z, w, toArray, fromString, fromArray, angle, m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44, setMatrixValue, translateSelf, rotateSelf, rotateAxisAngleSelf, scaleSelf, scale3dSelf, scaleNonUniformSelf, skewXSelf, skewYSelf, multiplySelf, matrix, domMatrix, getDOMMatrix, setDOMMatrix, attributeValue, startOffset, method, spacing, in1, in2, result, bias, divisor, edgeMode, kernelMatrix, kernelUnitLengthX, kernelUnitLengthY, orderX, orderY, preserveAlpha, targetX, targetY, diffuseConstant, surfaceScale, scale, xChannelSelector, yChannelSelector, azimuth, elevation, dx, dy, stdDeviationX, stdDeviationY, tableValues, slope, intercept, amplitude, exponent, crossOrigin, operator, radiusX, radiusY, specularConstant, specularExponent, pointsAtX, pointsAtY, pointsAtZ, limitingConeAngle, baseFrequencyX, baseFrequencyY, numOctaves, seed, stitchTiles, rotateFromVectorSelf, flipXSelf, flipYSelf, invertSelf, getLength, currentScale, rotate, bindMethods, xmlProcessingInstruction, root, filterNode, customElementReactionStack, dispatching, modules, preloads, body, redirect, referrerPolicy, signal, bodyUsed, credentials, blocking, moduleImportMap, dispatchError, supports, reason, propertyEventListeners, cssRules, parentRule, parentStyleSheet, conditionText, keyText, media, styleMap, selectorText, cssParser, cssRule, rulePrefix, virtualServerFile, frames, disableEvaluation, validateJavaScriptExecutionEnvironment, currentNode, openWebSockets, webSocket, moduleCache;
 var init_PropertySymbol = __esm(() => {
   abort = Symbol("abort");
   activeElement = Symbol("activeElement");
@@ -171500,7 +171597,7 @@ var init_PropertySymbol = __esm(() => {
   url = Symbol("url");
   value = Symbol("value");
   width = Symbol("width");
-  window2 = Symbol("window");
+  window = Symbol("window");
   windowResizeListener = Symbol("windowResizeListener");
   mutationObservers = Symbol("mutationObservers");
   openerFrame = Symbol("openerFrame");
@@ -171575,8 +171672,8 @@ var init_PropertySymbol = __esm(() => {
   localName = Symbol("localName");
   classRegistry = Symbol("classRegistry");
   nodeStream = Symbol("nodeStream");
-  location2 = Symbol("location");
-  history2 = Symbol("history");
+  location = Symbol("location");
+  history = Symbol("history");
   navigator = Symbol("navigator");
   screen = Symbol("screen");
   sessionStorage = Symbol("sessionStorage");
@@ -172044,7 +172141,7 @@ var init_Headers = __esm(() => {
       return !!this[entries][name2.toLowerCase()];
     }
     forEach(callback, thisArg) {
-      const thisArgValue = thisArg ?? this[window2];
+      const thisArgValue = thisArg ?? this[window];
       for (const header of Object.values(this[entries])) {
         callback.call(thisArgValue, header.value.join(", "), header.name, this);
       }
@@ -172494,7 +172591,7 @@ var init_Event = __esm(() => {
         } else if (this[composed] && eventTarget[nodeType] === NodeTypeEnum_default.documentFragmentNode && eventTarget.host) {
           eventTarget = eventTarget.host;
         } else if (eventTarget[nodeType] === NodeTypeEnum_default.documentNode && this[type] !== "load") {
-          eventTarget = eventTarget[window2];
+          eventTarget = eventTarget[window];
         } else {
           break;
         }
@@ -173111,11 +173208,11 @@ var init_Blob = __esm(() => {
 class Clipboard {
   #window;
   #data = [];
-  constructor(window3) {
-    if (!window3) {
+  constructor(window2) {
+    if (!window2) {
       throw new TypeError("Illegal constructor");
     }
-    this.#window = window3;
+    this.#window = window2;
   }
   async read() {
     const permissionStatus = await this.#window.navigator.permissions.query({
@@ -173373,15 +173470,15 @@ var init_CSSRule = __esm(() => {
     static DOCUMENT_RULE = CSSRuleTypeEnum_default.documentRule;
     static FONT_FEATURE_VALUES_RULE = CSSRuleTypeEnum_default.fontFeatureValuesRule;
     static REGION_STYLE_RULE = CSSRuleTypeEnum_default.regionStyleRule;
-    [window2];
+    [window];
     [cssParser];
     [parentRule] = null;
     [parentStyleSheet] = null;
-    constructor(illegalConstructorSymbol, window3, cssParser2) {
+    constructor(illegalConstructorSymbol, window2, cssParser2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[cssParser] = cssParser2;
     }
     get parentRule() {
@@ -176787,7 +176884,7 @@ var init_NodeList = __esm(() => {
       const proxy2 = this[proxy] ?? this;
       for (let i = 0, max = items2.length;i < max; i++) {
         const item = items2[i];
-        callback.call(thisArg ?? item[window2], item, i, proxy2);
+        callback.call(thisArg ?? item[window], item, i, proxy2);
       }
     }
     keys() {
@@ -176823,7 +176920,7 @@ class SelectorItem {
   combinator;
   ignoreErrors;
   constructor(options2) {
-    this.root = options2?.scope?.[ownerDocument]?.documentElement || options2?.scope?.[window2].document?.documentElement || null;
+    this.root = options2?.scope?.[ownerDocument]?.documentElement || options2?.scope?.[window].document?.documentElement || null;
     this.scope = options2?.scope || null;
     this.tagName = options2?.tagName || null;
     this.id = options2?.id || null;
@@ -176894,7 +176991,7 @@ class SelectorItem {
             if (this.ignoreErrors) {
               return null;
             }
-            throw new element[window2].DOMException(`Failed to execute 'matches' on '${element.constructor.name}': '${this.getSelectorString()}' is not a valid selector.`);
+            throw new element[window].DOMException(`Failed to execute 'matches' on '${element.constructor.name}': '${this.getSelectorString()}' is not a valid selector.`);
           }
           break;
       }
@@ -177571,19 +177668,19 @@ var init_SelectorParser = __esm(() => {
 // ../../node_modules/happy-dom/lib/query-selector/QuerySelector.js
 class QuerySelector {
   static querySelectorAll(node, selector) {
-    const window3 = node[window2];
+    const window2 = node[window];
     if (selector === "") {
-      throw new window3.DOMException(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`);
+      throw new window2.DOMException(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': The provided selector is empty.`);
     }
     if (typeof selector === "function") {
-      throw new window3.DOMException(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
+      throw new window2.DOMException(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
     }
     if (typeof selector === "symbol") {
-      throw new window3.TypeError(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': Cannot convert a Symbol value to a string`);
+      throw new window2.TypeError(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': Cannot convert a Symbol value to a string`);
     }
     selector = String(selector);
     if (INVALID_SELECTOR_REGEXP.test(selector)) {
-      throw new window3.DOMException(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
+      throw new window2.DOMException(`Failed to execute 'querySelectorAll' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
     }
     const cache2 = node[cache].querySelectorAll;
     const cachedResult = cache2.get(selector);
@@ -177597,7 +177694,7 @@ class QuerySelector {
       cache2.delete(selector);
     }
     const scope = node[nodeType] === NodeTypeEnum_default.documentNode ? node.documentElement : node;
-    const groups = new SelectorParser({ window: window3, scope }).getSelectorGroups(selector);
+    const groups = new SelectorParser({ window: window2, scope }).getSelectorGroups(selector);
     const items2 = [];
     const nodeList = new NodeList_default(illegalConstructor, items2);
     const matchesMap = new Map;
@@ -177625,19 +177722,19 @@ class QuerySelector {
     return nodeList;
   }
   static querySelector(node, selector) {
-    const window3 = node[window2];
+    const window2 = node[window];
     if (selector === "") {
-      throw new window3.DOMException(`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`);
+      throw new window2.DOMException(`Failed to execute 'querySelector' on '${node.constructor.name}': The provided selector is empty.`);
     }
     if (typeof selector === "function") {
-      throw new window3.DOMException(`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
+      throw new window2.DOMException(`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
     }
     if (typeof selector === "symbol") {
-      throw new window3.TypeError(`Failed to execute 'querySelector' on '${node.constructor.name}': Cannot convert a Symbol value to a string`);
+      throw new window2.TypeError(`Failed to execute 'querySelector' on '${node.constructor.name}': Cannot convert a Symbol value to a string`);
     }
     selector = String(selector);
     if (INVALID_SELECTOR_REGEXP.test(selector)) {
-      throw new window3.DOMException(`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
+      throw new window2.DOMException(`Failed to execute 'querySelector' on '${node.constructor.name}': '${selector}' is not a valid selector.`);
     }
     const cachedResult = node[cache].querySelector.get(selector);
     if (cachedResult) {
@@ -177662,7 +177759,7 @@ class QuerySelector {
     let bestMatch = null;
     const matchesMap = new Map;
     const scope = node[nodeType] === NodeTypeEnum_default.documentNode ? node.documentElement : node;
-    for (const items2 of new SelectorParser({ window: window3, scope }).getSelectorGroups(selector)) {
+    for (const items2 of new SelectorParser({ window: window2, scope }).getSelectorGroups(selector)) {
       const match = node[nodeType] === NodeTypeEnum_default.elementNode ? this.findFirst(node, [node], items2, cachedItem) : this.findFirst(null, node[elementArray], items2, cachedItem);
       if (match && !matchesMap.has(match.documentPosition)) {
         matchesMap.set(match.documentPosition, true);
@@ -177677,7 +177774,7 @@ class QuerySelector {
   }
   static matches(element, selector, options2) {
     const ignoreErrors = options2?.ignoreErrors;
-    const window3 = element[window2];
+    const window2 = element[window];
     if (selector === "*") {
       return {
         priorityWeight: 1
@@ -177687,26 +177784,26 @@ class QuerySelector {
       if (ignoreErrors) {
         return null;
       }
-      throw new window3.DOMException(`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`);
+      throw new window2.DOMException(`Failed to execute 'matches' on '${element.constructor.name}': The provided selector is empty.`);
     }
     if (typeof selector === "function") {
       if (ignoreErrors) {
         return null;
       }
-      throw new window3.DOMException(`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`);
+      throw new window2.DOMException(`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`);
     }
     if (typeof selector === "symbol") {
       if (ignoreErrors) {
         return null;
       }
-      throw new window3.TypeError(`Cannot convert a Symbol value to a string`);
+      throw new window2.TypeError(`Cannot convert a Symbol value to a string`);
     }
     selector = String(selector);
     if (INVALID_SELECTOR_REGEXP.test(selector)) {
       if (ignoreErrors) {
         return null;
       }
-      throw new window3.DOMException(`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`);
+      throw new window2.DOMException(`Failed to execute 'matches' on '${element.constructor.name}': '${selector}' is not a valid selector.`);
     }
     const cachedResult = element[cache].matches.get(selector);
     if (cachedResult) {
@@ -177726,7 +177823,7 @@ class QuerySelector {
     const scope = scopeOrElement[nodeType] === NodeTypeEnum_default.documentNode ? scopeOrElement.documentElement : scopeOrElement;
     for (const items2 of new SelectorParser({
       ignoreErrors: options2?.ignoreErrors,
-      window: window3,
+      window: window2,
       scope
     }).getSelectorGroups(selector)) {
       const result2 = this.matchSelector(element, items2.reverse(), cachedItem);
@@ -177969,8 +178066,8 @@ var init_WindowBrowserContext = __esm(() => {
     static [browserFrames] = new Map;
     static [windowInternalId] = 0;
     #window;
-    constructor(window3) {
-      this.#window = window3;
+    constructor(window2) {
+      this.#window = window2;
     }
     getSettings() {
       return this.getBrowserFrame()?.page.context.browser.settings || null;
@@ -177993,16 +178090,16 @@ var init_WindowBrowserContext = __esm(() => {
     getAsyncTaskManager() {
       return this.getBrowserFrame()?.[asyncTaskManager] || null;
     }
-    static setWindowBrowserFrameRelation(window3, browserFrame) {
+    static setWindowBrowserFrameRelation(window2, browserFrame) {
       const browserFrames2 = this[browserFrames];
-      if (window3[internalId] === -1) {
-        window3[internalId] = this[windowInternalId];
+      if (window2[internalId] === -1) {
+        window2[internalId] = this[windowInternalId];
         this[windowInternalId]++;
       }
-      browserFrames2.set(window3[internalId], browserFrame);
+      browserFrames2.set(window2[internalId], browserFrame);
     }
-    static removeWindowBrowserFrameRelation(window3) {
-      this[browserFrames].delete(window3[internalId]);
+    static removeWindowBrowserFrameRelation(window2) {
+      this[browserFrames].delete(window2[internalId]);
     }
   };
 });
@@ -178072,7 +178169,7 @@ var init_EventTarget = __esm(() => {
     }
     dispatchEvent(event) {
       if (!(event instanceof Event)) {
-        throw new this[window2].TypeError(`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`);
+        throw new this[window].TypeError(`Failed to execute 'dispatchEvent' on 'EventTarget': parameter 1 is not of type 'Event'.`);
       }
       if (!event[dispatching] && (event[type] !== "load" || !event[target])) {
         event[dispatching] = true;
@@ -178127,8 +178224,8 @@ var init_EventTarget = __esm(() => {
       event[currentTarget] = null;
     }
     #callDispatchEventListeners(event) {
-      const window3 = this[window2];
-      const browserSettings = window3 ? new WindowBrowserContext(window3).getSettings() : null;
+      const window2 = this[window];
+      const browserSettings = window2 ? new WindowBrowserContext(window2).getSettings() : null;
       const eventPhase2 = event.eventPhase === EventPhaseEnum_default.capturing ? "capturing" : "bubbling";
       const listeners2 = this[listeners][eventPhase2].get(event.type)?.slice();
       if (listeners2 && listeners2.length) {
@@ -178139,26 +178236,26 @@ var init_EventTarget = __esm(() => {
           if (options2?.passive) {
             event[isInPassiveEventListener] = true;
           }
-          if (window3 && (this !== window3 || event.type !== "error") && !browserSettings?.disableErrorCapturing && browserSettings?.errorCapture === BrowserErrorCaptureEnum_default.tryAndCatch) {
+          if (window2 && (this !== window2 || event.type !== "error") && !browserSettings?.disableErrorCapturing && browserSettings?.errorCapture === BrowserErrorCaptureEnum_default.tryAndCatch) {
             if (listener.handleEvent) {
               let result2;
               try {
                 result2 = listener.handleEvent.call(listener, event);
               } catch (error2) {
-                window3[dispatchError](error2);
+                window2[dispatchError](error2);
               }
               if (result2 instanceof Promise) {
-                result2.catch((error2) => window3[dispatchError](error2));
+                result2.catch((error2) => window2[dispatchError](error2));
               }
             } else {
               let result2;
               try {
                 result2 = listener.call(this, event);
               } catch (error2) {
-                window3[dispatchError](error2);
+                window2[dispatchError](error2);
               }
               if (result2 instanceof Promise) {
-                result2.catch((error2) => window3[dispatchError](error2));
+                result2.catch((error2) => window2[dispatchError](error2));
               }
             }
           } else {
@@ -178188,15 +178285,15 @@ var init_EventTarget = __esm(() => {
         if (propertyEventListeners2 || hasClassDefinedHandler) {
           const eventListener = propertyEventListeners2?.get(onEventName) ?? this[onEventName];
           if (typeof eventListener === "function") {
-            if (window3 && (this !== window3 || event.type !== "error") && !browserSettings?.disableErrorCapturing && browserSettings?.errorCapture === BrowserErrorCaptureEnum_default.tryAndCatch) {
+            if (window2 && (this !== window2 || event.type !== "error") && !browserSettings?.disableErrorCapturing && browserSettings?.errorCapture === BrowserErrorCaptureEnum_default.tryAndCatch) {
               let result2;
               try {
                 result2 = eventListener(event);
               } catch (error2) {
-                window3[dispatchError](error2);
+                window2[dispatchError](error2);
               }
               if (result2 instanceof Promise) {
-                result2.catch((error2) => window3[dispatchError](error2));
+                result2.catch((error2) => window2[dispatchError](error2));
               }
             } else {
               eventListener(event);
@@ -178621,16 +178718,16 @@ var init_CSSGroupingRule = __esm(() => {
     }
     insertRule(rule, index) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError(`Failed to execute 'insertRule' on '${this.constructor.name}': 1 argument required, but only 0 present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertRule' on '${this.constructor.name}': 1 argument required, but only 0 present.`);
       }
       const rules = this[cssParser].parseFromString(rule);
       if (rules.length === 0 || rules.length > 1) {
-        throw new this[window2].DOMException(`Failed to execute 'insertRule' on '${this.constructor.name}': Failed to parse the rule '${rule}'.`, DOMExceptionNameEnum_default.syntaxError);
+        throw new this[window].DOMException(`Failed to execute 'insertRule' on '${this.constructor.name}': Failed to parse the rule '${rule}'.`, DOMExceptionNameEnum_default.syntaxError);
       }
       if (index !== undefined) {
         index = Number(index);
         if (isNaN(index) || index > this.cssRules.length) {
-          throw new this[window2].DOMException(`Failed to execute 'insertRule' on '${this.constructor.name}': The index provided (${index}) is larger than the maximum index (${this.cssRules.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+          throw new this[window].DOMException(`Failed to execute 'insertRule' on '${this.constructor.name}': The index provided (${index}) is larger than the maximum index (${this.cssRules.length}).`, DOMExceptionNameEnum_default.indexSizeError);
         }
         this.cssRules.splice(index, 0, rules[0]);
         return index;
@@ -178641,11 +178738,11 @@ var init_CSSGroupingRule = __esm(() => {
     }
     deleteRule(index) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError(`Failed to execute 'deleteRule' on '${this.constructor.name}': 1 argument required, but only 0 present.`);
+        throw new this[window].TypeError(`Failed to execute 'deleteRule' on '${this.constructor.name}': 1 argument required, but only 0 present.`);
       }
       index = Number(index);
       if (isNaN(index) || index < 0 || index >= this.cssRules.length) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteRule' on '${this.constructor.name}': the index (${index}) is greater than the length of the rule list.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteRule' on '${this.constructor.name}': the index (${index}) is greater than the length of the rule list.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       this.cssRules.splice(index, 1);
     }
@@ -178868,7 +178965,7 @@ class CSSStyleDeclarationComputedStyle {
     if (!options2.hostElement && !options2.elements.length) {
       return;
     }
-    const window3 = this.element[window2];
+    const window2 = this.element[window];
     for (const rule of options2.cssRules) {
       if (rule.type === CSSRuleTypeEnum_default.styleRule) {
         const selectorText2 = rule.selectorText;
@@ -178928,7 +179025,7 @@ class CSSStyleDeclarationComputedStyle {
           }
         }
       } else if (rule.type === CSSRuleTypeEnum_default.mediaRule && new MediaQueryList({
-        window: window3,
+        window: window2,
         media: rule.conditionText,
         rootFontSize: this.element[tagName] === "HTML" ? 16 : null
       }).matches) {
@@ -178939,7 +179036,7 @@ class CSSStyleDeclarationComputedStyle {
           scopeElement: options2.scopeElement
         });
       } else if (rule.type === CSSRuleTypeEnum_default.supportsRule) {
-        if (window3.CSS.supports(rule.conditionText)) {
+        if (window2.CSS.supports(rule.conditionText)) {
           this.parseCSSRules({
             elements: options2.elements,
             cssRules: rule.cssRules,
@@ -178997,7 +179094,7 @@ class CSSStyleDeclarationComputedStyle {
     return newValue;
   }
   parseMeasurementsInValue(options2) {
-    if (new WindowBrowserContext(this.element[window2]).getSettings()?.disableComputedStyleRendering) {
+    if (new WindowBrowserContext(this.element[window]).getSettings()?.disableComputedStyleRendering) {
       return options2.value;
     }
     const regexp = new RegExp(CSS_MEASUREMENT_REGEXP);
@@ -179006,7 +179103,7 @@ class CSSStyleDeclarationComputedStyle {
     while ((match = regexp.exec(options2.value)) !== null) {
       if (match[1] !== "px") {
         const valueInPixels = CSSMeasurementConverter.toPixels({
-          window: this.element[window2],
+          window: this.element[window],
           value: match[0],
           rootFontSize: options2.rootFontSize,
           parentFontSize: options2.parentFontSize,
@@ -179049,18 +179146,18 @@ var init_CSSStyleDeclaration = __esm(() => {
   init_CSSStyleDeclarationComputedStyle();
   CSSStyleDeclaration = class CSSStyleDeclaration {
     parentRule = null;
-    [window2];
+    [window];
     #element;
     #computed;
     #cache = {
       attributeValue: null,
       propertyManager: null
     };
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this.#element = options2?.element || null;
       this.#computed = options2?.element ? !!options2?.computed : false;
     }
@@ -182627,7 +182724,7 @@ var init_CSSStyleDeclaration = __esm(() => {
     }
     set cssText(cssText2) {
       if (this.#computed) {
-        throw new this[window2].DOMException(`Failed to execute 'cssText' on 'CSSStyleDeclaration': These styles are computed, and the properties are therefore read-only.`, DOMExceptionNameEnum_default.domException);
+        throw new this[window].DOMException(`Failed to execute 'cssText' on 'CSSStyleDeclaration': These styles are computed, and the properties are therefore read-only.`, DOMExceptionNameEnum_default.domException);
       }
       if (this.#element) {
         this.#cache.propertyManager = new CSSStyleDeclarationPropertyManager({ cssText: cssText2 });
@@ -182642,7 +182739,7 @@ var init_CSSStyleDeclaration = __esm(() => {
     }
     setProperty(name2, value2, priority) {
       if (this.#computed) {
-        throw new this[window2].DOMException(`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name2}' property is read-only.`, DOMExceptionNameEnum_default.domException);
+        throw new this[window].DOMException(`Failed to execute 'setProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name2}' property is read-only.`, DOMExceptionNameEnum_default.domException);
       }
       if (priority !== "" && priority !== undefined && priority !== "important") {
         return;
@@ -182665,7 +182762,7 @@ var init_CSSStyleDeclaration = __esm(() => {
     }
     removeProperty(name2) {
       if (this.#computed) {
-        throw new this[window2].DOMException(`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name2}' property is read-only.`, DOMExceptionNameEnum_default.domException);
+        throw new this[window].DOMException(`Failed to execute 'removeProperty' on 'CSSStyleDeclaration': These styles are computed, and therefore the '${name2}' property is read-only.`, DOMExceptionNameEnum_default.domException);
       }
       const propertyManager = this.#getPropertyManager();
       propertyManager.remove(name2);
@@ -182761,7 +182858,7 @@ var init_CSSFontFaceRule = __esm(() => {
     }
     get style() {
       if (!this.#style) {
-        this.#style = new CSSStyleDeclaration(illegalConstructor, this[window2]);
+        this.#style = new CSSStyleDeclaration(illegalConstructor, this[window]);
         this.#style.parentRule = this;
         this.#style.cssText = this[cssText];
       }
@@ -182789,7 +182886,7 @@ var init_CSSKeyframeRule = __esm(() => {
     }
     get style() {
       if (!this.#style) {
-        this.#style = new CSSStyleDeclaration(illegalConstructor, this[window2]);
+        this.#style = new CSSStyleDeclaration(illegalConstructor, this[window]);
         this.#style.parentRule = this;
         this.#style.cssText = this[cssText];
       }
@@ -182838,13 +182935,13 @@ var init_CSSKeyframesRule = __esm(() => {
     }
     appendRule(rule) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError(`Failed to execute 'appendRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`);
+        throw new this[window].TypeError(`Failed to execute 'appendRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`);
       }
       const match = String(rule).trim().match(CSS_RULE_REGEXP);
       if (!match) {
-        throw new this[window2].DOMException(`Invalid or unexpected token`, DOMExceptionNameEnum_default.syntaxError);
+        throw new this[window].DOMException(`Invalid or unexpected token`, DOMExceptionNameEnum_default.syntaxError);
       }
-      const cssRule2 = new CSSKeyframeRule(illegalConstructor, this[window2], this[cssParser]);
+      const cssRule2 = new CSSKeyframeRule(illegalConstructor, this[window], this[cssParser]);
       let keyText2 = match[1].trim();
       if (keyText2 === "from") {
         keyText2 = "0%";
@@ -182858,7 +182955,7 @@ var init_CSSKeyframesRule = __esm(() => {
     }
     deleteRule(rule) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError(`Failed to execute 'deleteRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`);
+        throw new this[window].TypeError(`Failed to execute 'deleteRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`);
       }
       for (let i = 0, max = this[cssRules].length;i < max; i++) {
         if (this[cssRules][i][keyText] === rule) {
@@ -182869,7 +182966,7 @@ var init_CSSKeyframesRule = __esm(() => {
     }
     findRule(rule) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError(`Failed to execute 'findRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`);
+        throw new this[window].TypeError(`Failed to execute 'findRule' on 'CSSKeyframesRule': 1 argument required, but only 0 present.`);
       }
       for (let i = 0, max = this[cssRules].length;i < max; i++) {
         if (this[cssRules][i][keyText] === rule) {
@@ -183171,7 +183268,7 @@ var init_CSSStyleRule = __esm(() => {
     }
     get style() {
       if (!this.#style) {
-        this.#style = new CSSStyleDeclaration(illegalConstructor, this[window2]);
+        this.#style = new CSSStyleDeclaration(illegalConstructor, this[window]);
         this.#style.parentRule = this;
         this.#style.cssText = this[cssText];
       }
@@ -183282,11 +183379,11 @@ var init_CustomElementRegistry = __esm(() => {
     [callbacks] = new Map;
     [destroyed] = false;
     #window;
-    constructor(window3) {
-      if (!window3) {
+    constructor(window2) {
+      if (!window2) {
         throw new TypeError("Illegal constructor");
       }
-      this.#window = window3;
+      this.#window = window2;
     }
     define(name2, elementClass, options2) {
       if (this[destroyed]) {
@@ -183302,7 +183399,7 @@ var init_CustomElementRegistry = __esm(() => {
         throw new this.#window.DOMException("Failed to execute 'define' on 'CustomElementRegistry': this constructor has already been used with this registry");
       }
       const tagName2 = StringUtility.asciiUpperCase(name2);
-      elementClass.prototype[window2] = this.#window;
+      elementClass.prototype[window] = this.#window;
       elementClass.prototype[ownerDocument] = this.#window.document;
       elementClass.prototype[tagName] = tagName2;
       elementClass.prototype[localName] = name2;
@@ -183362,7 +183459,7 @@ var init_CustomElementRegistry = __esm(() => {
     [destroy]() {
       this[destroyed] = true;
       for (const definition of this[registry].values()) {
-        definition.elementClass.prototype[window2] = null;
+        definition.elementClass.prototype[window] = null;
         definition.elementClass.prototype[ownerDocument] = null;
         definition.elementClass.prototype[tagName] = null;
         definition.elementClass.prototype[localName] = null;
@@ -183948,8 +184045,8 @@ var init_URL = __esm(() => {
         super(url2, base);
       } catch (error2) {
         super("about:blank");
-        if (this[window2]) {
-          throw new this[window2].TypeError("Invalid URL");
+        if (this[window]) {
+          throw new this[window].TypeError("Invalid URL");
         }
         throw error2;
       }
@@ -183978,12 +184075,12 @@ class FetchRequestReferrerUtility {
       request[referrer] = "no-referrer";
     }
   }
-  static getInitialReferrer(window3, referrer2) {
+  static getInitialReferrer(window2, referrer2) {
     if (referrer2 === "" || referrer2 === "no-referrer" || referrer2 === "client") {
       return referrer2;
     } else if (referrer2) {
-      const referrerURL = referrer2 instanceof URL2 ? referrer2 : new URL2(referrer2, window3.location.href);
-      return referrerURL.origin === window3.location.origin ? referrerURL : "client";
+      const referrerURL = referrer2 instanceof URL2 ? referrer2 : new URL2(referrer2, window2.location.href);
+      return referrerURL.origin === window2.location.origin ? referrerURL : "client";
     }
     return "client";
   }
@@ -184169,10 +184266,10 @@ class MultipartReader {
     contentType: null,
     header: ""
   };
-  constructor(window3, boundary) {
+  constructor(window2, boundary) {
     const boundaryHeader = `--${boundary}`;
     this.boundary = new Uint8Array(boundaryHeader.length);
-    this.formData = new window3.FormData;
+    this.formData = new window2.FormData;
     for (let i = 0, max = boundaryHeader.length;i < max; i++) {
       this.boundary[i] = boundaryHeader.charCodeAt(i);
     }
@@ -184293,20 +184390,20 @@ import { ReadableStream as ReadableStream3 } from "stream/web";
 import { Buffer as Buffer3 } from "buffer";
 
 class MultipartFormDataParser {
-  static async streamToFormData(window3, requestOrResponse, contentType2) {
+  static async streamToFormData(window2, requestOrResponse, contentType2) {
     if (!/multipart/i.test(contentType2)) {
-      throw new window3.DOMException(`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Failed to build FormData object: The "content-type" header isn't of type "multipart/form-data".`, DOMExceptionNameEnum_default.invalidStateError);
     }
     const body2 = requestOrResponse.body;
     if (!body2) {
-      throw new window3.DOMException("Failed to build FormData object: The response body is null.", DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException("Failed to build FormData object: The response body is null.", DOMExceptionNameEnum_default.invalidStateError);
     }
     const match = contentType2.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
     if (!match) {
-      throw new window3.DOMException(`Failed to build FormData object: The "content-type" header doesn't contain any multipart boundary.`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Failed to build FormData object: The "content-type" header doesn't contain any multipart boundary.`, DOMExceptionNameEnum_default.invalidStateError);
     }
     const bodyReader = body2.getReader();
-    const reader = new MultipartReader(window3, match[1] || match[2]);
+    const reader = new MultipartReader(window2, match[1] || match[2]);
     const chunks = [];
     let buffer2;
     const bytes = 0;
@@ -184316,7 +184413,7 @@ class MultipartFormDataParser {
         throw requestOrResponse[error];
       }
       if (requestOrResponse[aborted]) {
-        throw new window3.DOMException("Failed to read response body: The stream was aborted.", DOMExceptionNameEnum_default.abortError);
+        throw new window2.DOMException("Failed to read response body: The stream was aborted.", DOMExceptionNameEnum_default.abortError);
       }
       reader.write(readResult.value);
       readResult = await bodyReader.read();
@@ -184324,7 +184421,7 @@ class MultipartFormDataParser {
     try {
       buffer2 = typeof chunks[0] === "string" ? Buffer3.from(chunks.join("")) : Buffer3.concat(chunks, bytes);
     } catch (error2) {
-      throw new window3.DOMException(`Could not create Buffer from response body. Error: ${error2.message}.`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Could not create Buffer from response body. Error: ${error2.message}.`, DOMExceptionNameEnum_default.invalidStateError);
     }
     return {
       formData: reader.end(),
@@ -184395,11 +184492,11 @@ var init_FormData = __esm(() => {
       if (submitter) {
         const formProxy = form[proxy] ? form[proxy] : form;
         if (submitter.form !== formProxy) {
-          throw new this[window2].DOMException("The specified element is not owned by this form element", DOMExceptionNameEnum_default.notFoundError);
+          throw new this[window].DOMException("The specified element is not owned by this form element", DOMExceptionNameEnum_default.notFoundError);
         }
         const isSubmitButton = submitter[tagName] === "INPUT" && (submitter.type === "submit" || submitter.type === "image") || submitter[tagName] === "BUTTON" && submitter.type === "submit";
         if (!isSubmitButton) {
-          throw new this[window2].TypeError("The specified element is not a submit button");
+          throw new this[window].TypeError("The specified element is not a submit button");
         }
       }
       const items2 = form[getFormControlItems]();
@@ -184459,7 +184556,7 @@ var init_FormData = __esm(() => {
     }
     append(name2, value2, filename) {
       if (filename && !(value2 instanceof Blob)) {
-        throw new this[window2].TypeError('Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".');
+        throw new this[window].TypeError('Failed to execute "append" on "FormData": parameter 2 is not of type "Blob".');
       }
       this.#entries.push({
         name: name2,
@@ -184615,9 +184712,9 @@ class FetchBodyUtility {
       contentLength: buffer2.length
     };
   }
-  static cloneBodyStream(window3, requestOrResponse) {
+  static cloneBodyStream(window2, requestOrResponse) {
     if (requestOrResponse.bodyUsed) {
-      throw new window3.DOMException(`Failed to clone body stream of request: Request body is already used.`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Failed to clone body stream of request: Request body is already used.`, DOMExceptionNameEnum_default.invalidStateError);
     }
     if (requestOrResponse.body === null || requestOrResponse.body === undefined) {
       return null;
@@ -184646,7 +184743,7 @@ class FetchBodyUtility {
     }
     return stream2;
   }
-  static async consumeBodyStream(window3, requestOrResponse) {
+  static async consumeBodyStream(window2, requestOrResponse) {
     const body2 = requestOrResponse.body;
     if (body2 === null || !(body2 instanceof ReadableStream4)) {
       return Buffer4.alloc(0);
@@ -184664,7 +184761,7 @@ class FetchBodyUtility {
           throw requestOrResponse[error];
         }
         if (requestOrResponse[aborted]) {
-          throw new window3.DOMException("Failed to read response body: The stream was aborted.", DOMExceptionNameEnum_default.abortError);
+          throw new window2.DOMException("Failed to read response body: The stream was aborted.", DOMExceptionNameEnum_default.abortError);
         }
         const chunk = readResult.value;
         bytes += chunk.length;
@@ -184675,7 +184772,7 @@ class FetchBodyUtility {
       if (error2 instanceof DOMException) {
         throw error2;
       }
-      throw new window3.DOMException(`Failed to read response body. Error: ${error2.message}.`, DOMExceptionNameEnum_default.encodingError);
+      throw new window2.DOMException(`Failed to read response body. Error: ${error2.message}.`, DOMExceptionNameEnum_default.encodingError);
     }
     try {
       if (typeof chunks[0] === "string") {
@@ -184683,7 +184780,7 @@ class FetchBodyUtility {
       }
       return Buffer4.concat(chunks, bytes);
     } catch (error2) {
-      throw new window3.DOMException(`Could not create Buffer from response body. Error: ${error2.message}.`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Could not create Buffer from response body. Error: ${error2.message}.`, DOMExceptionNameEnum_default.invalidStateError);
     }
   }
   static toReadableStream(value2) {
@@ -184979,35 +185076,35 @@ var init_Request = __esm(() => {
     [url];
     [bodyBuffer];
     constructor(input, init) {
-      const window3 = this[window2];
-      if (!window3) {
+      const window2 = this[window];
+      if (!window2) {
         throw new TypeError(`Failed to construct 'Request': 'Request' was constructed outside a Window context.`);
       }
       if (typeof input !== `string` && !input) {
-        throw new window3.TypeError(`Failed to construct 'Request': 1 argument required, only 0 present.`);
+        throw new window2.TypeError(`Failed to construct 'Request': 1 argument required, only 0 present.`);
       }
       this[method] = (init?.method || input.method || "GET").toUpperCase();
       if (init?.mode) {
         switch (init.mode) {
           case "navigate":
           case "websocket":
-            throw new window3.DOMException(`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as '${init.mode}'.`, DOMExceptionNameEnum_default.securityError);
+            throw new window2.DOMException(`Failed to construct 'Request': Cannot construct a Request with a RequestInit whose mode member is set as '${init.mode}'.`, DOMExceptionNameEnum_default.securityError);
           case "same-origin":
           case "no-cors":
           case "cors":
             this[mode] = init.mode;
             break;
           default:
-            throw new window3.DOMException(`Failed to construct 'Request': The provided value '${init.mode}' is not a valid enum value of type RequestMode.`, DOMExceptionNameEnum_default.syntaxError);
+            throw new window2.DOMException(`Failed to construct 'Request': The provided value '${init.mode}' is not a valid enum value of type RequestMode.`, DOMExceptionNameEnum_default.syntaxError);
         }
       } else if (input instanceof Request) {
         this[mode] = input.mode;
       }
-      const { stream, buffer: buffer2, contentType: contentType2, contentLength: contentLength2 } = FetchBodyUtility.getBodyStream(input instanceof Request && (input[bodyBuffer] || input.body) ? input[bodyBuffer] || FetchBodyUtility.cloneBodyStream(window3, input) : init?.body ?? null);
+      const { stream, buffer: buffer2, contentType: contentType2, contentLength: contentLength2 } = FetchBodyUtility.getBodyStream(input instanceof Request && (input[bodyBuffer] || input.body) ? input[bodyBuffer] || FetchBodyUtility.cloneBodyStream(window2, input) : init?.body ?? null);
       this[bodyBuffer] = buffer2;
       this[body] = stream;
       this[credentials] = init?.credentials || input.credentials || "same-origin";
-      this[headers] = new this[window2].Headers(init?.headers || input.headers || {});
+      this[headers] = new this[window].Headers(init?.headers || input.headers || {});
       FetchRequestHeaderUtility.removeForbiddenHeaders(this.headers);
       if (contentLength2) {
         this[contentLength] = contentLength2;
@@ -185024,19 +185121,19 @@ var init_Request = __esm(() => {
       }
       this[redirect] = init?.redirect || input.redirect || "follow";
       this[referrerPolicy] = (init?.referrerPolicy || input.referrerPolicy || "").toLowerCase();
-      this[signal] = init?.signal || input.signal || new window3.AbortSignal;
-      this[referrer] = FetchRequestReferrerUtility.getInitialReferrer(window3, init?.referrer !== null && init?.referrer !== undefined ? init?.referrer : input.referrer);
+      this[signal] = init?.signal || input.signal || new window2.AbortSignal;
+      this[referrer] = FetchRequestReferrerUtility.getInitialReferrer(window2, init?.referrer !== null && init?.referrer !== undefined ? init?.referrer : input.referrer);
       if (input instanceof URL5) {
         this[url] = input;
       } else {
         try {
           if (input instanceof Request && input.url) {
-            this[url] = new URL5(input.url, window3.location.href);
+            this[url] = new URL5(input.url, window2.location.href);
           } else {
-            this[url] = new URL5(input, window3.location.href);
+            this[url] = new URL5(input, window2.location.href);
           }
         } catch (error2) {
-          throw new window3.DOMException(`Failed to construct 'Request': Invalid URL "${input}" on document location '${window3.location}'.${window3.location.origin === "null" ? " Relative URLs are not permitted on current document location." : ""}`, DOMExceptionNameEnum_default.notSupportedError);
+          throw new window2.DOMException(`Failed to construct 'Request': Invalid URL "${input}" on document location '${window2.location}'.${window2.location.origin === "null" ? " Relative URLs are not permitted on current document location." : ""}`, DOMExceptionNameEnum_default.notSupportedError);
         }
       }
       FetchRequestValidationUtility.validateMethod(this);
@@ -185088,11 +185185,11 @@ var init_Request = __esm(() => {
       return "Request";
     }
     async arrayBuffer() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this[bodyUsed]) {
-        throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
       }
-      const asyncTaskManager2 = new WindowBrowserContext(window3).getAsyncTaskManager();
+      const asyncTaskManager2 = new WindowBrowserContext(window2).getAsyncTaskManager();
       this[bodyUsed] = true;
       const taskID = asyncTaskManager2.startTask(() => {
         this[aborted] = true;
@@ -185100,7 +185197,7 @@ var init_Request = __esm(() => {
       });
       let buffer2;
       try {
-        buffer2 = await FetchBodyUtility.consumeBodyStream(window3, this);
+        buffer2 = await FetchBodyUtility.consumeBodyStream(window2, this);
       } catch (error2) {
         asyncTaskManager2.endTask(taskID);
         throw error2;
@@ -185114,11 +185211,11 @@ var init_Request = __esm(() => {
       return new Blob([buffer2], { type: type2 });
     }
     async buffer() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this[bodyUsed]) {
-        throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
       }
-      const asyncTaskManager2 = new WindowBrowserContext(window3).getAsyncTaskManager();
+      const asyncTaskManager2 = new WindowBrowserContext(window2).getAsyncTaskManager();
       this[bodyUsed] = true;
       const taskID = asyncTaskManager2.startTask(() => {
         this[aborted] = true;
@@ -185126,7 +185223,7 @@ var init_Request = __esm(() => {
       });
       let buffer2;
       try {
-        buffer2 = await FetchBodyUtility.consumeBodyStream(window3, this);
+        buffer2 = await FetchBodyUtility.consumeBodyStream(window2, this);
       } catch (error2) {
         asyncTaskManager2.endTask(taskID);
         throw error2;
@@ -185135,11 +185232,11 @@ var init_Request = __esm(() => {
       return buffer2;
     }
     async text() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this[bodyUsed]) {
-        throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
       }
-      const asyncTaskManager2 = new WindowBrowserContext(window3).getAsyncTaskManager();
+      const asyncTaskManager2 = new WindowBrowserContext(window2).getAsyncTaskManager();
       this[bodyUsed] = true;
       const taskID = asyncTaskManager2.startTask(() => {
         this[aborted] = true;
@@ -185147,7 +185244,7 @@ var init_Request = __esm(() => {
       });
       let buffer2;
       try {
-        buffer2 = await FetchBodyUtility.consumeBodyStream(window3, this);
+        buffer2 = await FetchBodyUtility.consumeBodyStream(window2, this);
       } catch (error2) {
         asyncTaskManager2.endTask(taskID);
         throw error2;
@@ -185160,12 +185257,12 @@ var init_Request = __esm(() => {
       return JSON.parse(text);
     }
     async formData() {
-      const window3 = this[window2];
-      const asyncTaskManager2 = new WindowBrowserContext(window3).getAsyncTaskManager();
+      const window2 = this[window];
+      const asyncTaskManager2 = new WindowBrowserContext(window2).getAsyncTaskManager();
       const contentType2 = this.headers.get("Content-Type") ?? this[contentType];
       if (this.body && contentType2 && /multipart/i.test(contentType2)) {
         if (this[bodyUsed]) {
-          throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+          throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
         }
         this[bodyUsed] = true;
         const taskID = asyncTaskManager2.startTask(() => {
@@ -185174,7 +185271,7 @@ var init_Request = __esm(() => {
         });
         let formData;
         try {
-          const result2 = await MultipartFormDataParser.streamToFormData(window3, this, contentType2);
+          const result2 = await MultipartFormDataParser.streamToFormData(window2, this, contentType2);
           formData = result2.formData;
         } catch (error2) {
           asyncTaskManager2.endTask(taskID);
@@ -185185,16 +185282,16 @@ var init_Request = __esm(() => {
       }
       if (contentType2?.startsWith("application/x-www-form-urlencoded")) {
         const parameters = new URLSearchParams(await this.text());
-        const formData = new window3.FormData;
+        const formData = new window2.FormData;
         for (const [key, value2] of parameters) {
           formData.append(key, value2);
         }
         return formData;
       }
-      throw new window3.DOMException(`Failed to construct FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Failed to construct FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`, DOMExceptionNameEnum_default.invalidStateError);
     }
     clone() {
-      return new this[window2].Request(this);
+      return new this[window].Request(this);
     }
   };
 });
@@ -185228,13 +185325,13 @@ var init_Response = __esm(() => {
     [aborted] = false;
     [error] = null;
     constructor(body2, init) {
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
       this.status = init?.status !== undefined ? init.status : 200;
       this.statusText = init?.statusText || "";
       this.ok = this.status >= 200 && this.status < 300;
-      this.headers = new this[window2].Headers(init?.headers);
+      this.headers = new this[window].Headers(init?.headers);
       this.headers.delete("Set-Cookie");
       this.headers.delete("Set-Cookie2");
       if (body2) {
@@ -185252,11 +185349,11 @@ var init_Response = __esm(() => {
       return "Response";
     }
     async arrayBuffer() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.bodyUsed) {
-        throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
       }
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return new ArrayBuffer(0);
       }
@@ -185268,7 +185365,7 @@ var init_Response = __esm(() => {
           this[aborted] = true;
         });
         try {
-          buffer2 = await FetchBodyUtility.consumeBodyStream(window3, this);
+          buffer2 = await FetchBodyUtility.consumeBodyStream(window2, this);
         } catch (error2) {
           asyncTaskManager2.endTask(taskID);
           throw error2;
@@ -185284,11 +185381,11 @@ var init_Response = __esm(() => {
       return new Blob([buffer2], { type: type2 });
     }
     async buffer() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.bodyUsed) {
-        throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
       }
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return Buffer5.alloc(0);
       }
@@ -185300,7 +185397,7 @@ var init_Response = __esm(() => {
           this[aborted] = true;
         });
         try {
-          buffer2 = await FetchBodyUtility.consumeBodyStream(window3, this);
+          buffer2 = await FetchBodyUtility.consumeBodyStream(window2, this);
         } catch (error2) {
           asyncTaskManager2.endTask(taskID);
           throw error2;
@@ -185311,11 +185408,11 @@ var init_Response = __esm(() => {
       return buffer2;
     }
     async text() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.bodyUsed) {
-        throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
       }
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return "";
       }
@@ -185327,7 +185424,7 @@ var init_Response = __esm(() => {
           this[aborted] = true;
         });
         try {
-          buffer2 = await FetchBodyUtility.consumeBodyStream(window3, this);
+          buffer2 = await FetchBodyUtility.consumeBodyStream(window2, this);
         } catch (error2) {
           asyncTaskManager2.endTask(taskID);
           throw error2;
@@ -185342,16 +185439,16 @@ var init_Response = __esm(() => {
       return JSON.parse(text);
     }
     async formData() {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
-        return new window3.FormData;
+        return new window2.FormData;
       }
       const asyncTaskManager2 = browserFrame[asyncTaskManager];
       const contentType2 = this.headers.get("Content-Type");
       if (contentType2 && this.body && /multipart/i.test(contentType2)) {
         if (this.bodyUsed) {
-          throw new window3.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
+          throw new window2.DOMException(`Body has already been used for "${this.url}".`, DOMExceptionNameEnum_default.invalidStateError);
         }
         this.bodyUsed = true;
         const taskID = browserFrame[asyncTaskManager].startTask(() => {
@@ -185360,7 +185457,7 @@ var init_Response = __esm(() => {
         let formData;
         let buffer2;
         try {
-          const result2 = await MultipartFormDataParser.streamToFormData(window3, this, contentType2);
+          const result2 = await MultipartFormDataParser.streamToFormData(window2, this, contentType2);
           formData = result2.formData;
           buffer2 = result2.buffer;
         } catch (error2) {
@@ -185373,18 +185470,18 @@ var init_Response = __esm(() => {
       }
       if (contentType2?.startsWith("application/x-www-form-urlencoded")) {
         const parameters = new URLSearchParams3(await this.text());
-        const formData = new window3.FormData;
+        const formData = new window2.FormData;
         for (const [key, value2] of parameters) {
           formData.append(key, value2);
         }
         return formData;
       }
-      throw new window3.DOMException(`Failed to build FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`, DOMExceptionNameEnum_default.invalidStateError);
+      throw new window2.DOMException(`Failed to build FormData object: The "content-type" header is neither "application/x-www-form-urlencoded" nor "multipart/form-data".`, DOMExceptionNameEnum_default.invalidStateError);
     }
     clone() {
-      const window3 = this[window2];
-      const body2 = FetchBodyUtility.cloneBodyStream(window3, this);
-      const response = new window3.Response(body2, {
+      const window2 = this[window];
+      const body2 = FetchBodyUtility.cloneBodyStream(window2, this);
+      const response = new window2.Response(body2, {
         status: this.status,
         statusText: this.statusText,
         headers: this.headers
@@ -185405,11 +185502,11 @@ var init_Response = __esm(() => {
       }
     }
     static redirect(url2, status = 302) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (!REDIRECT_STATUS_CODES.includes(status)) {
-        throw new window3.DOMException("Failed to create redirect response: Invalid redirect status code.", DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException("Failed to create redirect response: Invalid redirect status code.", DOMExceptionNameEnum_default.invalidStateError);
       }
-      return new window3.Response(null, {
+      return new window2.Response(null, {
         headers: {
           location: new URL2(url2).toString()
         },
@@ -185417,21 +185514,21 @@ var init_Response = __esm(() => {
       });
     }
     static error() {
-      const response = new this[window2].Response(null, { status: 0, statusText: "" });
+      const response = new this[window].Response(null, { status: 0, statusText: "" });
       response.type = "error";
       return response;
     }
     static json(data2, init) {
-      const window3 = this[window2];
+      const window2 = this[window];
       const body2 = JSON.stringify(data2);
       if (body2 === undefined) {
-        throw new window3.TypeError("data is not JSON serializable");
+        throw new window2.TypeError("data is not JSON serializable");
       }
-      const headers2 = new window3.Headers(init && init.headers);
+      const headers2 = new window2.Headers(init && init.headers);
       if (!headers2.has("Content-Type")) {
         headers2.set("Content-Type", "application/json");
       }
-      return new window3.Response(body2, {
+      return new window2.Response(body2, {
         status: 200,
         ...init,
         headers: headers2
@@ -185542,8 +185639,8 @@ gl5OpEjeliU7Mus0BVS858g=
 import Path2 from "path";
 
 class VirtualServerUtility {
-  static getFilepath(window3, requestURL) {
-    const browserSettings = new WindowBrowserContext(window3).getSettings();
+  static getFilepath(window2, requestURL) {
+    const browserSettings = new WindowBrowserContext(window2).getSettings();
     if (!browserSettings || !browserSettings.fetch.virtualServers && !browserSettings.module.resolveNodeModules) {
       return null;
     }
@@ -185551,14 +185648,14 @@ class VirtualServerUtility {
       for (const virtualServer of browserSettings.fetch.virtualServers) {
         let baseURL = null;
         if (typeof virtualServer.url === "string") {
-          const url2 = new URL(virtualServer.url[virtualServer.url.length - 1] === "/" ? virtualServer.url.slice(0, -1) : virtualServer.url, window3.location.origin);
+          const url2 = new URL(virtualServer.url[virtualServer.url.length - 1] === "/" ? virtualServer.url.slice(0, -1) : virtualServer.url, window2.location.origin);
           if (requestURL.startsWith(url2.href)) {
             baseURL = url2;
           }
         } else if (virtualServer.url instanceof RegExp) {
           const match = requestURL.match(virtualServer.url);
           if (match) {
-            baseURL = new URL(match[0][match[0].length - 1] === "/" ? match[0].slice(0, -1) : match[0], window3.location.origin);
+            baseURL = new URL(match[0][match[0].length - 1] === "/" ? match[0].slice(0, -1) : match[0], window2.location.origin);
           }
         }
         if (baseURL) {
@@ -185569,7 +185666,7 @@ class VirtualServerUtility {
     }
     if (browserSettings.module.resolveNodeModules) {
       const moduleUrl = browserSettings.module.resolveNodeModules.url;
-      const url2 = new URL(moduleUrl[moduleUrl.length - 1] === "/" ? moduleUrl.slice(0, -1) : moduleUrl, window3.location.origin);
+      const url2 = new URL(moduleUrl[moduleUrl.length - 1] === "/" ? moduleUrl.slice(0, -1) : moduleUrl, window2.location.origin);
       if (requestURL.startsWith(url2.href)) {
         const path10 = requestURL.slice(url2.href.length).split("?")[0].split("#")[0];
         return Path2.join(Path2.resolve(browserSettings.module.resolveNodeModules.directory), path10.replaceAll("/", Path2.sep));
@@ -185577,8 +185674,8 @@ class VirtualServerUtility {
     }
     return null;
   }
-  static getNotFoundResponse(window3) {
-    return new window3.Response(NOT_FOUND_HTML, {
+  static getNotFoundResponse(window2) {
+    return new window2.Response(NOT_FOUND_HTML, {
       status: 404,
       statusText: "Not Found",
       headers: {
@@ -185586,14 +185683,14 @@ class VirtualServerUtility {
       }
     });
   }
-  static getNotFoundSyncResponse(window3, requestURL) {
+  static getNotFoundSyncResponse(window2, requestURL) {
     return {
       status: 404,
       statusText: "Not Found",
       ok: false,
       url: requestURL,
       redirected: false,
-      headers: new window3.Headers({
+      headers: new window2.Headers({
         "Content-Type": "text/html"
       }),
       body: Buffer.from(NOT_FOUND_HTML),
@@ -186292,7 +186389,7 @@ class BrowserFrameURL {
       return new URL7(url2);
     }
     try {
-      return new URL7(url2, frame.window[location2].href);
+      return new URL7(url2, frame.window[location].href);
     } catch (e) {
       return new URL7("about:blank");
     }
@@ -186312,27 +186409,27 @@ var init_History = __esm(() => {
   History = class History {
     #browserFrame;
     #window;
-    constructor(browserFrame, window3) {
+    constructor(browserFrame, window2) {
       if (!browserFrame) {
         throw new TypeError("Illegal constructor");
       }
       this.#browserFrame = browserFrame;
-      this.#window = window3;
+      this.#window = window2;
     }
     get length() {
-      return this.#browserFrame?.[history2].items.length || 0;
+      return this.#browserFrame?.[history].items.length || 0;
     }
     get state() {
-      return this.#browserFrame?.[history2].currentItem.state || null;
+      return this.#browserFrame?.[history].currentItem.state || null;
     }
     get scrollRestoration() {
-      return this.#browserFrame?.[history2].currentItem.scrollRestoration || HistoryScrollRestorationEnum_default.auto;
+      return this.#browserFrame?.[history].currentItem.scrollRestoration || HistoryScrollRestorationEnum_default.auto;
     }
     set scrollRestoration(scrollRestoration) {
       switch (scrollRestoration) {
         case HistoryScrollRestorationEnum_default.auto:
         case HistoryScrollRestorationEnum_default.manual:
-          const currentItem = this.#browserFrame?.[history2].currentItem;
+          const currentItem = this.#browserFrame?.[history].currentItem;
           if (currentItem) {
             currentItem.scrollRestoration = scrollRestoration;
           }
@@ -186358,57 +186455,57 @@ var init_History = __esm(() => {
       if (!this.#browserFrame || this.#window.closed) {
         return;
       }
-      const history3 = this.#browserFrame?.[history2];
-      if (!history3) {
+      const history2 = this.#browserFrame?.[history];
+      if (!history2) {
         return;
       }
       if (arguments.length < 2) {
         throw new this.#window.TypeError(`Failed to execute 'pushState' on 'History': 2 arguments required, but only ${arguments.length} present.`);
       }
-      const location3 = this.#window[location2];
-      const newURL = url2 ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url2) : location3;
-      if (url2 && newURL.origin !== location3.origin) {
-        throw new this.#window.DOMException(`Failed to execute 'pushState' on 'History': A history state object with URL '${url2.toString()}' cannot be created in a document with origin '${location3.origin}' and URL '${location3.href}'.`, DOMExceptionNameEnum_default.securityError);
+      const location2 = this.#window[location];
+      const newURL = url2 ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url2) : location2;
+      if (url2 && newURL.origin !== location2.origin) {
+        throw new this.#window.DOMException(`Failed to execute 'pushState' on 'History': A history state object with URL '${url2.toString()}' cannot be created in a document with origin '${location2.origin}' and URL '${location2.href}'.`, DOMExceptionNameEnum_default.securityError);
       }
-      history3.currentItem.popState = true;
-      history3.push({
+      history2.currentItem.popState = true;
+      history2.push({
         title: this.#window.document.title,
         href: newURL.href,
         state: state2,
         popState: true,
-        scrollRestoration: history3.currentItem.scrollRestoration,
-        method: history3.currentItem.method || "GET",
-        formData: history3.currentItem.formData || null
+        scrollRestoration: history2.currentItem.scrollRestoration,
+        method: history2.currentItem.method || "GET",
+        formData: history2.currentItem.formData || null
       });
-      location3[setURL](this.#browserFrame, history3.currentItem.href);
+      location2[setURL](this.#browserFrame, history2.currentItem.href);
     }
     replaceState(state2, _unused, url2) {
       if (!this.#browserFrame || this.#window.closed) {
         return;
       }
-      const history3 = this.#browserFrame?.[history2];
-      if (!history3) {
+      const history2 = this.#browserFrame?.[history];
+      if (!history2) {
         return;
       }
       if (arguments.length < 2) {
         throw new this.#window.TypeError(`Failed to execute 'pushState' on 'History': 2 arguments required, but only ${arguments.length} present.`);
       }
-      const location3 = this.#window[location2];
-      const newURL = url2 ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url2) : location3;
-      if (url2 && newURL.origin !== location3.origin) {
-        throw new this.#window.DOMException(`Failed to execute 'pushState' on 'History': A history state object with URL '${url2.toString()}' cannot be created in a document with origin '${location3.origin}' and URL '${location3.href}'.`, DOMExceptionNameEnum_default.securityError);
+      const location2 = this.#window[location];
+      const newURL = url2 ? BrowserFrameURL.getRelativeURL(this.#browserFrame, url2) : location2;
+      if (url2 && newURL.origin !== location2.origin) {
+        throw new this.#window.DOMException(`Failed to execute 'pushState' on 'History': A history state object with URL '${url2.toString()}' cannot be created in a document with origin '${location2.origin}' and URL '${location2.href}'.`, DOMExceptionNameEnum_default.securityError);
       }
-      history3.replace({
+      history2.replace({
         title: this.#window.document.title,
         href: newURL.href,
         state: state2,
-        popState: history3.currentItem.popState,
-        scrollRestoration: history3.currentItem.scrollRestoration,
-        method: history3.currentItem.method,
-        formData: history3.currentItem.formData
+        popState: history2.currentItem.popState,
+        scrollRestoration: history2.currentItem.scrollRestoration,
+        method: history2.currentItem.method,
+        formData: history2.currentItem.formData
       });
       if (url2) {
-        location3[setURL](this.#browserFrame, history3.currentItem.href);
+        location2[setURL](this.#browserFrame, history2.currentItem.href);
       }
     }
     [destroy]() {
@@ -186470,23 +186567,23 @@ var init_Location = __esm(() => {
       return this.#url.hash;
     }
     set hash(hash) {
-      const history3 = this.#browserFrame?.[history2];
-      if (!history3 || !this.#browserFrame) {
+      const history2 = this.#browserFrame?.[history];
+      if (!history2 || !this.#browserFrame) {
         return;
       }
       const url2 = new URL(this.#url.href);
       const oldHash = this.#url.hash;
       url2.hash = hash;
       if (url2.hash !== oldHash) {
-        history3.currentItem.popState = true;
-        history3.push({
+        history2.currentItem.popState = true;
+        history2.push({
           title: "",
           href: url2.href,
-          state: history3.currentItem.state,
+          state: history2.currentItem.state,
           popState: true,
           scrollRestoration: HistoryScrollRestorationEnum_default.manual,
-          method: history3.currentItem.method,
-          formData: history3.currentItem.formData || null
+          method: history2.currentItem.method,
+          formData: history2.currentItem.formData || null
         });
         this[setURL](this.#browserFrame, url2.href);
       }
@@ -186769,11 +186866,11 @@ var init_PermissionNameEnum = __esm(() => {
 class Permissions {
   #permissionStatus = {};
   #window;
-  constructor(window3) {
-    if (!window3?.document) {
+  constructor(window2) {
+    if (!window2?.document) {
       new TypeError("Invalid constructor");
     }
-    this.#window = window3;
+    this.#window = window2;
   }
   async query(permissionDescriptor) {
     const name2 = permissionDescriptor?.name;
@@ -186796,13 +186893,13 @@ class Navigator {
   #window;
   #clipboard;
   #permissions;
-  constructor(window3) {
-    if (!window3) {
+  constructor(window2) {
+    if (!window2) {
       throw new TypeError("Invalid constructor");
     }
-    this.#window = window3;
-    this.#clipboard = new Clipboard(window3);
-    this.#permissions = new Permissions(window3);
+    this.#window = window2;
+    this.#clipboard = new Clipboard(window2);
+    this.#permissions = new Permissions(window2);
   }
   get cookieEnabled() {
     return true;
@@ -187097,7 +187194,7 @@ var init_NodeFactory = __esm(() => {
   NodeFactory = class NodeFactory {
     static ownerDocuments = [];
     static createNode(ownerDocument2, nodeClass, ...args) {
-      if (!nodeClass.prototype[window2]) {
+      if (!nodeClass.prototype[window]) {
         this.ownerDocuments.push(ownerDocument2);
       }
       return new nodeClass(...args);
@@ -187161,15 +187258,15 @@ var init_Node = __esm(() => {
     [affectsCache] = [];
     constructor() {
       super();
-      if (this[window2]) {
-        this[ownerDocument] = this[window2].document;
+      if (this[window]) {
+        this[ownerDocument] = this[window].document;
       } else {
         const ownerDocument2 = NodeFactory.pullOwnerDocument();
         if (!ownerDocument2) {
           throw new TypeError("Illegal constructor");
         }
         this[ownerDocument] = ownerDocument2;
-        this[window2] = ownerDocument2[window2];
+        this[window] = ownerDocument2[window];
       }
     }
     get [Symbol.toStringTag]() {
@@ -187250,7 +187347,7 @@ var init_Node = __esm(() => {
       if (base) {
         return base.href;
       }
-      return this[window2].location.href;
+      return this[window].location.href;
     }
     hasChildNodes() {
       return this[nodeArray].length > 0;
@@ -187280,25 +187377,25 @@ var init_Node = __esm(() => {
     }
     appendChild(node) {
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'appendChild' on 'Node': 1 argument required, but only 0 present`);
+        throw new this[window].TypeError(`Failed to execute 'appendChild' on 'Node': 1 argument required, but only 0 present`);
       }
       return this[appendChild](node);
     }
     removeChild(node) {
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'removeChild' on 'Node': 1 argument required, but only 0 present`);
+        throw new this[window].TypeError(`Failed to execute 'removeChild' on 'Node': 1 argument required, but only 0 present`);
       }
       return this[removeChild](node);
     }
     insertBefore(newNode, referenceNode) {
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only ${arguments.length} present.`);
       }
       return this[insertBefore](newNode, referenceNode);
     }
     replaceChild(newChild, oldChild) {
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceChild' on 'Node': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceChild' on 'Node': 2 arguments required, but only ${arguments.length} present.`);
       }
       return this[replaceChild](newChild, oldChild);
     }
@@ -187329,10 +187426,10 @@ var init_Node = __esm(() => {
       const self2 = this[proxy] || this;
       if (!disableValidations) {
         if (node === self2) {
-          throw new this[window2].DOMException("Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself.");
+          throw new this[window].DOMException("Failed to execute 'appendChild' on 'Node': Not possible to append a node as a child of itself.");
         }
         if (NodeUtility.isInclusiveAncestor(node, self2, true)) {
-          throw new this[window2].DOMException("Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.", DOMExceptionNameEnum_default.domException);
+          throw new this[window].DOMException("Failed to execute 'appendChild' on 'Node': The new node is a parent of the node to insert to.", DOMExceptionNameEnum_default.domException);
         }
       }
       if (node[nodeType] === NodeTypeEnum_default.documentFragmentNode) {
@@ -187370,7 +187467,7 @@ var init_Node = __esm(() => {
       }
       const index = this[nodeArray].indexOf(node);
       if (index === -1) {
-        throw new this[window2].DOMException(`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`);
+        throw new this[window].DOMException(`Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.`);
       }
       const previousSibling = node.previousSibling;
       const nextSibling = node.nextSibling;
@@ -187418,10 +187515,10 @@ var init_Node = __esm(() => {
       const self2 = this[proxy] || this;
       if (!disableValidations) {
         if (newNode === self2) {
-          throw new this[window2].DOMException("Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself.");
+          throw new this[window].DOMException("Failed to execute 'insertBefore' on 'Node': Not possible to insert a node as a child of itself.");
         }
         if (NodeUtility.isInclusiveAncestor(newNode, self2, true)) {
-          throw new this[window2].DOMException("Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.", DOMExceptionNameEnum_default.domException);
+          throw new this[window].DOMException("Failed to execute 'insertBefore' on 'Node': The new node is a parent of the node to insert to.", DOMExceptionNameEnum_default.domException);
         }
       }
       if (newNode[nodeType] === NodeTypeEnum_default.documentFragmentNode) {
@@ -187437,7 +187534,7 @@ var init_Node = __esm(() => {
       }
       const nodeArray2 = this[nodeArray];
       if (!nodeArray2.includes(referenceNode)) {
-        throw new this[window2].DOMException("Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.");
+        throw new this[window].DOMException("Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.");
       }
       if (newNode[parentNode]) {
         newNode[parentNode][removeChild](newNode);
@@ -187627,7 +187724,7 @@ var init_Node = __esm(() => {
         isDisconnected = true;
       }
       this[ownerDocument] = parent2[ownerDocument] || parent2;
-      this[window2] = parent2[window2] || parent2[defaultView];
+      this[window] = parent2[window] || parent2[defaultView];
       if (parentNode2) {
         if (this[nodeType] !== NodeTypeEnum_default.documentFragmentNode) {
           this[rootNode] = parentNode2[rootNode];
@@ -188384,7 +188481,7 @@ var init_DOMTokenList = __esm(() => {
       return this[getTokenList]().entries();
     }
     forEach(callback, thisArg) {
-      const thisArgValue = thisArg ?? this[ownerElement][window2];
+      const thisArgValue = thisArg ?? this[ownerElement][window];
       const items2 = this[getTokenList]();
       const proxy2 = this[proxy] ?? this;
       for (let i = 0, max = items2.length;i < max; i++) {
@@ -188847,7 +188944,7 @@ var init_NamedNodeMap = __esm(() => {
     removeNamedItem(name2) {
       const item = this.getNamedItem(name2);
       if (!item) {
-        throw new this[ownerElement][window2].DOMException(`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name2}' was found.`, DOMExceptionNameEnum_default.notFoundError);
+        throw new this[ownerElement][window].DOMException(`Failed to execute 'removeNamedItem' on 'NamedNodeMap': No item with name '${name2}' was found.`, DOMExceptionNameEnum_default.notFoundError);
       }
       this[removeNamedItem](item);
       return item;
@@ -188855,14 +188952,14 @@ var init_NamedNodeMap = __esm(() => {
     removeNamedItemNS(namespace, localName2) {
       const item = this.getNamedItemNS(namespace, localName2);
       if (!item) {
-        throw new this[ownerElement][window2].DOMException(`Failed to execute 'removeNamedItemNS' on 'NamedNodeMap': No item with name '${localName2}' in namespace '${namespace}' was found.`, DOMExceptionNameEnum_default.notFoundError);
+        throw new this[ownerElement][window].DOMException(`Failed to execute 'removeNamedItemNS' on 'NamedNodeMap': No item with name '${localName2}' in namespace '${namespace}' was found.`, DOMExceptionNameEnum_default.notFoundError);
       }
       this[removeNamedItem](item);
       return item;
     }
     [setNamedItem](item, ignoreListeners = false) {
       if (item[ownerElement] !== null && item[ownerElement] !== this[ownerElement]) {
-        throw new this[ownerElement][window2].DOMException("The attribute is in use.", DOMExceptionNameEnum_default.inUseAttributeError);
+        throw new this[ownerElement][window].DOMException("The attribute is in use.", DOMExceptionNameEnum_default.inUseAttributeError);
       }
       item[ownerElement] = this[ownerElement];
       const replacedItem = this.getNamedItemNS(item[namespaceURI], item[localName]) || null;
@@ -190283,8 +190380,8 @@ class HTMLParser {
   nextElement = null;
   currentNode = null;
   readState = MarkupReadStateEnum.any;
-  constructor(window3, options2) {
-    this.window = window3;
+  constructor(window2, options2) {
+    this.window = window2;
     if (options2?.evaluateScripts) {
       this.evaluateScripts = true;
     }
@@ -190775,11 +190872,11 @@ class ElementEventAttributeUtility {
     if (cached) {
       return cached;
     }
-    const window3 = element[ownerDocument][defaultView];
-    if (!window3) {
+    const window2 = element[ownerDocument][defaultView];
+    if (!window2) {
       return null;
     }
-    const browserSettings = new WindowBrowserContext(window3).getSettings();
+    const browserSettings = new WindowBrowserContext(window2).getSettings();
     if (!browserSettings || !browserSettings.enableJavaScriptEvaluation) {
       return null;
     }
@@ -190799,17 +190896,17 @@ class ElementEventAttributeUtility {
     newCode += "})";
     let listener = null;
     try {
-      listener = window3[evaluateScript](newCode, {
-        filename: window3.location.href
+      listener = window2[evaluateScript](newCode, {
+        filename: window2.location.href
       }).bind(element, {
-        dispatchError: window3[dispatchError].bind(window3)
+        dispatchError: window2[dispatchError].bind(window2)
       });
     } catch (e) {
-      const error2 = new window3.SyntaxError(`Failed to read the '${property}' property from '${element.constructor.name}': ${e.message}`);
+      const error2 = new window2.SyntaxError(`Failed to read the '${property}' property from '${element.constructor.name}': ${e.message}`);
       if (browserSettings.disableErrorCapturing || browserSettings.errorCapture !== BrowserErrorCaptureEnum_default.tryAndCatch) {
         throw error2;
       } else {
-        window3[dispatchError](error2);
+        window2[dispatchError](error2);
         return null;
       }
     }
@@ -191026,13 +191123,13 @@ var init_Element = __esm(() => {
       while (childNodes2.length) {
         this.removeChild(childNodes2[0]);
       }
-      new HTMLParser(this[window2]).parse(html, this);
+      new HTMLParser(this[window]).parse(html, this);
     }
     get outerHTML() {
       return new HTMLSerializer().serializeToString(this);
     }
     set outerHTML(html) {
-      const childNodes2 = new HTMLParser(this[window2]).parse(html)[nodeArray];
+      const childNodes2 = new HTMLParser(this[window]).parse(html)[nodeArray];
       this.replaceWith(...childNodes2);
     }
     get childElementCount() {
@@ -191127,7 +191224,7 @@ var init_Element = __esm(() => {
       return element;
     }
     insertAdjacentHTML(position, text) {
-      const childNodes2 = new HTMLParser(this[window2]).parse(text)[nodeArray];
+      const childNodes2 = new HTMLParser(this[window]).parse(text)[nodeArray];
       while (childNodes2.length) {
         this.insertAdjacentElement(position, childNodes2[0]);
       }
@@ -191158,7 +191255,7 @@ var init_Element = __esm(() => {
             attributeNamespaceURI = NamespaceURI_default.xlink;
             break;
         }
-        const attribute = NodeFactory.createNode(this[ownerDocument], this[window2].Attr);
+        const attribute = NodeFactory.createNode(this[ownerDocument], this[window].Attr);
         attribute[namespaceURI] = attributeNamespaceURI;
         attribute[name] = name2;
         attribute[localName] = attributeNamespaceURI && nameParts[1] ? nameParts[1] : name2;
@@ -191170,7 +191267,7 @@ var init_Element = __esm(() => {
     setAttributeNS(namespaceURI2, name2, value2) {
       const attribute = this[ownerDocument].createAttributeNS(namespaceURI2, name2);
       if (!namespaceURI2 && attribute[prefix]) {
-        throw new this[window2].DOMException(`Failed to execute 'setAttributeNS' on 'Element': '' is an invalid namespace for attributes.`, DOMExceptionNameEnum_default.namespaceError);
+        throw new this[window].DOMException(`Failed to execute 'setAttributeNS' on 'Element': '' is an invalid namespace for attributes.`, DOMExceptionNameEnum_default.namespaceError);
       }
       attribute[value] = String(value2);
       this[attributes].setNamedItemNS(attribute);
@@ -191234,20 +191331,20 @@ var init_Element = __esm(() => {
       }
     }
     attachShadow(init) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (!init) {
-        throw new window3.TypeError("Failed to execute 'attachShadow' on 'Element': 1 argument required, but only 0 present.");
+        throw new window2.TypeError("Failed to execute 'attachShadow' on 'Element': 1 argument required, but only 0 present.");
       }
       if (!init.mode) {
-        throw new window3.TypeError("Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': Required member is undefined.");
+        throw new window2.TypeError("Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': Required member is undefined.");
       }
       if (init.mode !== "open" && init.mode !== "closed") {
-        throw new window3.TypeError(`Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': The provided value '${init.mode}' is not a valid enum value of type ShadowRootMode.`);
+        throw new window2.TypeError(`Failed to execute 'attachShadow' on 'Element': Failed to read the 'mode' property from 'ShadowRootInit': The provided value '${init.mode}' is not a valid enum value of type ShadowRootMode.`);
       }
       if (this[shadowRoot]) {
-        throw new window3.DOMException("Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree.");
+        throw new window2.DOMException("Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree.");
       }
-      const shadowRoot2 = NodeFactory.createNode(this[ownerDocument], this[window2].ShadowRoot);
+      const shadowRoot2 = NodeFactory.createNode(this[ownerDocument], this[window].ShadowRoot);
       this[shadowRoot] = shadowRoot2;
       shadowRoot2[host] = this;
       shadowRoot2[mode] = init.mode;
@@ -191320,18 +191417,18 @@ var init_Element = __esm(() => {
     }
     removeAttributeNode(attribute) {
       if (attribute[ownerElement] !== this) {
-        throw new this[window2].DOMException("Failed to execute 'removeAttributeNode' on 'Element': The node provided is owned by another element.");
+        throw new this[window].DOMException("Failed to execute 'removeAttributeNode' on 'Element': The node provided is owned by another element.");
       }
       this[attributes][removeNamedItem](attribute);
       return attribute;
     }
     scroll(x3, y3) {
       if (typeof x3 !== "object" && arguments.length === 1) {
-        throw new this[window2].TypeError("Failed to execute 'scroll' on 'Element': The provided value is not of type 'ScrollToOptions'.");
+        throw new this[window].TypeError("Failed to execute 'scroll' on 'Element': The provided value is not of type 'ScrollToOptions'.");
       }
       const options2 = typeof x3 === "object" ? x3 : { left: x3, top: y3 };
       if (options2.behavior === "smooth") {
-        this[window2].setTimeout(() => {
+        this[window].setTimeout(() => {
           if (options2.top !== undefined) {
             const top2 = Number(options2.top);
             this.scrollTop = isNaN(top2) ? 0 : top2;
@@ -191354,13 +191451,13 @@ var init_Element = __esm(() => {
     }
     scrollTo(x3, y3) {
       if (typeof x3 !== "object" && arguments.length === 1) {
-        throw new this[window2].TypeError("Failed to execute 'scrollTo' on 'Element': The provided value is not of type 'ScrollToOptions'.");
+        throw new this[window].TypeError("Failed to execute 'scrollTo' on 'Element': The provided value is not of type 'ScrollToOptions'.");
       }
       this.scroll(x3, y3);
     }
     scrollBy(x3, y3) {
       if (typeof x3 !== "object" && arguments.length === 1) {
-        throw new this[window2].TypeError("Failed to execute 'scrollBy' on 'Element': The provided value is not of type 'ScrollToOptions'.");
+        throw new this[window].TypeError("Failed to execute 'scrollBy' on 'Element': The provided value is not of type 'ScrollToOptions'.");
       }
       const options2 = typeof x3 === "object" ? x3 : { left: x3, top: y3 };
       this.scroll({
@@ -191454,7 +191551,7 @@ var init_Element = __esm(() => {
         this.#addIdentifierToWindow(id2);
       }
       super[connectedToDocument]();
-      this[window2][customElementReactionStack].enqueueReaction(this, "connectedCallback");
+      this[window][customElementReactionStack].enqueueReaction(this, "connectedCallback");
       if (this[shadowRoot]) {
         for (const childNode of this[nodeArray]) {
           this.#onSlotChange(childNode);
@@ -191467,14 +191564,14 @@ var init_Element = __esm(() => {
       if (id2) {
         this.#removeIdentifierFromWindow(id2);
       }
-      this[window2][customElementReactionStack].enqueueReaction(this, "disconnectedCallback");
+      this[window][customElementReactionStack].enqueueReaction(this, "disconnectedCallback");
     }
     [destroy]() {
       const id2 = this.getAttribute("id");
       if (id2) {
         this.#removeIdentifierFromWindow(id2);
       }
-      this[window2][customElementReactionStack].enqueueReaction(this, "disconnectedCallback");
+      this[window][customElementReactionStack].enqueueReaction(this, "disconnectedCallback");
       super[destroy]();
       if (this[shadowRoot]) {
         this[shadowRoot][destroy]();
@@ -191494,7 +191591,7 @@ var init_Element = __esm(() => {
         return;
       }
       const document2 = this[ownerDocument];
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this[rootNode] && this[rootNode] !== document2) {
         return;
       }
@@ -191511,11 +191608,11 @@ var init_Element = __esm(() => {
         if (!entry.htmlCollection) {
           entry.htmlCollection = new HTMLCollection(illegalConstructor, () => entry.elements);
         }
-        if (!(id2 in window3) || window3[id2] === entry.elements[0]) {
-          window3[id2] = entry.htmlCollection;
+        if (!(id2 in window2) || window2[id2] === entry.elements[0]) {
+          window2[id2] = entry.htmlCollection;
         }
-      } else if (!(id2 in window3) || entry.htmlCollection !== null && window3[id2] === entry.htmlCollection) {
-        window3[id2] = element;
+      } else if (!(id2 in window2) || entry.htmlCollection !== null && window2[id2] === entry.htmlCollection) {
+        window2[id2] = element;
       }
     }
     #removeIdentifierFromWindow(id2) {
@@ -191523,7 +191620,7 @@ var init_Element = __esm(() => {
         return;
       }
       const document2 = this[ownerDocument];
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this[rootNode] && this[rootNode] !== document2) {
         return;
       }
@@ -191537,14 +191634,14 @@ var init_Element = __esm(() => {
         entry.elements.splice(index, 1);
       }
       if (entry.elements.length === 1) {
-        if (window3[id2] === entry.htmlCollection) {
-          window3[id2] = entry.elements[0];
+        if (window2[id2] === entry.htmlCollection) {
+          window2[id2] = entry.elements[0];
         }
         entry.htmlCollection = null;
       } else if (!entry.elements.length) {
         document2[elementIdMap].delete(id2);
-        if (window3[id2] === element || window3[id2] === entry.htmlCollection) {
-          delete window3[id2];
+        if (window2[id2] === element || window2[id2] === entry.htmlCollection) {
+          delete window2[id2];
         }
       }
     }
@@ -192083,7 +192180,7 @@ var init_HTMLElement = __esm(() => {
           this.setAttribute("contentEditable", contentEditable);
           break;
         default:
-          throw new this[window2].SyntaxError(`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('${contentEditable}') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`);
+          throw new this[window].SyntaxError(`Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('${contentEditable}') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.`);
       }
     }
     get isContentEditable() {
@@ -192144,7 +192241,7 @@ var init_HTMLElement = __esm(() => {
       for (const childNode of this[nodeArray]) {
         if (childNode[nodeType] === NodeTypeEnum_default.elementNode) {
           const childElement = childNode;
-          const computedStyle2 = this[window2].getComputedStyle(childElement);
+          const computedStyle2 = this[window].getComputedStyle(childElement);
           if (childElement[tagName] !== "SCRIPT" && childElement[tagName] !== "STYLE" && childElement[tagName] !== "svg") {
             const display = computedStyle2.display;
             if (display !== "none") {
@@ -192194,7 +192291,7 @@ var init_HTMLElement = __esm(() => {
     }
     set outerText(text) {
       if (!this[parentNode]) {
-        throw new this[window2].DOMException("Failed to set the 'outerHTML' property on 'Element': This element has no parent node.");
+        throw new this[window].DOMException("Failed to set the 'outerHTML' property on 'Element': This element has no parent node.");
       }
       const texts = text.split(/[\n\r]/);
       for (let i = 0, max = texts.length;i < max; i++) {
@@ -192207,7 +192304,7 @@ var init_HTMLElement = __esm(() => {
     }
     get style() {
       if (!this[style]) {
-        this[style] = new CSSStyleDeclaration(illegalConstructor, this[window2], { element: this });
+        this[style] = new CSSStyleDeclaration(illegalConstructor, this[window], { element: this });
       }
       return this[style];
     }
@@ -192295,10 +192392,10 @@ var init_HTMLElement = __esm(() => {
       return clone2;
     }
     [connectedToDocument]() {
-      const window3 = this[window2];
+      const window2 = this[window];
       const localName2 = this[localName];
-      const allCallbacks = window3.customElements[callbacks];
-      if (this.constructor === window3.HTMLElement && localName2.includes("-") && allCallbacks) {
+      const allCallbacks = window2.customElements[callbacks];
+      if (this.constructor === window2.HTMLElement && localName2.includes("-") && allCallbacks) {
         if (!this.#customElementDefineCallback) {
           const callback = this.#onCustomElementConnected.bind(this);
           const callbacks2 = allCallbacks.get(localName2);
@@ -192313,10 +192410,10 @@ var init_HTMLElement = __esm(() => {
       super[connectedToDocument]();
     }
     [disconnectedFromDocument]() {
-      const window3 = this[window2];
+      const window2 = this[window];
       const localName2 = this[localName];
-      const allCallbacks = window3.customElements[callbacks];
-      if (this.constructor === window3.HTMLElement && localName2.includes("-") && allCallbacks) {
+      const allCallbacks = window2.customElements[callbacks];
+      if (this.constructor === window2.HTMLElement && localName2.includes("-") && allCallbacks) {
         const callbacks2 = allCallbacks.get(localName2);
         if (callbacks2 && this.#customElementDefineCallback) {
           const index = callbacks2.indexOf(this.#customElementDefineCallback);
@@ -192333,11 +192430,11 @@ var init_HTMLElement = __esm(() => {
     }
     [onSetAttribute](attribute, replacedAttribute) {
       super[onSetAttribute](attribute, replacedAttribute);
-      this[window2][customElementReactionStack].enqueueReaction(this, "attributeChangedCallback", [attribute.name, replacedAttribute?.value ?? null, attribute.value]);
+      this[window][customElementReactionStack].enqueueReaction(this, "attributeChangedCallback", [attribute.name, replacedAttribute?.value ?? null, attribute.value]);
     }
     [onRemoveAttribute](removedAttribute) {
       super[onRemoveAttribute](removedAttribute);
-      this[window2][customElementReactionStack].enqueueReaction(this, "attributeChangedCallback", [removedAttribute.name, removedAttribute.value, null]);
+      this[window][customElementReactionStack].enqueueReaction(this, "attributeChangedCallback", [removedAttribute.name, removedAttribute.value, null]);
     }
     [destroy]() {
       super[destroy]();
@@ -192348,7 +192445,7 @@ var init_HTMLElement = __esm(() => {
       if (!this[parentNode]) {
         return;
       }
-      const window3 = this[window2];
+      const window2 = this[window];
       const localName2 = this[localName];
       const newElement = this[ownerDocument].createElement(localName2);
       const newCache = newElement[cache];
@@ -192396,7 +192493,7 @@ var init_HTMLElement = __esm(() => {
       const parentChildElements = newElement[parentNode][elementArray];
       parentChildNodes[parentChildNodes.indexOf(this)] = newElement;
       parentChildElements[parentChildElements.indexOf(this)] = newElement;
-      const allCallbacks = window3.customElements[callbacks];
+      const allCallbacks = window2.customElements[callbacks];
       const callbacks2 = allCallbacks.get(localName2);
       if (callbacks2 && this.#customElementDefineCallback) {
         const index = callbacks2.indexOf(this.#customElementDefineCallback);
@@ -192766,8 +192863,8 @@ var init_HTMLAnchorElement = __esm(() => {
           if (this.relList.contains("noopener")) {
             features.push("noopener");
           }
-          this[window2].open(href2, this.target || "_self", features.join(","));
-          if (this[window2].closed) {
+          this[window].open(href2, this.target || "_self", features.join(","));
+          if (this[window].closed) {
             event.stopImmediatePropagation();
           }
         }
@@ -192928,8 +193025,8 @@ var init_HTMLAreaElement = __esm(() => {
       if (!event[defaultPrevented] && event[type] === "click" && event[eventPhase] === EventPhaseEnum_default.none && event instanceof MouseEvent) {
         const href2 = this.href;
         if (href2) {
-          this[window2].open(href2, this.target || "_self");
-          if (this[window2].closed) {
+          this[window].open(href2, this.target || "_self");
+          if (this[window].closed) {
             event.stopImmediatePropagation();
           }
         }
@@ -192998,7 +193095,7 @@ var init_MediaStream = __esm(() => {
     [tracks] = [];
     constructor(streamOrTracks) {
       super();
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
       if (streamOrTracks !== undefined) {
@@ -193084,7 +193181,7 @@ var init_HTMLMediaElement = __esm(() => {
     [seekable] = new TimeRanges(illegalConstructor);
     [sinkId] = "";
     [played] = new TimeRanges(illegalConstructor);
-    [remote] = new this[window2].RemotePlayback;
+    [remote] = new this[window].RemotePlayback;
     [controlsList] = null;
     [mediaKeys] = null;
     [srcObject] = null;
@@ -193362,7 +193459,7 @@ var init_HTMLMediaElement = __esm(() => {
     }
     set srcObject(srcObject2) {
       if (srcObject2 !== null && !(srcObject2 instanceof MediaStream)) {
-        throw new this[window2].TypeError(`Failed to set the 'srcObject' property on 'HTMLMediaElement': The provided value is not of type 'MediaStream'.`);
+        throw new this[window].TypeError(`Failed to set the 'srcObject' property on 'HTMLMediaElement': The provided value is not of type 'MediaStream'.`);
       }
       this[srcObject] = srcObject2;
     }
@@ -193374,7 +193471,7 @@ var init_HTMLMediaElement = __esm(() => {
       for (const track2 of this.querySelectorAll("track")[items]) {
         items2.push(track2.track);
       }
-      return new this[window2].TextTrackList(illegalConstructor, items2);
+      return new this[window].TextTrackList(illegalConstructor, items2);
     }
     get currentSrc() {
       const src = this.src;
@@ -193390,10 +193487,10 @@ var init_HTMLMediaElement = __esm(() => {
     set volume(volume2) {
       const parsedVolume = Number(volume2);
       if (isNaN(parsedVolume)) {
-        throw new this[window2].TypeError(`Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.`);
+        throw new this[window].TypeError(`Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.`);
       }
       if (parsedVolume < 0 || parsedVolume > 1) {
-        throw new this[window2].DOMException(`Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (${parsedVolume}) is outside the range [0, 1].`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (${parsedVolume}) is outside the range [0, 1].`, DOMExceptionNameEnum_default.indexSizeError);
       }
       this[volume] = parsedVolume;
     }
@@ -193416,7 +193513,7 @@ var init_HTMLMediaElement = __esm(() => {
     set currentTime(currentTime2) {
       const parsedCurrentTime = Number(currentTime2);
       if (isNaN(parsedCurrentTime)) {
-        throw new this[window2].TypeError(`Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided double value is non-finite.`);
+        throw new this[window].TypeError(`Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided double value is non-finite.`);
       }
       this[currentTime] = parsedCurrentTime;
     }
@@ -193426,7 +193523,7 @@ var init_HTMLMediaElement = __esm(() => {
     set playbackRate(playbackRate2) {
       const parsedPlaybackRate = Number(playbackRate2);
       if (isNaN(parsedPlaybackRate)) {
-        throw new this[window2].TypeError(`Failed to set the 'playbackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`);
+        throw new this[window].TypeError(`Failed to set the 'playbackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`);
       }
       this[playbackRate] = parsedPlaybackRate;
     }
@@ -193436,7 +193533,7 @@ var init_HTMLMediaElement = __esm(() => {
     set defaultPlaybackRate(defaultPlaybackRate2) {
       const parsedDefaultPlaybackRate = Number(defaultPlaybackRate2);
       if (isNaN(parsedDefaultPlaybackRate)) {
-        throw new this[window2].TypeError(`Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`);
+        throw new this[window].TypeError(`Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The provided double value is non-finite.`);
       }
       this[defaultPlaybackRate] = parsedDefaultPlaybackRate;
     }
@@ -193461,14 +193558,14 @@ var init_HTMLMediaElement = __esm(() => {
       super.tabIndex = tabIndex;
     }
     addTextTrack(kind2, label2, language2) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (arguments.length === 0) {
-        throw new window3.TypeError(`Failed to execute 'addTextTrack' on 'HTMLMediaElement': 1 argument required, but only 0 present.`);
+        throw new window2.TypeError(`Failed to execute 'addTextTrack' on 'HTMLMediaElement': 1 argument required, but only 0 present.`);
       }
       if (!TextTrackKindEnum_default[kind2]) {
-        throw new window3.TypeError(`Failed to execute 'addTextTrack' on 'HTMLMediaElement': The provided value '${kind2}' is not a valid enum value of type TextTrackKind.`);
+        throw new window2.TypeError(`Failed to execute 'addTextTrack' on 'HTMLMediaElement': The provided value '${kind2}' is not a valid enum value of type TextTrackKind.`);
       }
-      const track2 = new window3.TextTrack(illegalConstructor);
+      const track2 = new window2.TextTrack(illegalConstructor);
       track2[kind] = kind2;
       track2[label] = label2 || "";
       track2[language] = language2 || "";
@@ -193504,7 +193601,7 @@ var init_HTMLMediaElement = __esm(() => {
       this[sinkId] = sinkId2;
     }
     captureStream() {
-      return new this[window2].MediaStream;
+      return new this[window].MediaStream;
     }
     [cloneNode](deep = false) {
       return super[cloneNode](deep);
@@ -193882,7 +193979,7 @@ var init_HTMLButtonElement = __esm(() => {
     }
     set popoverTargetElement(popoverTargetElement2) {
       if (popoverTargetElement2 !== null && !(popoverTargetElement2 instanceof HTMLElement)) {
-        throw new this[window2].TypeError(`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`);
+        throw new this[window].TypeError(`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`);
       }
       this[popoverTargetElement] = popoverTargetElement2;
     }
@@ -194030,8 +194127,8 @@ var init_HTMLCanvasElement = __esm(() => {
       this.setAttribute("height", String(height2));
     }
     captureStream(frameRate) {
-      const stream = new this[window2].MediaStream;
-      const track2 = new this[window2].CanvasCaptureMediaStreamTrack(illegalConstructor, this);
+      const stream = new this[window].MediaStream;
+      const track2 = new this[window].CanvasCaptureMediaStreamTrack(illegalConstructor, this);
       track2[kind] = "video";
       track2[capabilities].deviceId = DEVICE_ID;
       track2[capabilities].aspectRatio.max = this.width;
@@ -194482,10 +194579,10 @@ class BrowserFrameNavigator {
       throw new Error('The frame has been destroyed, the "window" property is not set.');
     }
     if (targetURLWithoutHash.href === currentURLWithoutHash.href && targetURL.hash && targetURL.hash !== frame.window?.location.hash) {
-      const history3 = frame[history2];
+      const history2 = frame[history];
       if (!disableHistory) {
-        history3.currentItem.popState = true;
-        history3.push({
+        history2.currentItem.popState = true;
+        history2.push({
           title: "",
           href: targetURL.href,
           state: null,
@@ -194532,8 +194629,8 @@ class BrowserFrameNavigator {
       return null;
     }
     if (!disableHistory) {
-      const history3 = frame[history2];
-      history3.push({
+      const history2 = frame[history];
+      history2.push({
         title: "",
         href: targetURL.href,
         state: null,
@@ -194641,7 +194738,7 @@ class BrowserFrameNavigator {
       return null;
     }
     if (response.url) {
-      frame.window[location2][setURL](frame, response.url);
+      frame.window[location][setURL](frame, response.url);
     }
     if (!response.ok) {
       frame.page.console.error(`GET ${targetURL.href} ${response.status} (${response.statusText})`);
@@ -194671,8 +194768,8 @@ class BrowserFrameNavigator {
   }
   static navigateBack(options2) {
     const { windowClass, frame, goToOptions } = options2;
-    const history3 = frame[history2];
-    const historyItem = history3.items[history3.items.indexOf(history3.currentItem) - 1];
+    const history2 = frame[history];
+    const historyItem = history2.items[history2.items.indexOf(history2.currentItem) - 1];
     if (!historyItem) {
       return new Promise((resolve) => {
         frame.window.requestAnimationFrame(() => {
@@ -194685,9 +194782,9 @@ class BrowserFrameNavigator {
         });
       });
     }
-    const fromOrigin = new URL(history3.currentItem.href).origin;
+    const fromOrigin = new URL(history2.currentItem.href).origin;
     const toOrigin = new URL(historyItem.href).origin;
-    history3.currentItem = historyItem;
+    history2.currentItem = historyItem;
     if (!historyItem.popState || fromOrigin !== toOrigin) {
       return BrowserFrameNavigator.navigate({
         windowClass,
@@ -194711,8 +194808,8 @@ class BrowserFrameNavigator {
   }
   static navigateForward(options2) {
     const { windowClass, frame, goToOptions } = options2;
-    const history3 = frame[history2];
-    const historyItem = history3.items[history3.items.indexOf(history3.currentItem) + 1];
+    const history2 = frame[history];
+    const historyItem = history2.items[history2.items.indexOf(history2.currentItem) + 1];
     if (!historyItem) {
       return new Promise((resolve) => {
         frame.window.requestAnimationFrame(() => {
@@ -194725,9 +194822,9 @@ class BrowserFrameNavigator {
         });
       });
     }
-    const fromOrigin = new URL(history3.currentItem.href).origin;
+    const fromOrigin = new URL(history2.currentItem.href).origin;
     const toOrigin = new URL(historyItem.href).origin;
-    history3.currentItem = historyItem;
+    history2.currentItem = historyItem;
     if (!historyItem.popState || fromOrigin !== toOrigin) {
       return BrowserFrameNavigator.navigate({
         windowClass,
@@ -194754,10 +194851,10 @@ class BrowserFrameNavigator {
       return this.reload(options2);
     }
     const { windowClass, frame, goToOptions, steps } = options2;
-    const history3 = frame[history2];
-    const fromIndex = history3.items.indexOf(history3.currentItem);
+    const history2 = frame[history];
+    const fromIndex = history2.items.indexOf(history2.currentItem);
     const toIndex = fromIndex + steps;
-    const historyItem = history3.items[toIndex];
+    const historyItem = history2.items[toIndex];
     if (!historyItem) {
       return new Promise((resolve) => {
         frame.window.requestAnimationFrame(() => {
@@ -194770,24 +194867,24 @@ class BrowserFrameNavigator {
         });
       });
     }
-    const fromOrigin = new URL(history3.currentItem.href).origin;
+    const fromOrigin = new URL(history2.currentItem.href).origin;
     let isPopState = true;
     if (steps < 0) {
       for (let i = fromIndex;i > toIndex; i--) {
-        if (!history3.items[i].popState || fromOrigin !== new URL(history3.items[i].href).origin) {
+        if (!history2.items[i].popState || fromOrigin !== new URL(history2.items[i].href).origin) {
           isPopState = false;
           break;
         }
       }
     } else {
       for (let i = fromIndex;i < toIndex; i++) {
-        if (!history3.items[i].popState || fromOrigin !== new URL(history3.items[i].href).origin) {
+        if (!history2.items[i].popState || fromOrigin !== new URL(history2.items[i].href).origin) {
           isPopState = false;
           break;
         }
       }
     }
-    history3.currentItem = historyItem;
+    history2.currentItem = historyItem;
     if (!isPopState) {
       return BrowserFrameNavigator.navigate({
         windowClass,
@@ -194811,7 +194908,7 @@ class BrowserFrameNavigator {
   }
   static reload(options2) {
     const { windowClass, frame, goToOptions } = options2;
-    const history3 = frame[history2];
+    const history2 = frame[history];
     return BrowserFrameNavigator.navigate({
       windowClass,
       frame,
@@ -194819,9 +194916,9 @@ class BrowserFrameNavigator {
         ...goToOptions,
         referrer: frame.url
       },
-      url: history3.currentItem.href,
-      method: history3.currentItem.method,
-      formData: history3.currentItem.formData,
+      url: history2.currentItem.href,
+      method: history2.currentItem.method,
+      formData: history2.currentItem.formData,
       disableHistory: true
     });
   }
@@ -195201,7 +195298,7 @@ var init_HTMLFormElement = __esm(() => {
         }
       }
       const action = submitter?.hasAttribute("formaction") ? submitter?.formAction || this.action : this.action;
-      const browserFrame = new WindowBrowserContext(this[window2]).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(this[window]).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
@@ -195209,7 +195306,7 @@ var init_HTMLFormElement = __esm(() => {
         this[ownerDocument].location.hash = "#blocked";
         return;
       }
-      const formData = new this[window2].FormData(this, submitter);
+      const formData = new this[window].FormData(this, submitter);
       let targetFrame;
       switch (submitter?.formTarget || this.target) {
         default:
@@ -195506,7 +195603,7 @@ var init_HTMLIFrameElement = __esm(() => {
       }
     }
     #validateSandboxFlags() {
-      const window3 = this[window2];
+      const window2 = this[window];
       const invalidFlags = [];
       for (const token of this.sandbox) {
         if (!SANDBOX_FLAGS.includes(token)) {
@@ -195514,9 +195611,9 @@ var init_HTMLIFrameElement = __esm(() => {
         }
       }
       if (invalidFlags.length === 1) {
-        window3.console.error(`Error while parsing the 'sandbox' attribute: '${invalidFlags[0]}' is an invalid sandbox flag.`);
+        window2.console.error(`Error while parsing the 'sandbox' attribute: '${invalidFlags[0]}' is an invalid sandbox flag.`);
       } else if (invalidFlags.length > 1) {
-        window3.console.error(`Error while parsing the 'sandbox' attribute: '${invalidFlags.join(`', '`)}' are invalid sandbox flags.`);
+        window2.console.error(`Error while parsing the 'sandbox' attribute: '${invalidFlags.join(`', '`)}' are invalid sandbox flags.`);
       }
     }
     #loadPage() {
@@ -195525,8 +195622,8 @@ var init_HTMLIFrameElement = __esm(() => {
         return;
       }
       const srcdoc = this.getAttribute("srcdoc");
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
@@ -195543,7 +195640,7 @@ var init_HTMLIFrameElement = __esm(() => {
         this.#iframe.window.document.open();
         this.#iframe.window.document.write(srcdoc);
         this.#loadedSrcdoc = srcdoc;
-        this[window2].requestAnimationFrame(() => this.dispatchEvent(new Event("load")));
+        this[window].requestAnimationFrame(() => this.dispatchEvent(new Event("load")));
         return;
       }
       if (this.#loadedSrcdoc !== null) {
@@ -195555,13 +195652,13 @@ var init_HTMLIFrameElement = __esm(() => {
         return;
       }
       if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
-        const error2 = new window3.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
+        const error2 = new window2.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
         browserFrame.page.console.error(error2);
         this.dispatchEvent(new Event("error"));
         return;
       }
       const isSameOrigin = originURL.origin === targetURL.origin || targetURL.origin === "null";
-      const parentWindow = isSameOrigin ? window3 : new CrossOriginBrowserWindow(window3);
+      const parentWindow = isSameOrigin ? window2 : new CrossOriginBrowserWindow(window2);
       this.#iframe = this.#iframe ?? BrowserFrameFactory.createChildFrame(browserFrame);
       this.#iframe.window[top] = parentWindow;
       this.#iframe.window[parent] = parentWindow;
@@ -195572,7 +195669,7 @@ var init_HTMLIFrameElement = __esm(() => {
         browserFrame.page.console.error(error2);
         this.dispatchEvent(new Event("error"));
       });
-      this.#contentWindowContainer.window = isSameOrigin ? this.#iframe.window : new CrossOriginBrowserWindow(this.#iframe.window, window3);
+      this.#contentWindowContainer.window = isSameOrigin ? this.#iframe.window : new CrossOriginBrowserWindow(this.#iframe.window, window2);
     }
     #unloadPage() {
       if (this.#iframe) {
@@ -196360,7 +196457,7 @@ var init_HTMLInputElement = __esm(() => {
           break;
         case "file":
           if (value2 !== null && value2 !== "") {
-            throw new this[window2].DOMException('Input elements of type "file" may only programmatically set the value to empty string.', DOMExceptionNameEnum_default.invalidStateError);
+            throw new this[window].DOMException('Input elements of type "file" may only programmatically set the value to empty string.', DOMExceptionNameEnum_default.invalidStateError);
           }
           this[files] = new FileList;
           break;
@@ -196386,7 +196483,7 @@ var init_HTMLInputElement = __esm(() => {
     }
     set selectionStart(start2) {
       if (!this.#isSelectionSupported()) {
-        throw new this[window2].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       this.setSelectionRange(start2, Math.max(start2, this.selectionEnd), this.#selectionDirection);
     }
@@ -196401,7 +196498,7 @@ var init_HTMLInputElement = __esm(() => {
     }
     set selectionEnd(end2) {
       if (!this.#isSelectionSupported()) {
-        throw new this[window2].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       this.setSelectionRange(this.selectionStart, end2, this.#selectionDirection);
     }
@@ -196413,7 +196510,7 @@ var init_HTMLInputElement = __esm(() => {
     }
     set selectionDirection(direction) {
       if (!this.#isSelectionSupported()) {
-        throw new this[window2].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       this.setSelectionRange(this.#selectionStart, this.#selectionEnd, direction);
     }
@@ -196439,12 +196536,12 @@ var init_HTMLInputElement = __esm(() => {
     }
     set valueAsDate(value2) {
       if (!["date", "month", "time", "week"].includes(this.type)) {
-        throw new this[window2].DOMException("Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.", DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException("Failed to set the 'valueAsDate' property on 'HTMLInputElement': This input element does not support Date values.", DOMExceptionNameEnum_default.invalidStateError);
       }
       if (typeof value2 !== "object") {
-        throw new this[window2].TypeError("Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'.");
+        throw new this[window].TypeError("Failed to set the 'valueAsDate' property on 'HTMLInputElement': Failed to convert value to 'object'.");
       } else if (value2 && !(value2 instanceof Date)) {
-        throw new this[window2].TypeError("Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date.");
+        throw new this[window].TypeError("Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date.");
       } else if (value2 === null || isNaN(value2.getTime())) {
         this.value = "";
         return;
@@ -196547,7 +196644,7 @@ var init_HTMLInputElement = __esm(() => {
           break;
         }
         default:
-          throw new this[window2].DOMException("Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.", DOMExceptionNameEnum_default.invalidStateError);
+          throw new this[window].DOMException("Failed to set the 'valueAsNumber' property on 'HTMLInputElement': This input element does not support Number values.", DOMExceptionNameEnum_default.invalidStateError);
       }
     }
     get labels() {
@@ -196566,7 +196663,7 @@ var init_HTMLInputElement = __esm(() => {
     }
     set popoverTargetElement(popoverTargetElement2) {
       if (popoverTargetElement2 !== null && !(popoverTargetElement2 instanceof HTMLElement)) {
-        throw new this[window2].TypeError(`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`);
+        throw new this[window].TypeError(`Failed to set the 'popoverTargetElement' property on 'HTMLInputElement': Failed to convert value to 'Element'.`);
       }
       this[popoverTargetElement] = popoverTargetElement2;
     }
@@ -196605,7 +196702,7 @@ var init_HTMLInputElement = __esm(() => {
     }
     setSelectionRange(start2, end2, direction = "none") {
       if (!this.#isSelectionSupported()) {
-        throw new this[window2].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       this.#selectionEnd = Math.min(end2, this.value.length);
       this.#selectionStart = Math.min(start2, this.#selectionEnd);
@@ -196614,7 +196711,7 @@ var init_HTMLInputElement = __esm(() => {
     }
     setRangeText(replacement, start2 = null, end2 = null, selectionMode = HTMLInputElementSelectionModeEnum_default.preserve) {
       if (!this.#isSelectionSupported()) {
-        throw new this[window2].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`The input element's type (${this.type}) does not support selection.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       if (start2 === null) {
         start2 = this.#selectionStart;
@@ -196623,7 +196720,7 @@ var init_HTMLInputElement = __esm(() => {
         end2 = this.#selectionEnd;
       }
       if (start2 > end2) {
-        throw new this[window2].DOMException("The index is not in the allowed range.", DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException("The index is not in the allowed range.", DOMExceptionNameEnum_default.invalidStateError);
       }
       start2 = Math.min(start2, this.value.length);
       end2 = Math.min(end2, this.value.length);
@@ -197355,8 +197452,8 @@ var init_SyncFetch = __esm(() => {
 // ../../node_modules/happy-dom/lib/fetch/ResourceFetch.js
 class ResourceFetch {
   window;
-  constructor(window3) {
-    this.window = window3;
+  constructor(window2) {
+    this.window = window2;
   }
   async fetch(url2, destination, options2) {
     const browserFrame = new WindowBrowserContext(this.window).getBrowserFrame();
@@ -197566,10 +197663,10 @@ var init_ModuleURLUtility = __esm(() => {
   ModuleURLUtility = class ModuleURLUtility {
     static nodeModuleResolveCache = new Map;
     static packageJsonCache = new Map;
-    static getURL(window3, parentURL, url2) {
+    static getURL(window2, parentURL, url2) {
       const parentURLString = typeof parentURL === "string" ? parentURL : parentURL.href;
-      const importMap = window3[moduleImportMap];
-      const resolved = this.resolveURL(window3, parentURLString, url2);
+      const importMap = window2[moduleImportMap];
+      const resolved = this.resolveURL(window2, parentURLString, url2);
       if (!importMap) {
         return new URL10(resolved, parentURLString);
       }
@@ -197597,8 +197694,8 @@ var init_ModuleURLUtility = __esm(() => {
       this.nodeModuleResolveCache.clear();
       this.packageJsonCache.clear();
     }
-    static resolveURL(window3, parentURL, url2) {
-      const settings2 = new WindowBrowserContext(window3).getSettings();
+    static resolveURL(window2, parentURL, url2) {
+      const settings2 = new WindowBrowserContext(window2).getSettings();
       if (!settings2) {
         return url2;
       }
@@ -197607,7 +197704,7 @@ var init_ModuleURLUtility = __esm(() => {
         resolvedURL = this.resolveNodeModuleURL(settings2.module.resolveNodeModules, url2);
       }
       if (settings2.module.urlResolver) {
-        resolvedURL = settings2.module.urlResolver({ url: resolvedURL, parentURL, window: window3 });
+        resolvedURL = settings2.module.urlResolver({ url: resolvedURL, parentURL, window: window2 });
       }
       return resolvedURL;
     }
@@ -197714,8 +197811,8 @@ class ECMAScriptModuleCompiler {
     doubleString: []
   };
   templateString = [];
-  constructor(window3) {
-    this.window = window3;
+  constructor(window2) {
+    this.window = window2;
   }
   compile(moduleURL, code, sourceURL = null) {
     const browserContext = new WindowBrowserContext(this.window).getBrowserContext();
@@ -198280,7 +198377,7 @@ var init_ECMAScriptModule = __esm(() => {
   EMPTY_COMPILED_RESULT = { imports: [], execute: async () => {} };
   ECMAScriptModule = class ECMAScriptModule {
     url;
-    [window2];
+    [window];
     #source;
     #sourceURL;
     #preloaded = false;
@@ -198289,7 +198386,7 @@ var init_ECMAScriptModule = __esm(() => {
     #evaluateQueue = null;
     #factory;
     constructor(init) {
-      this[window2] = init.window;
+      this[window] = init.window;
       this.url = init.url;
       this.#source = init.source;
       this.#sourceURL = init.sourceURL || null;
@@ -198312,8 +198409,8 @@ var init_ECMAScriptModule = __esm(() => {
       }
       const compiled = this.#compile();
       const modulePromises = [];
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return {};
       }
@@ -198347,7 +198444,7 @@ var init_ECMAScriptModule = __esm(() => {
       }
       const href2 = this.url.href;
       compiled.execute({
-        dispatchError: window3[dispatchError].bind(window3),
+        dispatchError: window2[dispatchError].bind(window2),
         dynamicImport: this.#factory.importModule.bind(this.#factory),
         importMeta: {
           url: href2,
@@ -198371,8 +198468,8 @@ var init_ECMAScriptModule = __esm(() => {
       this.#preloaded = true;
       const compiled = this.#compile();
       const modulePromises = [];
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
@@ -198393,7 +198490,7 @@ var init_ECMAScriptModule = __esm(() => {
         return this.#compiled;
       }
       this.#compiled = EMPTY_COMPILED_RESULT;
-      const compiler = new ECMAScriptModuleCompiler(this[window2]);
+      const compiler = new ECMAScriptModuleCompiler(this[window]);
       this.#compiled = compiler.compile(this.url.href, this.#source, this.#sourceURL);
       return this.#compiled;
     }
@@ -198404,38 +198501,38 @@ var init_ECMAScriptModule = __esm(() => {
 class ModuleFactory {
   window;
   parentURL;
-  constructor(window3, parentURL) {
-    this.window = window3;
+  constructor(window2, parentURL) {
+    this.window = window2;
     this.parentURL = parentURL;
   }
   async getModule(url2, options2) {
-    const window3 = this.window;
+    const window2 = this.window;
     const parentURL = this.parentURL;
-    const absoluteURL = ModuleURLUtility.getURL(window3, parentURL, url2);
+    const absoluteURL = ModuleURLUtility.getURL(window2, parentURL, url2);
     const absoluteURLString = absoluteURL.href;
     const type2 = options2?.with?.type || "esm";
     if (type2 !== "esm" && type2 !== "css" && type2 !== "json") {
-      throw new window3.TypeError(`Failed to import module "${absoluteURL}" from "${parentURL}": Unknown type "${type2}"`);
+      throw new window2.TypeError(`Failed to import module "${absoluteURL}" from "${parentURL}": Unknown type "${type2}"`);
     }
-    const cached = window3[modules][type2].get(absoluteURLString);
+    const cached = window2[modules][type2].get(absoluteURLString);
     if (cached) {
       if (cached instanceof UnresolvedModule) {
         await new Promise((resolve, reject) => {
           cached.addResolveListener(resolve, reject);
         });
-        return window3[modules][type2].get(absoluteURLString);
+        return window2[modules][type2].get(absoluteURLString);
       }
       return cached;
     }
-    const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+    const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
     if (!browserFrame) {
-      throw new window3.TypeError(`Failed to import module "${absoluteURL}" from "${parentURL}": Window is closed and is no longer attached to a frame`);
+      throw new window2.TypeError(`Failed to import module "${absoluteURL}" from "${parentURL}": Window is closed and is no longer attached to a frame`);
     }
-    const unresolvedModule = new UnresolvedModule({ window: window3, url: absoluteURL });
-    const readyStateManager2 = window3[readyStateManager];
+    const unresolvedModule = new UnresolvedModule({ window: window2, url: absoluteURL });
+    const readyStateManager2 = window2[readyStateManager];
     const taskID = readyStateManager2.startTask();
-    window3[modules][type2].set(absoluteURLString, unresolvedModule);
-    const resourceFetch = new ResourceFetch(window3);
+    window2[modules][type2].set(absoluteURLString, unresolvedModule);
+    const resourceFetch = new ResourceFetch(window2);
     let response;
     try {
       response = await resourceFetch.fetch(absoluteURL, "module");
@@ -198448,22 +198545,22 @@ class ModuleFactory {
     let module;
     switch (type2) {
       case "json":
-        module = new JSONModule({ window: window3, url: absoluteURL, source: response.content });
+        module = new JSONModule({ window: window2, url: absoluteURL, source: response.content });
         break;
       case "css":
-        module = new CSSModule({ window: window3, url: absoluteURL, source: response.content });
+        module = new CSSModule({ window: window2, url: absoluteURL, source: response.content });
         break;
       case "esm":
         module = new ECMAScriptModule({
-          window: window3,
+          window: window2,
           url: absoluteURL,
           source: response.content,
           sourceURL: response.virtualServerFile || absoluteURLString,
-          factory: new ModuleFactory(window3, absoluteURL)
+          factory: new ModuleFactory(window2, absoluteURL)
         });
         break;
     }
-    window3[modules][type2].set(absoluteURLString, module);
+    window2[modules][type2].set(absoluteURLString, module);
     unresolvedModule.resolve();
     return module;
   }
@@ -198652,13 +198749,13 @@ var init_HTMLLinkElement = __esm(() => {
       }
     }
     async#preloadModule(url2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
-      const browserSettings = new WindowBrowserContext(window3).getSettings();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
+      const browserSettings = new WindowBrowserContext(window2).getSettings();
       if (!browserFrame || !browserSettings || !this[isConnected] || browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation) {
         return;
       }
-      const moduleFactory = new ModuleFactory(window3, window3.location);
+      const moduleFactory = new ModuleFactory(window2, window2.location);
       if (browserSettings.disableErrorCapturing || browserSettings.errorCapture !== BrowserErrorCaptureEnum_default.tryAndCatch) {
         const module = await moduleFactory.getModule(url2);
         await module.preload();
@@ -198668,14 +198765,14 @@ var init_HTMLLinkElement = __esm(() => {
           await module.preload();
         } catch (error2) {
           browserFrame.page.console.error(error2);
-          window3[dispatchError](error2);
+          window2[dispatchError](error2);
           return;
         }
       }
     }
     async#preloadResource(url2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       const as = this.as;
       if (!browserFrame || !this[isConnected] || as !== "script" && as !== "style" && as !== "fetch") {
         return;
@@ -198687,21 +198784,21 @@ var init_HTMLLinkElement = __esm(() => {
       if (as === "style" && browserSettings.disableCSSFileLoading) {
         return;
       }
-      const absoluteURL = new URL(url2, window3.location.href).href;
+      const absoluteURL = new URL(url2, window2.location.href).href;
       const preloadKey = PreloadUtility.getKey({
         url: absoluteURL,
         destination: as,
         mode: "cors",
         credentialsMode: this.crossOrigin === "use-credentials" ? "include" : "same-origin"
       });
-      if (window3.document[preloads].has(preloadKey)) {
+      if (window2.document[preloads].has(preloadKey)) {
         return;
       }
       const preloadEntry = new PreloadEntry;
-      window3.document[preloads].set(preloadKey, preloadEntry);
+      window2.document[preloads].set(preloadKey, preloadEntry);
       const fetch2 = new Fetch({
         browserFrame,
-        window: window3,
+        window: window2,
         url: absoluteURL,
         disableSameOriginPolicy: as === "script" || as === "style",
         disablePreload: true,
@@ -198717,13 +198814,13 @@ var init_HTMLLinkElement = __esm(() => {
         preloadEntry.responseAvailable(null, response);
       } catch (error2) {
         preloadEntry.responseAvailable(error2, null);
-        window3.document[preloads].delete(preloadKey);
+        window2.document[preloads].delete(preloadKey);
         browserFrame.page.console.error(`Failed to preload resource "${absoluteURL}": ${error2.message}`);
       }
     }
     async#loadStyleSheet(url2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame || url2 === null) {
         return;
       }
@@ -198733,7 +198830,7 @@ var init_HTMLLinkElement = __esm(() => {
       }
       let absoluteURL;
       try {
-        absoluteURL = new URL(url2, window3.location.href).href;
+        absoluteURL = new URL(url2, window2.location.href).href;
       } catch (error3) {
         return;
       }
@@ -198744,14 +198841,14 @@ var init_HTMLLinkElement = __esm(() => {
         if (browserSettings.handleDisabledFileLoadingAsSuccess) {
           this.dispatchEvent(new Event("load"));
         } else {
-          const error3 = new window3.DOMException(`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
+          const error3 = new window2.DOMException(`Failed to load external stylesheet "${absoluteURL}". CSS file loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
           browserFrame.page.console.error(error3);
           this.dispatchEvent(new Event("error"));
         }
         return;
       }
-      const resourceFetch = new ResourceFetch(window3);
-      const readyStateManager2 = window3[readyStateManager];
+      const resourceFetch = new ResourceFetch(window2);
+      const readyStateManager2 = window2[readyStateManager];
       this.#loadedStyleSheetURL = absoluteURL;
       const taskID = readyStateManager2.startTask();
       let response = null;
@@ -198768,7 +198865,7 @@ var init_HTMLLinkElement = __esm(() => {
         browserFrame.page.console.error(error2);
         this.dispatchEvent(new Event("error"));
       } else {
-        const styleSheet = new this[ownerDocument][window2].CSSStyleSheet;
+        const styleSheet = new this[ownerDocument][window].CSSStyleSheet;
         styleSheet.replaceSync(response.content);
         this[sheet] = styleSheet;
         const document2 = this[ownerDocument];
@@ -198889,7 +198986,7 @@ var init_HTMLMeterElement = __esm(() => {
     set high(high) {
       high = typeof high !== "number" ? Number(high) : high;
       if (isNaN(high)) {
-        throw new this[window2].TypeError("Failed to set the 'high' property on 'HTMLMeterElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'high' property on 'HTMLMeterElement': The provided double value is non-finite.");
       }
       this.setAttribute("high", String(high));
     }
@@ -198906,7 +199003,7 @@ var init_HTMLMeterElement = __esm(() => {
     set low(low) {
       low = typeof low !== "number" ? Number(low) : low;
       if (isNaN(low)) {
-        throw new this[window2].TypeError("Failed to set the 'low' property on 'HTMLMeterElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'low' property on 'HTMLMeterElement': The provided double value is non-finite.");
       }
       this.setAttribute("low", String(low));
     }
@@ -198923,7 +199020,7 @@ var init_HTMLMeterElement = __esm(() => {
     set max(max) {
       max = typeof max !== "number" ? Number(max) : max;
       if (isNaN(max)) {
-        throw new this[window2].TypeError("Failed to set the 'max' property on 'HTMLMeterElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'max' property on 'HTMLMeterElement': The provided double value is non-finite.");
       }
       this.setAttribute("max", String(max));
     }
@@ -198940,7 +199037,7 @@ var init_HTMLMeterElement = __esm(() => {
     set min(min) {
       min = typeof min !== "number" ? Number(min) : min;
       if (isNaN(min)) {
-        throw new this[window2].TypeError("Failed to set the 'min' property on 'HTMLMeterElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'min' property on 'HTMLMeterElement': The provided double value is non-finite.");
       }
       this.setAttribute("min", String(min));
     }
@@ -198960,7 +199057,7 @@ var init_HTMLMeterElement = __esm(() => {
     set optimum(optimum) {
       optimum = typeof optimum !== "number" ? Number(optimum) : optimum;
       if (isNaN(optimum)) {
-        throw new this[window2].TypeError("Failed to set the 'optimum' property on 'HTMLMeterElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'optimum' property on 'HTMLMeterElement': The provided double value is non-finite.");
       }
       this.setAttribute("optimum", String(optimum));
     }
@@ -198977,7 +199074,7 @@ var init_HTMLMeterElement = __esm(() => {
     set value(value2) {
       value2 = typeof value2 !== "number" ? Number(value2) : value2;
       if (isNaN(value2)) {
-        throw new this[window2].TypeError("Failed to set the 'value' property on 'HTMLMeterElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'value' property on 'HTMLMeterElement': The provided double value is non-finite.");
       }
       this.setAttribute("value", String(value2));
     }
@@ -199394,7 +199491,7 @@ var init_HTMLProgressElement = __esm(() => {
     set max(max) {
       max = typeof max !== "number" ? Number(max) : max;
       if (isNaN(max)) {
-        throw new this[window2].TypeError("Failed to set the 'max' property on 'HTMLProgressElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'max' property on 'HTMLProgressElement': The provided double value is non-finite.");
       }
       this.setAttribute("max", max < 0 ? "1" : String(max));
     }
@@ -199411,7 +199508,7 @@ var init_HTMLProgressElement = __esm(() => {
     set value(value2) {
       value2 = typeof value2 !== "number" ? Number(value2) : value2;
       if (isNaN(value2)) {
-        throw new this[window2].TypeError("Failed to set the 'value' property on 'HTMLProgressElement': The provided double value is non-finite.");
+        throw new this[window].TypeError("Failed to set the 'value' property on 'HTMLProgressElement': The provided double value is non-finite.");
       }
       this.setAttribute("value", value2 < 0 ? "0" : String(value2));
     }
@@ -199465,8 +199562,8 @@ class JavaScriptCompiler {
     doubleString: 0
   };
   templateString = [];
-  constructor(window3) {
-    this.window = window3;
+  constructor(window2) {
+    this.window = window2;
   }
   compile(sourceURL, code) {
     const browserSettings = new WindowBrowserContext(this.window).getSettings();
@@ -199814,7 +199911,7 @@ var init_HTMLScriptElement = __esm(() => {
       return super[cloneNode](deep);
     }
     [connectedToDocument]() {
-      const browserSettings = new WindowBrowserContext(this[window2]).getSettings();
+      const browserSettings = new WindowBrowserContext(this[window]).getSettings();
       super[connectedToDocument]();
       if (this[disableEvaluation]) {
         return;
@@ -199852,30 +199949,30 @@ var init_HTMLScriptElement = __esm(() => {
     }
     #evaluateModule(source) {
       const url2 = this[ownerDocument].location;
-      const window3 = this[window2];
-      const browserSettings = new WindowBrowserContext(window3).getSettings();
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserSettings = new WindowBrowserContext(window2).getSettings();
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame || !browserSettings || !browserSettings.enableJavaScriptEvaluation) {
         return;
       }
       this[ownerDocument][currentScript] = this;
-      const factory = new ModuleFactory(window3, url2);
-      const module = new ECMAScriptModule({ window: window3, url: url2, source, factory });
+      const factory = new ModuleFactory(window2, url2);
+      const module = new ECMAScriptModule({ window: window2, url: url2, source, factory });
       if (browserSettings.disableErrorCapturing || browserSettings.errorCapture !== BrowserErrorCaptureEnum_default.tryAndCatch) {
         module.evaluate();
       } else {
         module.evaluate().catch((error2) => {
-          window3[dispatchError](error2);
+          window2[dispatchError](error2);
         });
       }
       this[ownerDocument][currentScript] = null;
       this.dispatchEvent(new Event("load"));
     }
     async#evaluateImportMap(source) {
-      const window3 = this[window2];
-      const browserSettings = new WindowBrowserContext(window3).getSettings();
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
-      if (!browserFrame || !browserSettings || window3[moduleImportMap] || !browserSettings.enableJavaScriptEvaluation) {
+      const window2 = this[window];
+      const browserSettings = new WindowBrowserContext(window2).getSettings();
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
+      if (!browserFrame || !browserSettings || window2[moduleImportMap] || !browserSettings.enableJavaScriptEvaluation) {
         return;
       }
       let json;
@@ -199885,7 +199982,7 @@ var init_HTMLScriptElement = __esm(() => {
         try {
           json = JSON.parse(source);
         } catch (error2) {
-          window3[dispatchError](error2);
+          window2[dispatchError](error2);
           return;
         }
       }
@@ -199918,29 +200015,29 @@ var init_HTMLScriptElement = __esm(() => {
             importMap.scopes.push(scope);
           }
         }
-        window3[moduleImportMap] = importMap;
+        window2[moduleImportMap] = importMap;
       }
     }
     #evaluateScript(code) {
-      const window3 = this[window2];
-      const browserSettings = new WindowBrowserContext(window3).getSettings();
+      const window2 = this[window];
+      const browserSettings = new WindowBrowserContext(window2).getSettings();
       if (!browserSettings) {
         return;
       }
       this[ownerDocument][currentScript] = this;
-      const compiler = new JavaScriptCompiler(window3);
-      const compiled = compiler.compile(window3.location.href, code);
-      const moduleFactory = new ModuleFactory(window3, window3.location);
+      const compiler = new JavaScriptCompiler(window2);
+      const compiled = compiler.compile(window2.location.href, code);
+      const moduleFactory = new ModuleFactory(window2, window2.location);
       compiled.execute({
         dynamicImport: moduleFactory.importModule.bind(moduleFactory),
-        dispatchError: window3[dispatchError].bind(window3)
+        dispatchError: window2[dispatchError].bind(window2)
       });
       this[ownerDocument][currentScript] = null;
     }
     async#loadModule(url2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
-      const browserSettings = new WindowBrowserContext(window3).getSettings();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
+      const browserSettings = new WindowBrowserContext(window2).getSettings();
       if (!browserFrame || !browserSettings) {
         return;
       }
@@ -199951,13 +200048,13 @@ var init_HTMLScriptElement = __esm(() => {
         if (browserSettings.handleDisabledFileLoadingAsSuccess) {
           this.dispatchEvent(new Event("load"));
         } else {
-          const error2 = new window3.DOMException(`Failed to load module "${url2}". JavaScript file loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
+          const error2 = new window2.DOMException(`Failed to load module "${url2}". JavaScript file loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
           browserFrame.page.console.error(error2);
           this.dispatchEvent(new Event("error"));
         }
         return;
       }
-      const moduleFactory = new ModuleFactory(window3, window3.location);
+      const moduleFactory = new ModuleFactory(window2, window2.location);
       if (browserSettings.disableErrorCapturing || browserSettings.errorCapture !== BrowserErrorCaptureEnum_default.tryAndCatch) {
         const module = await moduleFactory.getModule(url2);
         await module.evaluate();
@@ -199974,8 +200071,8 @@ var init_HTMLScriptElement = __esm(() => {
       this.dispatchEvent(new Event("load"));
     }
     async#loadScript(url2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
@@ -199986,7 +200083,7 @@ var init_HTMLScriptElement = __esm(() => {
       }
       let absoluteURL;
       try {
-        absoluteURL = new URL(url2, window3.location.href);
+        absoluteURL = new URL(url2, window2.location.href);
       } catch (error2) {
         return;
       }
@@ -199998,18 +200095,18 @@ var init_HTMLScriptElement = __esm(() => {
         if (browserSettings.handleDisabledFileLoadingAsSuccess) {
           this.dispatchEvent(new Event("load"));
         } else {
-          const error2 = new window3.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
+          const error2 = new window2.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum_default.notSupportedError);
           browserFrame.page.console.error(error2);
           this.dispatchEvent(new Event("error"));
         }
         return;
       }
       this.#loadedScriptURL = absoluteURLString;
-      const resourceFetch = new ResourceFetch(window3);
+      const resourceFetch = new ResourceFetch(window2);
       const async = this.getAttribute("async") !== null || this.getAttribute("defer") !== null;
       let response = null;
       if (async) {
-        const readyStateManager2 = window3[readyStateManager];
+        const readyStateManager2 = window2[readyStateManager];
         const taskID = readyStateManager2.startTask();
         try {
           response = await resourceFetch.fetch(absoluteURLString, "script", {
@@ -200036,12 +200133,12 @@ var init_HTMLScriptElement = __esm(() => {
         }
       }
       this[ownerDocument][currentScript] = this;
-      const compiler = new JavaScriptCompiler(window3);
+      const compiler = new JavaScriptCompiler(window2);
       const compiled = compiler.compile(response.virtualServerFile || absoluteURLString, response.content);
-      const moduleFactory = new ModuleFactory(window3, window3.location);
+      const moduleFactory = new ModuleFactory(window2, window2.location);
       compiled.execute({
         dynamicImport: moduleFactory.importModule.bind(moduleFactory),
-        dispatchError: window3[dispatchError].bind(window3)
+        dispatchError: window2[dispatchError].bind(window2)
       });
       this[ownerDocument][currentScript] = null;
       this.dispatchEvent(new Event("load"));
@@ -200142,7 +200239,7 @@ var init_HTMLSelectElement = __esm(() => {
             return true;
           }
           if (!newValue || !(newValue instanceof HTMLOptionElement)) {
-            throw new target2[window2].Error(`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`);
+            throw new target2[window].Error(`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`);
           }
           const options2 = QuerySelector.querySelectorAll(target2, "option")[items];
           const childNodes2 = target2[nodeArray];
@@ -200195,7 +200292,7 @@ var init_HTMLSelectElement = __esm(() => {
             return true;
           }
           if (!descriptor.value || !(descriptor.value instanceof HTMLOptionElement)) {
-            throw new target2[window2].Error(`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`);
+            throw new target2[window].Error(`TypeError: Failed to set an indexed property [${index}] on 'HTMLSelectElement': parameter 2 is not of type 'HTMLOptionElement'.`);
           }
           const options2 = QuerySelector.querySelectorAll(target2, "option")[items];
           const childNodes2 = target2[nodeArray];
@@ -200422,16 +200519,16 @@ var init_HTMLSelectElement = __esm(() => {
         this[appendChild](element);
         return;
       }
-      const window3 = this[window2];
+      const window2 = this[window];
       if (typeof before !== "number") {
         if (!(before instanceof HTMLOptionElement)) {
-          throw new window3.DOMException("Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not an 'HTMLOptionElement'.");
+          throw new window2.DOMException("Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not an 'HTMLOptionElement'.");
         }
         before = options2.indexOf(before);
       }
       const optionsElement = options2[before];
       if (!optionsElement) {
-        throw new window3.DOMException("Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node.");
+        throw new window2.DOMException("Failed to execute 'add' on 'HTMLFormElement': The node before which the new node is to be inserted before is not a child of this node.");
       }
       const childNodes2 = this[nodeArray];
       while (childNodes2.length) {
@@ -200778,7 +200875,7 @@ var init_HTMLStyleElement = __esm(() => {
         return null;
       }
       if (!this[sheet]) {
-        this[sheet] = new this[ownerDocument][window2].CSSStyleSheet;
+        this[sheet] = new this[ownerDocument][window].CSSStyleSheet;
         this[sheet].replaceSync(this.textContent);
       }
       return this[sheet];
@@ -200884,10 +200981,10 @@ var init_HTMLTableSectionElement = __esm(() => {
       }
       const rows2 = QuerySelector.querySelectorAll(this, "tr")[items];
       if (index < -1) {
-        throw new this[window2].DOMException(`Failed to execute 'insertRow' on 'HTMLTableSectionElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertRow' on 'HTMLTableSectionElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index > rows2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'insertRow' on 'HTMLTableSectionElement': The index provided (${index}) is greater than the number of rows (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertRow' on 'HTMLTableSectionElement': The index provided (${index}) is greater than the number of rows (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const row = this[ownerDocument].createElement("tr");
       if (index === -1 || index === rows2.length) {
@@ -200899,17 +200996,17 @@ var init_HTMLTableSectionElement = __esm(() => {
     }
     deleteRow(index) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError("Failed to execute 'deleteRow' on 'HTMLTableSectionElement': 1 argument required, but only 0 present.");
+        throw new this[window].TypeError("Failed to execute 'deleteRow' on 'HTMLTableSectionElement': 1 argument required, but only 0 present.");
       }
       if (typeof index !== "number") {
         index = -1;
       }
       if (index < -1) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableSectionElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableSectionElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const rows2 = QuerySelector.querySelectorAll(this, "tr")[items];
       if (index >= rows2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableSectionElement': The index provided (${index}) is greater than the number of rows in the table (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableSectionElement': The index provided (${index}) is greater than the number of rows in the table (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index === -1) {
         index = rows2.length - 1;
@@ -200938,7 +201035,7 @@ var init_HTMLTableElement = __esm(() => {
     set caption(caption) {
       if (caption) {
         if (!(caption instanceof HTMLTableCaptionElement)) {
-          throw new this[window2].TypeError("Failed to set the 'caption' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableCaptionElement'.");
+          throw new this[window].TypeError("Failed to set the 'caption' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableCaptionElement'.");
         }
         this.caption?.remove();
         this.insertBefore(caption, this.firstChild);
@@ -200952,7 +201049,7 @@ var init_HTMLTableElement = __esm(() => {
     set tHead(tHead) {
       if (tHead) {
         if (!(tHead instanceof HTMLTableSectionElement)) {
-          throw new this[window2].TypeError("Failed to set the 'tHead' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableSectionElement'.");
+          throw new this[window].TypeError("Failed to set the 'tHead' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableSectionElement'.");
         }
         this.tHead?.remove();
         let found = false;
@@ -200976,7 +201073,7 @@ var init_HTMLTableElement = __esm(() => {
     set tFoot(tFoot) {
       if (tFoot) {
         if (!(tFoot instanceof HTMLTableSectionElement)) {
-          throw new this[window2].TypeError("Failed to set the 'tFoot' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableSectionElement'.");
+          throw new this[window].TypeError("Failed to set the 'tFoot' property on 'HTMLTableElement': Failed to convert value to 'HTMLTableSectionElement'.");
         }
         this.tFoot?.remove();
         let found = false;
@@ -201059,10 +201156,10 @@ var init_HTMLTableElement = __esm(() => {
       }
       const rows2 = QuerySelector.querySelectorAll(this, "tr")[items];
       if (index < -1) {
-        throw new this[window2].DOMException(`Failed to execute 'insertRow' on 'HTMLTableElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertRow' on 'HTMLTableElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index > rows2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'insertRow' on 'HTMLTableElement': The index provided (${index}) is greater than the number of rows (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertRow' on 'HTMLTableElement': The index provided (${index}) is greater than the number of rows (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const row = this[ownerDocument].createElement("tr");
       if (index === -1 || index === rows2.length) {
@@ -201081,17 +201178,17 @@ var init_HTMLTableElement = __esm(() => {
     }
     deleteRow(index) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError("Failed to execute 'deleteRow' on 'HTMLTableElement': 1 argument required, but only 0 present.");
+        throw new this[window].TypeError("Failed to execute 'deleteRow' on 'HTMLTableElement': 1 argument required, but only 0 present.");
       }
       if (typeof index !== "number") {
         index = -1;
       }
       if (index < -1) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const rows2 = QuerySelector.querySelectorAll(this, "tr")[items];
       if (index >= rows2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableElement': The index provided (${index}) is greater than the number of rows in the table (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteRow' on 'HTMLTableElement': The index provided (${index}) is greater than the number of rows in the table (${rows2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index === -1) {
         index = rows2.length - 1;
@@ -201146,10 +201243,10 @@ var init_HTMLTableRowElement = __esm(() => {
       }
       const cells2 = QuerySelector.querySelectorAll(this, "td,th")[items];
       if (index < -1) {
-        throw new this[window2].DOMException(`Failed to execute 'insertCell' on 'HTMLTableRowElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertCell' on 'HTMLTableRowElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index > cells2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'insertCell' on 'HTMLTableRowElement': The index provided (${index}) is greater than the number of cells (${cells2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertCell' on 'HTMLTableRowElement': The index provided (${index}) is greater than the number of cells (${cells2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const cell = this[ownerDocument].createElement("td");
       if (index === -1 || index === cells2.length) {
@@ -201161,17 +201258,17 @@ var init_HTMLTableRowElement = __esm(() => {
     }
     deleteCell(index) {
       if (arguments.length === 0) {
-        throw new this[window2].TypeError("Failed to execute 'deleteCell' on 'HTMLTableRowElement': 1 argument required, but only 0 present.");
+        throw new this[window].TypeError("Failed to execute 'deleteCell' on 'HTMLTableRowElement': 1 argument required, but only 0 present.");
       }
       if (typeof index !== "number") {
         index = -1;
       }
       if (index < -1) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteCell' on 'HTMLTableRowElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteCell' on 'HTMLTableRowElement': The index provided (${index}) is less than -1.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const cells2 = QuerySelector.querySelectorAll(this, "td,th")[items];
       if (index >= cells2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'deleteCell' on 'HTMLTableRowElement': The index provided (${index}) is greater than the number of cells in the row (${cells2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'deleteCell' on 'HTMLTableRowElement': The index provided (${index}) is greater than the number of cells in the row (${cells2.length}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index === -1) {
         index = cells2.length - 1;
@@ -201202,7 +201299,7 @@ var init_HTMLTemplateElement = __esm(() => {
       while (childNodes2.length) {
         content2.removeChild(childNodes2[0]);
       }
-      new HTMLParser(this[window2], { isTemplateDocumentFragment: true }).parse(html, this[content]);
+      new HTMLParser(this[window], { isTemplateDocumentFragment: true }).parse(html, this[content]);
     }
     get firstChild() {
       return this[content].firstChild;
@@ -201476,7 +201573,7 @@ var init_HTMLTextAreaElement = __esm(() => {
         end2 = this.#selectionEnd !== null ? this.#selectionEnd : this.value.length;
       }
       if (start2 > end2) {
-        throw new this[window2].DOMException("The index is not in the allowed range.", DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException("The index is not in the allowed range.", DOMExceptionNameEnum_default.invalidStateError);
       }
       start2 = Math.min(start2, this.value.length);
       end2 = Math.min(end2, this.value.length);
@@ -201653,7 +201750,7 @@ var init_HTMLTrackElement = __esm(() => {
       return 0;
     }
     get track() {
-      const textTrack = new this[window2].TextTrack(illegalConstructor);
+      const textTrack = new this[window].TextTrack(illegalConstructor);
       textTrack[kind] = this.kind;
       textTrack[label] = this.label;
       textTrack[language] = this.srclang;
@@ -201834,7 +201931,7 @@ var init_ShadowRoot = __esm(() => {
       while (childNodes2.length) {
         this.removeChild(childNodes2[0]);
       }
-      new HTMLParser(this[window2]).parse(html, this);
+      new HTMLParser(this[window]).parse(html, this);
     }
     get adoptedStyleSheets() {
       return this[adoptedStyleSheets];
@@ -201865,7 +201962,7 @@ var init_ShadowRoot = __esm(() => {
       while (childNodes2.length) {
         this.removeChild(childNodes2[0]);
       }
-      new HTMLParser(this[window2]).parse(html, this);
+      new HTMLParser(this[window]).parse(html, this);
     }
     toString() {
       return this.innerHTML;
@@ -202446,7 +202543,7 @@ var init_SVGElement = __esm(() => {
     }
     get style() {
       if (!this[style]) {
-        this[style] = new CSSStyleDeclaration(illegalConstructor, this[window2], { element: this });
+        this[style] = new CSSStyleDeclaration(illegalConstructor, this[window], { element: this });
       }
       return this[style];
     }
@@ -202646,7 +202743,7 @@ class Selection {
   }
   addRange(newRange) {
     if (!newRange) {
-      throw new this.#ownerDocument[window2].TypeError("Failed to execute addRange on Selection. Parameter 1 is not of type Range.");
+      throw new this.#ownerDocument[window].TypeError("Failed to execute addRange on Selection. Parameter 1 is not of type Range.");
     }
     if (!this.#range && newRange[ownerDocument] === this.#ownerDocument) {
       this.#associateRange(newRange);
@@ -202654,13 +202751,13 @@ class Selection {
   }
   getRangeAt(index) {
     if (!this.#range || index !== 0) {
-      throw new this.#ownerDocument[window2].DOMException("Invalid range index.", DOMExceptionNameEnum_default.indexSizeError);
+      throw new this.#ownerDocument[window].DOMException("Invalid range index.", DOMExceptionNameEnum_default.indexSizeError);
     }
     return this.#range;
   }
   removeRange(range) {
     if (this.#range !== range) {
-      throw new this.#ownerDocument[window2].DOMException("Invalid range.", DOMExceptionNameEnum_default.notFoundError);
+      throw new this.#ownerDocument[window].DOMException("Invalid range.", DOMExceptionNameEnum_default.notFoundError);
     }
     this.#associateRange(null);
   }
@@ -202676,15 +202773,15 @@ class Selection {
       return;
     }
     if (node[nodeType] === NodeTypeEnum_default.documentTypeNode) {
-      throw new this.#ownerDocument[window2].DOMException("DocumentType Node can't be used as boundary point.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+      throw new this.#ownerDocument[window].DOMException("DocumentType Node can't be used as boundary point.", DOMExceptionNameEnum_default.invalidNodeTypeError);
     }
     if (offset2 > NodeUtility.getNodeLength(node)) {
-      throw new this.#ownerDocument[window2].DOMException("Invalid range index.", DOMExceptionNameEnum_default.indexSizeError);
+      throw new this.#ownerDocument[window].DOMException("Invalid range index.", DOMExceptionNameEnum_default.indexSizeError);
     }
     if (node !== this.#ownerDocument && node[ownerDocument] !== this.#ownerDocument) {
       return;
     }
-    const newRange = new this.#ownerDocument[window2].Range;
+    const newRange = new this.#ownerDocument[window].Range;
     newRange[start].node = node;
     newRange[start].offset = offset2;
     newRange[end].node = node;
@@ -202696,10 +202793,10 @@ class Selection {
   }
   collapseToEnd() {
     if (this.#range === null) {
-      throw new this.#ownerDocument[window2].DOMException("There is no selection to collapse.", DOMExceptionNameEnum_default.invalidStateError);
+      throw new this.#ownerDocument[window].DOMException("There is no selection to collapse.", DOMExceptionNameEnum_default.invalidStateError);
     }
     const { node, offset: offset2 } = this.#range[end];
-    const newRange = new this.#ownerDocument[window2].Range;
+    const newRange = new this.#ownerDocument[window].Range;
     newRange[start].node = node;
     newRange[start].offset = offset2;
     newRange[end].node = node;
@@ -202708,10 +202805,10 @@ class Selection {
   }
   collapseToStart() {
     if (!this.#range) {
-      throw new this.#ownerDocument[window2].DOMException("There is no selection to collapse.", DOMExceptionNameEnum_default.invalidStateError);
+      throw new this.#ownerDocument[window].DOMException("There is no selection to collapse.", DOMExceptionNameEnum_default.invalidStateError);
     }
     const { node, offset: offset2 } = this.#range[start];
-    const newRange = new this.#ownerDocument[window2].Range;
+    const newRange = new this.#ownerDocument[window].Range;
     newRange[start].node = node;
     newRange[start].offset = offset2;
     newRange[end].node = node;
@@ -202742,11 +202839,11 @@ class Selection {
       return;
     }
     if (!this.#range) {
-      throw new this.#ownerDocument[window2].DOMException("There is no selection to extend.", DOMExceptionNameEnum_default.invalidStateError);
+      throw new this.#ownerDocument[window].DOMException("There is no selection to extend.", DOMExceptionNameEnum_default.invalidStateError);
     }
     const anchorNode = this.anchorNode;
     const anchorOffset = this.anchorOffset;
-    const newRange = new this.#ownerDocument[window2].Range;
+    const newRange = new this.#ownerDocument[window].Range;
     newRange[start].node = node;
     newRange[start].offset = 0;
     newRange[end].node = node;
@@ -202770,13 +202867,13 @@ class Selection {
   }
   selectAllChildren(node) {
     if (node[nodeType] === NodeTypeEnum_default.documentTypeNode) {
-      throw new this.#ownerDocument[window2].DOMException("DocumentType Node can't be used as boundary point.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+      throw new this.#ownerDocument[window].DOMException("DocumentType Node can't be used as boundary point.", DOMExceptionNameEnum_default.invalidNodeTypeError);
     }
     if (node !== this.#ownerDocument && node[ownerDocument] !== this.#ownerDocument) {
       return;
     }
     const length2 = node[nodeArray].length;
-    const newRange = new this.#ownerDocument[window2].Range;
+    const newRange = new this.#ownerDocument[window].Range;
     newRange[start].node = node;
     newRange[start].offset = 0;
     newRange[end].node = node;
@@ -202785,14 +202882,14 @@ class Selection {
   }
   setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset) {
     if (anchorOffset > NodeUtility.getNodeLength(anchorNode) || focusOffset > NodeUtility.getNodeLength(focusNode)) {
-      throw new this.#ownerDocument[window2].DOMException("Invalid anchor or focus offset.", DOMExceptionNameEnum_default.indexSizeError);
+      throw new this.#ownerDocument[window].DOMException("Invalid anchor or focus offset.", DOMExceptionNameEnum_default.indexSizeError);
     }
     if (anchorNode !== this.#ownerDocument && anchorNode[ownerDocument] !== this.#ownerDocument || focusNode !== this.#ownerDocument && focusNode[ownerDocument] !== this.#ownerDocument) {
       return;
     }
     const anchor = { node: anchorNode, offset: anchorOffset };
     const focus = { node: focusNode, offset: focusOffset };
-    const newRange = new this.#ownerDocument[window2].Range;
+    const newRange = new this.#ownerDocument[window].Range;
     if (RangeUtility.compareBoundaryPointsPosition(anchor, focus) === -1) {
       newRange[start] = anchor;
       newRange[end] = focus;
@@ -202999,7 +203096,7 @@ var init_TreeWalker = __esm(() => {
     }
     set currentNode(node) {
       if (!(node instanceof Node)) {
-        throw new this.root[window2].TypeError("Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'.");
+        throw new this.root[window].TypeError("Failed to set the 'currentNode' property on 'TreeWalker': Failed to convert value to 'Node'.");
       }
       this.#currentNode = node;
     }
@@ -203537,10 +203634,10 @@ class DOMImplementation {
     this.#document = document2;
   }
   createDocument(_namespaceURI, _qualifiedName, _docType) {
-    return new this.#document[window2].HTMLDocument;
+    return new this.#document[window].HTMLDocument;
   }
   createHTMLDocument() {
-    return new this.#document[window2].HTMLDocument;
+    return new this.#document[window].HTMLDocument;
   }
   createDocumentType(qualifiedName, publicId2, systemId2) {
     const documentType = NodeFactory.createNode(this.#document, DocumentType);
@@ -204378,18 +204475,18 @@ var init_Document = __esm(() => {
       return children2[children2.length - 1] ?? null;
     }
     get cookie() {
-      const browserFrame = new WindowBrowserContext(this[window2]).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(this[window]).getBrowserFrame();
       if (!browserFrame) {
         return "";
       }
-      return CookieStringUtility.cookiesToString(browserFrame.page.context.cookieContainer.getCookies(this[window2].location, true));
+      return CookieStringUtility.cookiesToString(browserFrame.page.context.cookieContainer.getCookies(this[window].location, true));
     }
     set cookie(value2) {
-      const browserFrame = new WindowBrowserContext(this[window2]).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(this[window]).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
-      const cookie = CookieStringUtility.stringToCookie(this[window2].location, value2);
+      const cookie = CookieStringUtility.stringToCookie(this[window].location, value2);
       if (cookie) {
         browserFrame.page.context.cookieContainer.addCookies([cookie]);
       }
@@ -204446,7 +204543,7 @@ var init_Document = __esm(() => {
       return this.documentElement;
     }
     get location() {
-      return this[window2].location;
+      return this[window].location;
     }
     get scripts() {
       return this.getElementsByTagName("script");
@@ -204456,16 +204553,16 @@ var init_Document = __esm(() => {
       if (element) {
         return element.href;
       }
-      return this[window2].location.href;
+      return this[window].location.href;
     }
     get URL() {
-      return this[window2].location.href;
+      return this[window].location.href;
     }
     get documentURI() {
       return this.URL;
     }
     get domain() {
-      return this[window2].location.hostname;
+      return this[window].location.hostname;
     }
     get visibilityState() {
       if (this.defaultView) {
@@ -204502,7 +204599,7 @@ var init_Document = __esm(() => {
     }
     queryCommandSupported(_) {
       if (!arguments.length) {
-        throw new this[window2].TypeError("Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present.");
+        throw new this[window].TypeError("Failed to execute 'queryCommandSupported' on 'Document': 1 argument required, but only 0 present.");
       }
       return true;
     }
@@ -204535,11 +204632,11 @@ var init_Document = __esm(() => {
         }
         this[isFirstWrite] = false;
         this[isFirstWriteAfterOpen] = false;
-        new HTMLParser(this[window2], {
+        new HTMLParser(this[window], {
           evaluateScripts: true
         }).parse(html, this);
       } else {
-        new HTMLParser(this[window2], {
+        new HTMLParser(this[window], {
           evaluateScripts: true
         }).parse(html, this.body);
       }
@@ -204581,10 +204678,10 @@ var init_Document = __esm(() => {
       return this.createElementNS(NamespaceURI_default.html, StringUtility.asciiLowerCase(String(qualifiedName)), options2);
     }
     createElementNS(namespaceURI2, qualifiedName, options2) {
-      const window3 = this[window2];
+      const window2 = this[window];
       qualifiedName = String(qualifiedName);
       if (!qualifiedName) {
-        throw new window3.DOMException("Failed to execute 'createElementNS' on 'Document': The qualified name provided is empty.");
+        throw new window2.DOMException("Failed to execute 'createElementNS' on 'Document': The qualified name provided is empty.");
       }
       const parts = qualifiedName.split(":");
       const localName2 = parts[1] ?? parts[0];
@@ -204592,7 +204689,7 @@ var init_Document = __esm(() => {
       switch (namespaceURI2) {
         case NamespaceURI_default.svg:
           const config = SVGElementConfig_default[qualifiedName.toLowerCase()];
-          const svgElementClass = config && config.localName === qualifiedName ? window3[config.className] : window3.SVGElement;
+          const svgElementClass = config && config.localName === qualifiedName ? window2[config.className] : window2.SVGElement;
           const svgElement = NodeFactory.createNode(this, svgElementClass);
           svgElement[tagName] = qualifiedName;
           svgElement[localName] = localName2;
@@ -204601,7 +204698,7 @@ var init_Document = __esm(() => {
           svgElement[isValue] = options2 && options2.is ? String(options2.is) : null;
           return svgElement;
         case NamespaceURI_default.html:
-          const customElementDefinition = window3.customElements[registry]?.get(options2 && options2.is ? String(options2.is) : qualifiedName);
+          const customElementDefinition = window2.customElements[registry]?.get(options2 && options2.is ? String(options2.is) : qualifiedName);
           if (customElementDefinition) {
             const element2 = new customElementDefinition.elementClass;
             element2[tagName] = StringUtility.asciiUpperCase(qualifiedName);
@@ -204611,7 +204708,7 @@ var init_Document = __esm(() => {
             element2[isValue] = options2 && options2.is ? String(options2.is) : null;
             return element2;
           }
-          const elementClass = HTMLElementConfig_default[qualifiedName] ? window3[HTMLElementConfig_default[qualifiedName].className] : null;
+          const elementClass = HTMLElementConfig_default[qualifiedName] ? window2[HTMLElementConfig_default[qualifiedName].className] : null;
           if (elementClass) {
             const element2 = NodeFactory.createNode(this, elementClass);
             element2[tagName] = StringUtility.asciiUpperCase(qualifiedName);
@@ -204621,7 +204718,7 @@ var init_Document = __esm(() => {
             element2[isValue] = options2 && options2.is ? String(options2.is) : null;
             return element2;
           }
-          const unknownElementClass = qualifiedName.includes("-") ? window3.HTMLElement : window3.HTMLUnknownElement;
+          const unknownElementClass = qualifiedName.includes("-") ? window2.HTMLElement : window2.HTMLUnknownElement;
           const unknownElement = NodeFactory.createNode(this, unknownElementClass);
           unknownElement[tagName] = StringUtility.asciiUpperCase(qualifiedName);
           unknownElement[localName] = localName2;
@@ -204641,18 +204738,18 @@ var init_Document = __esm(() => {
     }
     createTextNode(data2) {
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'createTextNode' on 'Document': 1 argument required, but only ${arguments.length} present.`);
       }
-      return NodeFactory.createNode(this, this[window2].Text, String(data2));
+      return NodeFactory.createNode(this, this[window].Text, String(data2));
     }
     createComment(data2) {
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'createComment' on 'Document': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'createComment' on 'Document': 1 argument required, but only ${arguments.length} present.`);
       }
-      return NodeFactory.createNode(this, this[window2].Comment, String(data2));
+      return NodeFactory.createNode(this, this[window].Comment, String(data2));
     }
     createDocumentFragment() {
-      return NodeFactory.createNode(this, this[window2].DocumentFragment);
+      return NodeFactory.createNode(this, this[window].DocumentFragment);
     }
     createNodeIterator(root2, whatToShow = -1, filter = null) {
       return new NodeIterator(root2, whatToShow, filter);
@@ -204661,13 +204758,13 @@ var init_Document = __esm(() => {
       return new TreeWalker(root2, whatToShow, filter);
     }
     createEvent(type2) {
-      if (typeof this[window2][type2] === "function") {
-        return new this[window2][type2]("init");
+      if (typeof this[window][type2] === "function") {
+        return new this[window][type2]("init");
       }
       return new Event("init");
     }
     createAttribute(qualifiedName) {
-      const attribute = NodeFactory.createNode(this, this[window2].Attr);
+      const attribute = NodeFactory.createNode(this, this[window].Attr);
       const name2 = StringUtility.asciiLowerCase(qualifiedName);
       const parts = name2.split(":");
       attribute[name] = name2;
@@ -204676,31 +204773,31 @@ var init_Document = __esm(() => {
       return attribute;
     }
     createAttributeNS(namespaceURI2, qualifiedName) {
-      const attribute = NodeFactory.createNode(this, this[window2].Attr);
+      const attribute = NodeFactory.createNode(this, this[window].Attr);
       const parts = qualifiedName.split(":");
       attribute[namespaceURI] = namespaceURI2;
       attribute[name] = qualifiedName;
       attribute[localName] = parts[1] ?? qualifiedName;
       attribute[prefix] = parts[1] ? parts[0] : null;
       if (!namespaceURI2 && attribute[prefix]) {
-        throw new this[window2].DOMException(`Failed to execute 'createAttributeNS' on 'Document': The namespace URI provided ('${namespaceURI2 || ""}') is not valid for the qualified name provided ('${qualifiedName}').`, DOMExceptionNameEnum_default.namespaceError);
+        throw new this[window].DOMException(`Failed to execute 'createAttributeNS' on 'Document': The namespace URI provided ('${namespaceURI2 || ""}') is not valid for the qualified name provided ('${qualifiedName}').`, DOMExceptionNameEnum_default.namespaceError);
       }
       return attribute;
     }
     importNode(node, deep = false) {
       if (!(node instanceof Node)) {
-        throw new this[window2].DOMException("Parameter 1 was not of type Node.");
+        throw new this[window].DOMException("Parameter 1 was not of type Node.");
       }
       const clone2 = node.cloneNode(deep);
       this.#importNode(clone2);
       return clone2;
     }
     createRange() {
-      return new this[window2].Range;
+      return new this[window].Range;
     }
     adoptNode(node) {
       if (!(node instanceof Node)) {
-        throw new this[window2].DOMException("Parameter 1 was not of type Node.");
+        throw new this[window].DOMException("Parameter 1 was not of type Node.");
       }
       const adopted = node[parentNode] ? node[parentNode].removeChild(node) : node;
       const document2 = this;
@@ -204718,17 +204815,17 @@ var init_Document = __esm(() => {
     }
     createProcessingInstruction(target2, data2) {
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'createProcessingInstruction' on 'Document': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'createProcessingInstruction' on 'Document': 2 arguments required, but only ${arguments.length} present.`);
       }
       target2 = String(target2);
       data2 = String(data2);
       if (!target2 || !PROCESSING_INSTRUCTION_TARGET_REGEXP.test(target2)) {
-        throw new this[window2].DOMException(`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target2}') is not a valid name.`);
+        throw new this[window].DOMException(`Failed to execute 'createProcessingInstruction' on 'Document': The target provided ('${target2}') is not a valid name.`);
       }
       if (data2.includes("?>")) {
-        throw new this[window2].DOMException(`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`);
+        throw new this[window].DOMException(`Failed to execute 'createProcessingInstruction' on 'Document': The data provided ('?>') contains '?>'`);
       }
-      const element = NodeFactory.createNode(this, this[window2].ProcessingInstruction);
+      const element = NodeFactory.createNode(this, this[window].ProcessingInstruction);
       element[data] = data2;
       element[target] = target2;
       return element;
@@ -204779,25 +204876,25 @@ var init_HTMLDocument = __esm(() => {
     }
     [appendChild](node, disableValidations = false) {
       if (node[nodeType] === NodeTypeEnum_default.textNode) {
-        throw new this[window2].Error(`Failed to execute 'appendChild' on 'Node': Nodes of type '#text' may not be inserted inside nodes of type '#document'.`);
+        throw new this[window].Error(`Failed to execute 'appendChild' on 'Node': Nodes of type '#text' may not be inserted inside nodes of type '#document'.`);
       }
       if (node[nodeType] === NodeTypeEnum_default.documentFragmentNode) {
         return node;
       }
       if (node[nodeType] === NodeTypeEnum_default.elementNode && this[elementArray].length !== 0) {
-        throw new this[window2].Error(`Failed to execute 'appendChild' on 'Node': Only one element on document allowed.`);
+        throw new this[window].Error(`Failed to execute 'appendChild' on 'Node': Only one element on document allowed.`);
       }
       return super[appendChild](node, disableValidations);
     }
     [insertBefore](newNode, referenceNode, disableValidations = false) {
       if (newNode[nodeType] === NodeTypeEnum_default.textNode) {
-        throw new this[window2].Error(`Failed to execute 'insertBefore' on 'Node': Nodes of type '#text' may not be inserted inside nodes of type '#document'.`);
+        throw new this[window].Error(`Failed to execute 'insertBefore' on 'Node': Nodes of type '#text' may not be inserted inside nodes of type '#document'.`);
       }
       if (newNode[nodeType] === NodeTypeEnum_default.documentFragmentNode) {
         return newNode;
       }
       if (newNode[nodeType] === NodeTypeEnum_default.elementNode && this[elementArray].length !== 0) {
-        throw new this[window2].Error(`Failed to execute 'insertBefore' on 'Node': Only one element on document allowed.`);
+        throw new this[window].Error(`Failed to execute 'insertBefore' on 'Node': Only one element on document allowed.`);
       }
       return super[insertBefore](newNode, referenceNode, disableValidations);
     }
@@ -204858,7 +204955,7 @@ var init_Text = __esm(() => {
     splitText(offset2) {
       const length2 = this[data].length;
       if (offset2 < 0 || offset2 > length2) {
-        throw new this[window2].DOMException("The index is not in the allowed range.", DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException("The index is not in the allowed range.", DOMExceptionNameEnum_default.indexSizeError);
       }
       const count = length2 - offset2;
       const newData = this.substringData(offset2, count);
@@ -205032,7 +205129,7 @@ var init_MutationObserver = __esm(() => {
     #listeners = [];
     #destroyed = false;
     constructor(callback) {
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
       this.#callback = callback;
@@ -205042,7 +205139,7 @@ var init_MutationObserver = __esm(() => {
         return;
       }
       if (!target2) {
-        throw new this[window2].TypeError(`Failed to execute 'observe' on 'MutationObserver': The first parameter "target" should be of type "Node".`);
+        throw new this[window].TypeError(`Failed to execute 'observe' on 'MutationObserver': The first parameter "target" should be of type "Node".`);
       }
       if (options2 && (options2.attributeFilter || options2.attributeOldValue)) {
         if (options2.attributes === undefined) {
@@ -205053,10 +205150,10 @@ var init_MutationObserver = __esm(() => {
           });
         }
         if (!options2.attributes && options2.attributeOldValue) {
-          throw new this[window2].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present.`);
+          throw new this[window].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present.`);
         }
         if (!options2.attributes && options2.attributeFilter) {
-          throw new this[window2].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeFilter' when 'attributes' is true or not present.`);
+          throw new this[window].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeFilter' when 'attributes' is true or not present.`);
         }
       }
       if (options2 && options2.characterDataOldValue) {
@@ -205067,11 +205164,11 @@ var init_MutationObserver = __esm(() => {
           });
         }
         if (!options2.characterData && options2.characterDataOldValue) {
-          throw new this[window2].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'characterDataOldValue' to true when 'characterData' is true or not present.`);
+          throw new this[window].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object may only set 'characterDataOldValue' to true when 'characterData' is true or not present.`);
         }
       }
       if (!options2 || !options2.childList && !options2.attributes && !options2.characterData) {
-        throw new this[window2].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true.`);
+        throw new this[window].TypeError(`Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true.`);
       }
       options2 = Object.assign({}, options2, {
         attributeFilter: options2.attributeFilter ? options2.attributeFilter.map((name2) => name2.toLowerCase()) : null
@@ -205083,15 +205180,15 @@ var init_MutationObserver = __esm(() => {
         }
       }
       const listener = new MutationObserverListener({
-        window: this[window2],
+        window: this[window],
         options: options2,
         callback: this.#callback.bind(this),
         observer: this,
         target: target2
       });
       this.#listeners.push(listener);
-      if (!this[window2][mutationObservers].includes(this)) {
-        this[window2][mutationObservers].push(this);
+      if (!this[window][mutationObservers].includes(this)) {
+        this[window][mutationObservers].push(this);
       }
       target2[observeMutations](listener.mutationListener);
     }
@@ -205104,7 +205201,7 @@ var init_MutationObserver = __esm(() => {
         listener.destroy();
       }
       this.#listeners = [];
-      const mutationObservers2 = this[window2][mutationObservers];
+      const mutationObservers2 = this[window][mutationObservers];
       const index = mutationObservers2.indexOf(this);
       if (index !== -1) {
         mutationObservers2.splice(index, 1);
@@ -205143,7 +205240,7 @@ class CSSParser {
   }
   parseFromString(cssText2) {
     const parentStyleSheet2 = this.#parentStyleSheet;
-    const window3 = parentStyleSheet2[window2];
+    const window2 = parentStyleSheet2[window];
     const css = cssText2.replace(COMMENT_REGEXP, "");
     const cssRules2 = [];
     const regExp = /{|}/gm;
@@ -205161,7 +205258,7 @@ class CSSParser {
           switch (ruleType) {
             case "@keyframes":
             case "@-webkit-keyframes":
-              const keyframesRule = new CSSKeyframesRule(illegalConstructor, window3, this);
+              const keyframesRule = new CSSKeyframesRule(illegalConstructor, window2, this);
               keyframesRule[rulePrefix] = ruleType === "@-webkit-keyframes" ? "-webkit-" : "";
               keyframesRule[name] = ruleParameters;
               keyframesRule[parentStyleSheet] = parentStyleSheet2;
@@ -205176,7 +205273,7 @@ class CSSParser {
               break;
             case "@media":
               const mediums = ruleParameters.split(",");
-              const mediaRule = new CSSMediaRule(illegalConstructor, window3, this);
+              const mediaRule = new CSSMediaRule(illegalConstructor, window2, this);
               for (const medium of mediums) {
                 mediaRule.media.appendMedium(medium.trim());
               }
@@ -205192,7 +205289,7 @@ class CSSParser {
               break;
             case "@container":
             case "@-webkit-container":
-              const containerRule = new CSSContainerRule(illegalConstructor, window3, this);
+              const containerRule = new CSSContainerRule(illegalConstructor, window2, this);
               containerRule[rulePrefix] = ruleType === "@-webkit-container" ? "-webkit-" : "";
               containerRule[conditionText] = ruleParameters;
               containerRule[parentStyleSheet] = parentStyleSheet2;
@@ -205207,7 +205304,7 @@ class CSSParser {
               break;
             case "@supports":
             case "@-webkit-supports":
-              const supportsRule = new CSSSupportsRule(illegalConstructor, window3, this);
+              const supportsRule = new CSSSupportsRule(illegalConstructor, window2, this);
               supportsRule[rulePrefix] = ruleType === "@-webkit-supports" ? "-webkit-" : "";
               supportsRule[conditionText] = ruleParameters;
               supportsRule[parentStyleSheet] = parentStyleSheet2;
@@ -205221,7 +205318,7 @@ class CSSParser {
               parentRule2 = supportsRule;
               break;
             case "@font-face":
-              const fontFaceRule = new CSSFontFaceRule(illegalConstructor, window3, this);
+              const fontFaceRule = new CSSFontFaceRule(illegalConstructor, window2, this);
               fontFaceRule[cssText] = ruleParameters;
               fontFaceRule[parentStyleSheet] = parentStyleSheet2;
               if (parentRule2) {
@@ -205235,7 +205332,7 @@ class CSSParser {
               break;
             case "@scope":
             case "@-webkit-scope":
-              const scopeRule = new CSSScopeRule(illegalConstructor, window3, this);
+              const scopeRule = new CSSScopeRule(illegalConstructor, window2, this);
               scopeRule[rulePrefix] = ruleType === "@-webkit-scope" ? "-webkit-" : "";
               scopeRule[parentStyleSheet] = parentStyleSheet2;
               if (ruleParameters) {
@@ -205257,13 +205354,13 @@ class CSSParser {
               parentRule2 = scopeRule;
               break;
             default:
-              const newRule = new CSSStyleRule(illegalConstructor, window3, this);
+              const newRule = new CSSStyleRule(illegalConstructor, window2, this);
               newRule[parentStyleSheet] = parentStyleSheet2;
               parentRule2 = newRule;
               break;
           }
         } else if (parentRule2 && parentRule2.type === CSSRuleTypeEnum_default.keyframesRule) {
-          const newRule = new CSSKeyframeRule(illegalConstructor, window3, this);
+          const newRule = new CSSKeyframeRule(illegalConstructor, window2, this);
           let keyText2 = selectorText2.trim();
           if (keyText2 === "from") {
             keyText2 = "0%";
@@ -205277,7 +205374,7 @@ class CSSParser {
           parentRule2 = newRule;
         } else if (parentRule2 && (parentRule2.type === CSSRuleTypeEnum_default.mediaRule || parentRule2.type === CSSRuleTypeEnum_default.containerRule || parentRule2.type === CSSRuleTypeEnum_default.supportsRule)) {
           if (this.validateSelectorText(selectorText2)) {
-            const newRule = new CSSStyleRule(illegalConstructor, window3, this);
+            const newRule = new CSSStyleRule(illegalConstructor, window2, this);
             newRule[selectorText] = selectorText2;
             newRule[parentStyleSheet] = parentStyleSheet2;
             newRule[parentRule] = parentRule2;
@@ -205286,7 +205383,7 @@ class CSSParser {
           }
         } else {
           if (this.validateSelectorText(selectorText2)) {
-            const newRule = new CSSStyleRule(illegalConstructor, window3, this);
+            const newRule = new CSSStyleRule(illegalConstructor, window2, this);
             newRule[selectorText] = selectorText2;
             newRule[parentStyleSheet] = parentStyleSheet2;
             newRule[parentRule] = parentRule2;
@@ -205318,8 +205415,8 @@ class CSSParser {
     return cssRules2;
   }
   validateSelectorText(selectorText2) {
-    const window3 = this.#parentStyleSheet[window2];
-    return new SelectorParser({ window: window3, scope: window3.document, ignoreErrors: true }).getSelectorGroups(selectorText2).length > 0;
+    const window2 = this.#parentStyleSheet[window];
+    return new SelectorParser({ window: window2, scope: window2.document, ignoreErrors: true }).getSelectorGroups(selectorText2).length > 0;
   }
 }
 var COMMENT_REGEXP;
@@ -205354,16 +205451,16 @@ class CSSStyleSheet {
   }
   insertRule(rule, index) {
     if (arguments.length === 0) {
-      throw new this[window2].TypeError(`Failed to execute 'insertRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
+      throw new this[window].TypeError(`Failed to execute 'insertRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
     }
     const parser = new CSSParser(this);
     const rules = parser.parseFromString(rule);
     if (rules.length === 0 || rules.length > 1) {
-      throw new this[window2].DOMException(`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '${rule}'.`, DOMExceptionNameEnum_default.syntaxError);
+      throw new this[window].DOMException(`Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '${rule}'.`, DOMExceptionNameEnum_default.syntaxError);
     }
     if (index !== undefined) {
       if (index > this.cssRules.length) {
-        throw new this[window2].DOMException(`Failed to execute 'insertRule' on 'CSSStyleSheet': The index provided (${index}) is larger than the maximum index (${this.cssRules.length - 1}).`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'insertRule' on 'CSSStyleSheet': The index provided (${index}) is larger than the maximum index (${this.cssRules.length - 1}).`, DOMExceptionNameEnum_default.indexSizeError);
       }
       this.cssRules.splice(index, 0, rules[0]);
       return index;
@@ -205374,19 +205471,19 @@ class CSSStyleSheet {
   }
   deleteRule(index) {
     if (arguments.length === 0) {
-      throw new this[window2].TypeError(`Failed to execute 'deleteRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
+      throw new this[window].TypeError(`Failed to execute 'deleteRule' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
     }
     this.cssRules.splice(index, 1);
   }
   async replace(text) {
     if (arguments.length === 0) {
-      throw new this[window2].TypeError(`Failed to execute 'replace' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
+      throw new this[window].TypeError(`Failed to execute 'replace' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
     }
     this.replaceSync(text);
   }
   replaceSync(text) {
     if (arguments.length === 0) {
-      throw new this[window2].TypeError(`Failed to execute 'replaceSync' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
+      throw new this[window].TypeError(`Failed to execute 'replaceSync' on 'CSSStyleSheet': 1 argument required, but only 0 present.`);
     }
     if (this.#currentText !== text) {
       this.#currentText = text;
@@ -205462,7 +205559,7 @@ var init_XMLHttpRequestUpload = __esm(() => {
 
 // ../../node_modules/happy-dom/lib/fetch/AbortController.js
 class AbortController {
-  signal = new this[window2].AbortSignal;
+  signal = new this[window].AbortSignal;
   abort(reason2) {
     this.signal[abort](reason2);
   }
@@ -205484,7 +205581,7 @@ var init_AbortSignal = __esm(() => {
     onabort = null;
     constructor() {
       super();
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct 'AbortSignal': Illegal constructor`);
       }
     }
@@ -205503,7 +205600,7 @@ var init_AbortSignal = __esm(() => {
       if (this.aborted) {
         return;
       }
-      this[reason] = reason2 !== undefined ? reason2 : new this[window2].DOMException("signal is aborted without reason", DOMExceptionNameEnum_default.abortError);
+      this[reason] = reason2 !== undefined ? reason2 : new this[window].DOMException("signal is aborted without reason", DOMExceptionNameEnum_default.abortError);
       this[aborted] = true;
       this.dispatchEvent(new Event("abort"));
     }
@@ -205514,15 +205611,15 @@ var init_AbortSignal = __esm(() => {
     }
     static abort(reason2) {
       const signal2 = new this;
-      signal2[reason] = reason2 !== undefined ? reason2 : new this[window2].DOMException("signal is aborted without reason", DOMExceptionNameEnum_default.abortError);
+      signal2[reason] = reason2 !== undefined ? reason2 : new this[window].DOMException("signal is aborted without reason", DOMExceptionNameEnum_default.abortError);
       signal2[aborted] = true;
       return signal2;
     }
     static timeout(time) {
-      const window3 = this[window2];
+      const window2 = this[window];
       const signal2 = new this;
-      window3.setTimeout(() => {
-        signal2[abort](new window3.DOMException("signal timed out", DOMExceptionNameEnum_default.timeoutError));
+      window2.setTimeout(() => {
+        signal2[abort](new window2.DOMException("signal timed out", DOMExceptionNameEnum_default.timeoutError));
       }, time);
       return signal2;
     }
@@ -205612,8 +205709,8 @@ class XMLHttpRequestResponseDataParser {
         } catch (e) {}
         return null;
       case XMLHttpResponseTypeEnum_default.document:
-        const window3 = options2.window;
-        const domParser = new window3.DOMParser;
+        const window2 = options2.window;
+        const domParser = new window2.DOMParser;
         try {
           return domParser.parseFromString(options2.data.toString(), "application/xml");
         } catch (e) {}
@@ -205659,7 +205756,7 @@ var init_XMLHttpRequest = __esm(() => {
     static HEADERS_RECEIVED = XMLHttpRequestReadyStateEnum_default.headersReceived;
     static LOADING = XMLHttpRequestReadyStateEnum_default.loading;
     static DONE = XMLHttpRequestReadyStateEnum_default.done;
-    upload = new this[window2].XMLHttpRequestUpload;
+    upload = new this[window].XMLHttpRequestUpload;
     withCredentials = false;
     #async = true;
     #abortController = null;
@@ -205673,7 +205770,7 @@ var init_XMLHttpRequest = __esm(() => {
     #overriddenMimeType = null;
     constructor() {
       super();
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
     }
@@ -205691,7 +205788,7 @@ var init_XMLHttpRequest = __esm(() => {
     }
     get responseText() {
       if (this.responseType !== XMLHttpResponseTypeEnum_default.text && this.responseType !== "") {
-        throw new this[window2].DOMException(`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${this.responseType}').`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was '${this.responseType}').`, DOMExceptionNameEnum_default.invalidStateError);
       }
       if (this.#responseBody !== null) {
         return this.#responseBody;
@@ -205703,7 +205800,7 @@ var init_XMLHttpRequest = __esm(() => {
     }
     get responseXML() {
       if (this.responseType !== XMLHttpResponseTypeEnum_default.document && this.responseType !== "") {
-        throw new this[window2].DOMException(`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was '${this.responseType}').`, DOMExceptionNameEnum_default.invalidStateError);
       }
       return this.responseType === "" ? null : this.#responseBody;
     }
@@ -205715,10 +205812,10 @@ var init_XMLHttpRequest = __esm(() => {
     }
     set responseType(type2) {
       if (this.readyState !== XMLHttpRequestReadyStateEnum_default.opened && this.readyState !== XMLHttpRequestReadyStateEnum_default.unsent) {
-        throw new this[window2].DOMException(`Failed to set the 'responseType' property on 'XMLHttpRequest': The object's state must be OPENED or UNSENT.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to set the 'responseType' property on 'XMLHttpRequest': The object's state must be OPENED or UNSENT.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       if (!this.#async) {
-        throw new this[window2].DOMException(`Failed to set the 'responseType' property on 'XMLHttpRequest': The response type cannot be changed for synchronous requests made from a document.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to set the 'responseType' property on 'XMLHttpRequest': The response type cannot be changed for synchronous requests made from a document.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       this.#responseType = type2;
     }
@@ -205726,11 +205823,11 @@ var init_XMLHttpRequest = __esm(() => {
       return this.#responseType;
     }
     open(method2, url2, async = true, user, password) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (!async && !!this.responseType && this.responseType !== XMLHttpResponseTypeEnum_default.text) {
-        throw new window3.DOMException(`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`, DOMExceptionNameEnum_default.invalidAccessError);
+        throw new window2.DOMException(`Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type.`, DOMExceptionNameEnum_default.invalidAccessError);
       }
-      const headers2 = new this[window2].Headers;
+      const headers2 = new this[window].Headers;
       if (user) {
         const authBuffer = Buffer.from(`${user}:${password || ""}`);
         headers2.set("Authorization", "Basic " + authBuffer.toString("base64"));
@@ -205740,8 +205837,8 @@ var init_XMLHttpRequest = __esm(() => {
       this.#response = null;
       this.#responseBody = null;
       this.#accumulatedData = Buffer.from([]);
-      this.#abortController = new window3.AbortController;
-      this.#request = new window3.Request(url2, {
+      this.#abortController = new window2.AbortController;
+      this.#request = new window2.Request(url2, {
         method: method2,
         headers: headers2,
         signal: this.#abortController.signal,
@@ -205751,7 +205848,7 @@ var init_XMLHttpRequest = __esm(() => {
     }
     setRequestHeader(name2, value2) {
       if (this.readyState !== XMLHttpRequestReadyStateEnum_default.opened) {
-        throw new this[window2].DOMException(`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': The object's state must be OPENED.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': The object's state must be OPENED.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       if (FetchRequestHeaderUtility.isHeaderForbidden(name2)) {
         return false;
@@ -205777,12 +205874,12 @@ var init_XMLHttpRequest = __esm(() => {
 `);
     }
     send(body2) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.readyState != XMLHttpRequestReadyStateEnum_default.opened) {
-        throw new this[window2].DOMException(`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to execute 'send' on 'XMLHttpRequest': Connection must be opened before send() is called.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       if (typeof body2 === "object" && body2 !== null && body2[nodeType] === NodeTypeEnum_default.documentNode) {
-        body2 = new window3.XMLSerializer().serializeToString(body2);
+        body2 = new window2.XMLSerializer().serializeToString(body2);
       }
       if (this.#async) {
         this.#sendAsync(body2).catch((error2) => {
@@ -205801,13 +205898,13 @@ var init_XMLHttpRequest = __esm(() => {
     }
     overrideMimeType(mimeType) {
       if (this.readyState === XMLHttpRequestReadyStateEnum_default.loading || this.readyState === XMLHttpRequestReadyStateEnum_default.done) {
-        throw new this[window2].DOMException(`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`, DOMExceptionNameEnum_default.invalidStateError);
+        throw new this[window].DOMException(`Failed to execute 'overrideMimeType' on 'XMLHttpRequest': MIME type cannot be overridden when the request state is LOADING or DONE.`, DOMExceptionNameEnum_default.invalidStateError);
       }
       this.#overriddenMimeType = mimeType;
     }
     async#sendAsync(body2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
@@ -205817,7 +205914,7 @@ var init_XMLHttpRequest = __esm(() => {
       this.#dispatchEvent(new Event("readystatechange"));
       this.#dispatchEvent(new Event("loadstart"));
       if (body2) {
-        this.#request = new window3.Request(this.#request.url, {
+        this.#request = new window2.Request(this.#request.url, {
           method: this.#request.method,
           headers: this.#request.headers,
           signal: this.#abortController.signal,
@@ -205850,7 +205947,7 @@ var init_XMLHttpRequest = __esm(() => {
       };
       const fetch2 = new Fetch({
         browserFrame,
-        window: window3,
+        window: window2,
         url: this.#request.url,
         init: this.#request
       });
@@ -205892,7 +205989,7 @@ var init_XMLHttpRequest = __esm(() => {
         }
       }
       this.#responseBody = XMLHttpRequestResponseDataParser.parse({
-        window: window3,
+        window: window2,
         responseType: this.#responseType,
         data: this.#accumulatedData,
         contentType: this.#overriddenMimeType || this.#response.headers.get("Content-Type") || this.#request.headers.get("Content-Type")
@@ -205905,13 +206002,13 @@ var init_XMLHttpRequest = __esm(() => {
       this.#dispatchEvent(new Event("loadend"));
     }
     #sendSync(body2) {
-      const window3 = this[window2];
-      const browserFrame = new WindowBrowserContext(window3).getBrowserFrame();
+      const window2 = this[window];
+      const browserFrame = new WindowBrowserContext(window2).getBrowserFrame();
       if (!browserFrame) {
         return;
       }
       if (body2) {
-        this.#request = new window3.Request(this.#request.url, {
+        this.#request = new window2.Request(this.#request.url, {
           method: this.#request.method,
           headers: this.#request.headers,
           signal: this.#abortController.signal,
@@ -205922,7 +206019,7 @@ var init_XMLHttpRequest = __esm(() => {
       this.#readyState = XMLHttpRequestReadyStateEnum_default.loading;
       const fetch2 = new SyncFetch({
         browserFrame,
-        window: window3,
+        window: window2,
         url: this.#request.url,
         init: this.#request
       });
@@ -205937,7 +206034,7 @@ var init_XMLHttpRequest = __esm(() => {
       }
       this.#readyState = XMLHttpRequestReadyStateEnum_default.headersReceived;
       this.#responseBody = XMLHttpRequestResponseDataParser.parse({
-        window: window3,
+        window: window2,
         responseType: this.#responseType,
         data: this.#response.body,
         contentType: this.#overriddenMimeType || this.#response.headers.get("Content-Type") || this.#request.headers.get("Content-Type")
@@ -205948,7 +206045,7 @@ var init_XMLHttpRequest = __esm(() => {
       this.#dispatchEvent(new Event("loadend"));
     }
     #dispatchEvent(event) {
-      const browserFrame = new WindowBrowserContext(this[window2]).getBrowserFrame();
+      const browserFrame = new WindowBrowserContext(this[window]).getBrowserFrame();
       if (!browserFrame?.page?.context?.browser?.settings?.errorCapture) {
         return;
       }
@@ -205978,8 +206075,8 @@ class XMLParser {
   currentNode = null;
   readState = MarkupReadStateEnum2.any;
   errorMessage = null;
-  constructor(window3) {
-    this.window = window3;
+  constructor(window2) {
+    this.window = window2;
   }
   parse(xml) {
     this.rootNode = new this.window.XMLDocument;
@@ -206415,21 +206512,21 @@ var init_XMLParser = __esm(() => {
 class DOMParser {
   parseFromString(string, mimeType) {
     if (!mimeType) {
-      throw new this[window2].DOMException('Second parameter "mimeType" is mandatory.');
+      throw new this[window].DOMException('Second parameter "mimeType" is mandatory.');
     }
-    const window3 = this[window2];
+    const window2 = this[window];
     switch (mimeType) {
       case "text/html":
-        const newDocument = new window3.HTMLDocument;
-        newDocument[defaultView] = window3;
-        return new HTMLParser(this[window2]).parse(string, newDocument);
+        const newDocument = new window2.HTMLDocument;
+        newDocument[defaultView] = window2;
+        return new HTMLParser(this[window]).parse(string, newDocument);
       case "image/svg+xml":
       case "text/xml":
       case "application/xml":
       case "application/xhtml+xml":
-        return new XMLParser(this[window2]).parse(string);
+        return new XMLParser(this[window]).parse(string);
       default:
-        throw new window3.DOMException(`Unknown mime type "${mimeType}".`);
+        throw new window2.DOMException(`Unknown mime type "${mimeType}".`);
     }
   }
 }
@@ -206476,13 +206573,13 @@ var init_Range = __esm(() => {
     [end];
     [ownerDocument];
     constructor() {
-      const window3 = this[window2];
-      if (!window3) {
+      const window2 = this[window];
+      if (!window2) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
-      this[ownerDocument] = window3.document;
-      this[start] = { node: window3.document, offset: 0 };
-      this[end] = { node: window3.document, offset: 0 };
+      this[ownerDocument] = window2.document;
+      this[start] = { node: window2.document, offset: 0 };
+      this[end] = { node: window2.document, offset: 0 };
     }
     get startContainer() {
       return this[start].node;
@@ -206530,10 +206627,10 @@ var init_Range = __esm(() => {
     }
     compareBoundaryPoints(how, sourceRange) {
       if (how !== RangeHowEnum_default.startToStart && how !== RangeHowEnum_default.startToEnd && how !== RangeHowEnum_default.endToEnd && how !== RangeHowEnum_default.endToStart) {
-        throw new this[window2].DOMException(`The comparison method provided must be one of '${RangeHowEnum_default.startToStart}', '${RangeHowEnum_default.startToEnd}', '${RangeHowEnum_default.endToEnd}' or '${RangeHowEnum_default.endToStart}'.`, DOMExceptionNameEnum_default.notSupportedError);
+        throw new this[window].DOMException(`The comparison method provided must be one of '${RangeHowEnum_default.startToStart}', '${RangeHowEnum_default.startToEnd}', '${RangeHowEnum_default.endToEnd}' or '${RangeHowEnum_default.endToStart}'.`, DOMExceptionNameEnum_default.notSupportedError);
       }
       if (this[ownerDocument] !== sourceRange[ownerDocument]) {
-        throw new this[window2].DOMException(`The two Ranges are not in the same tree.`, DOMExceptionNameEnum_default.wrongDocumentError);
+        throw new this[window].DOMException(`The two Ranges are not in the same tree.`, DOMExceptionNameEnum_default.wrongDocumentError);
       }
       const thisPoint = {
         node: null,
@@ -206573,7 +206670,7 @@ var init_Range = __esm(() => {
     }
     comparePoint(node, offset2) {
       if (node[ownerDocument] !== this[ownerDocument]) {
-        throw new this[window2].DOMException(`The two Ranges are not in the same tree.`, DOMExceptionNameEnum_default.wrongDocumentError);
+        throw new this[window].DOMException(`The two Ranges are not in the same tree.`, DOMExceptionNameEnum_default.wrongDocumentError);
       }
       RangeUtility.validateBoundaryPoint({ node, offset: offset2 });
       const boundaryPoint = { node, offset: offset2 };
@@ -206591,7 +206688,7 @@ var init_Range = __esm(() => {
       return 0;
     }
     cloneContents() {
-      const window3 = this[window2];
+      const window2 = this[window];
       const fragment = this[ownerDocument].createDocumentFragment();
       const startOffset2 = this.startOffset;
       const endOffset = this.endOffset;
@@ -206632,7 +206729,7 @@ var init_Range = __esm(() => {
       for (const node of commonAncestor[nodeArray]) {
         if (RangeUtility.isContained(node, this)) {
           if (node[nodeType] === NodeTypeEnum_default.documentTypeNode) {
-            throw new window3.DOMException("Invalid document type element.", DOMExceptionNameEnum_default.hierarchyRequestError);
+            throw new window2.DOMException("Invalid document type element.", DOMExceptionNameEnum_default.hierarchyRequestError);
           }
           containedChildren.push(node);
         }
@@ -206644,7 +206741,7 @@ var init_Range = __esm(() => {
       } else if (firstPartialContainedChild !== null) {
         const clone2 = firstPartialContainedChild.cloneNode();
         fragment.appendChild(clone2);
-        const subRange = new window3.Range;
+        const subRange = new window2.Range;
         subRange[start].node = this[start].node;
         subRange[start].offset = startOffset2;
         subRange[end].node = firstPartialContainedChild;
@@ -206663,7 +206760,7 @@ var init_Range = __esm(() => {
       } else if (lastPartiallyContainedChild !== null) {
         const clone2 = lastPartiallyContainedChild.cloneNode(false);
         fragment.appendChild(clone2);
-        const subRange = new window3.Range;
+        const subRange = new window2.Range;
         subRange[start].node = lastPartiallyContainedChild;
         subRange[start].offset = 0;
         subRange[end].node = this[end].node;
@@ -206674,7 +206771,7 @@ var init_Range = __esm(() => {
       return fragment;
     }
     cloneRange() {
-      const clone2 = new this[window2].Range;
+      const clone2 = new this[window].Range;
       clone2[start].node = this[start].node;
       clone2[start].offset = this[start].offset;
       clone2[end].node = this[end].node;
@@ -206682,7 +206779,7 @@ var init_Range = __esm(() => {
       return clone2;
     }
     createContextualFragment(tagString) {
-      return new HTMLParser(this[window2]).parse(tagString);
+      return new HTMLParser(this[window]).parse(tagString);
     }
     deleteContents() {
       const startOffset2 = this.startOffset;
@@ -206733,7 +206830,7 @@ var init_Range = __esm(() => {
     }
     detach() {}
     extractContents() {
-      const window3 = this[window2];
+      const window2 = this[window];
       const fragment = this[ownerDocument].createDocumentFragment();
       const startOffset2 = this.startOffset;
       const endOffset = this.endOffset;
@@ -206775,7 +206872,7 @@ var init_Range = __esm(() => {
       for (const node of commonAncestor[nodeArray]) {
         if (RangeUtility.isContained(node, this)) {
           if (node[nodeType] === NodeTypeEnum_default.documentTypeNode) {
-            throw new this[window2].DOMException("Invalid document type element.", DOMExceptionNameEnum_default.hierarchyRequestError);
+            throw new this[window].DOMException("Invalid document type element.", DOMExceptionNameEnum_default.hierarchyRequestError);
           }
           containedChildren.push(node);
         }
@@ -206801,7 +206898,7 @@ var init_Range = __esm(() => {
       } else if (firstPartialContainedChild !== null) {
         const clone2 = firstPartialContainedChild.cloneNode(false);
         fragment.appendChild(clone2);
-        const subRange = new window3.Range;
+        const subRange = new window2.Range;
         subRange[start].node = this[start].node;
         subRange[start].offset = startOffset2;
         subRange[end].node = firstPartialContainedChild;
@@ -206820,7 +206917,7 @@ var init_Range = __esm(() => {
       } else if (lastPartiallyContainedChild !== null) {
         const clone2 = lastPartiallyContainedChild.cloneNode(false);
         fragment.appendChild(clone2);
-        const subRange = new window3.Range;
+        const subRange = new window2.Range;
         subRange[start].node = lastPartiallyContainedChild;
         subRange[start].offset = 0;
         subRange[end].node = this[end].node;
@@ -206859,7 +206956,7 @@ var init_Range = __esm(() => {
     }
     insertNode(newNode) {
       if (this[start].node[nodeType] === NodeTypeEnum_default.processingInstructionNode || this[start].node[nodeType] === NodeTypeEnum_default.commentNode || this[start].node[nodeType] === NodeTypeEnum_default.textNode && !this[start].node[parentNode] || newNode === this[start].node) {
-        throw new this[window2].DOMException("Invalid start node.", DOMExceptionNameEnum_default.hierarchyRequestError);
+        throw new this[window].DOMException("Invalid start node.", DOMExceptionNameEnum_default.hierarchyRequestError);
       }
       let referenceNode = this[start].node[nodeType] === NodeTypeEnum_default.textNode ? this[start].node : this[start].node[nodeArray][this.startOffset] || null;
       const parent2 = !referenceNode ? this[start].node : referenceNode[parentNode];
@@ -206894,7 +206991,7 @@ var init_Range = __esm(() => {
     }
     selectNode(node) {
       if (!node[parentNode]) {
-        throw new this[window2].DOMException(`The given Node has no parent.`, DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException(`The given Node has no parent.`, DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       const index = node[parentNode][nodeArray].indexOf(node);
       this[start].node = node[parentNode];
@@ -206904,7 +207001,7 @@ var init_Range = __esm(() => {
     }
     selectNodeContents(node) {
       if (node[nodeType] === NodeTypeEnum_default.documentTypeNode) {
-        throw new this[window2].DOMException("DocumentType Node can't be used as boundary point.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException("DocumentType Node can't be used as boundary point.", DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       this[start].node = node;
       this[start].offset = 0;
@@ -206939,25 +207036,25 @@ var init_Range = __esm(() => {
     }
     setEndAfter(node) {
       if (!node[parentNode]) {
-        throw new this[window2].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       this.setEnd(node[parentNode], node[parentNode][nodeArray].indexOf(node) + 1);
     }
     setEndBefore(node) {
       if (!node[parentNode]) {
-        throw new this[window2].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       this.setEnd(node[parentNode], node[parentNode][nodeArray].indexOf(node));
     }
     setStartAfter(node) {
       if (!node[parentNode]) {
-        throw new this[window2].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       this.setStart(node[parentNode], node[parentNode][nodeArray].indexOf(node) + 1);
     }
     setStartBefore(node) {
       if (!node[parentNode]) {
-        throw new this[window2].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException("The given Node has no parent.", DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       this.setStart(node[parentNode], node[parentNode][nodeArray].indexOf(node));
     }
@@ -206969,12 +207066,12 @@ var init_Range = __esm(() => {
       const endNode = NodeUtility.nextDescendantNode(node);
       while (node && node !== endNode) {
         if (node[nodeType] !== NodeTypeEnum_default.textNode && RangeUtility.isPartiallyContained(node, this)) {
-          throw new this[window2].DOMException("The Range has partially contains a non-Text node.", DOMExceptionNameEnum_default.invalidStateError);
+          throw new this[window].DOMException("The Range has partially contains a non-Text node.", DOMExceptionNameEnum_default.invalidStateError);
         }
         node = NodeUtility.following(node);
       }
       if (newParent[nodeType] === NodeTypeEnum_default.documentNode || newParent[nodeType] === NodeTypeEnum_default.documentTypeNode || newParent[nodeType] === NodeTypeEnum_default.documentFragmentNode) {
-        throw new this[window2].DOMException("Invalid element type.", DOMExceptionNameEnum_default.invalidNodeTypeError);
+        throw new this[window].DOMException("Invalid element type.", DOMExceptionNameEnum_default.invalidNodeTypeError);
       }
       const fragment = this.extractContents();
       while (newParent.firstChild) {
@@ -207028,7 +207125,7 @@ var init_TextTrackCue = __esm(() => {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
     }
@@ -207056,7 +207153,7 @@ var init_VTTCue = __esm(() => {
     text = "";
     constructor(startTime, endTime, text) {
       super(illegalConstructor);
-      const window3 = this[window2];
+      const window2 = this[window];
       let argumentCount = 0;
       if (startTime !== undefined) {
         argumentCount++;
@@ -207068,21 +207165,21 @@ var init_VTTCue = __esm(() => {
         argumentCount++;
       }
       if (argumentCount < 3) {
-        throw new window3.TypeError(`Failed to construct 'VTTCue': 3 arguments required, but only ${argumentCount} present.`);
+        throw new window2.TypeError(`Failed to construct 'VTTCue': 3 arguments required, but only ${argumentCount} present.`);
       }
       startTime = Number(startTime);
       endTime = Number(endTime);
       if (isNaN(startTime) || isNaN(endTime)) {
-        throw new window3.TypeError(`Failed to construct 'VTTCue': The provided double value is non-finite.`);
+        throw new window2.TypeError(`Failed to construct 'VTTCue': The provided double value is non-finite.`);
       }
       this.startTime = startTime;
       this.endTime = endTime;
       this.text = String(text);
     }
     getCueAsHTML() {
-      const window3 = this[window2];
-      const fragment = window3.document.createDocumentFragment();
-      fragment.appendChild(window3.document.createTextNode(this.text));
+      const window2 = this[window];
+      const fragment = window2.document.createDocumentFragment();
+      fragment.appendChild(window2.document.createTextNode(this.text));
       return fragment;
     }
   };
@@ -207109,7 +207206,7 @@ var init_TextTrack = __esm(() => {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
     }
@@ -207689,41 +207786,41 @@ var init_FileReader = __esm(() => {
     #parseTimeout = null;
     constructor() {
       super();
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
     }
     readAsArrayBuffer(blob) {
       if (!(blob instanceof Blob)) {
-        throw new this[window2].TypeError(`Failed to execute 'readAsArrayBuffer' on 'FileReader': parameter 1 is not of type 'Blob'.`);
+        throw new this[window].TypeError(`Failed to execute 'readAsArrayBuffer' on 'FileReader': parameter 1 is not of type 'Blob'.`);
       }
       this.#readFile(blob, FileReaderFormatEnum_default.buffer);
     }
     readAsBinaryString(blob) {
       if (!(blob instanceof Blob)) {
-        throw new this[window2].TypeError(`Failed to execute 'readAsBinaryString' on 'FileReader': parameter 1 is not of type 'Blob'.`);
+        throw new this[window].TypeError(`Failed to execute 'readAsBinaryString' on 'FileReader': parameter 1 is not of type 'Blob'.`);
       }
       this.#readFile(blob, FileReaderFormatEnum_default.binaryString);
     }
     readAsDataURL(blob) {
       if (!(blob instanceof Blob)) {
-        throw new this[window2].TypeError(`Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'.`);
+        throw new this[window].TypeError(`Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'.`);
       }
       this.#readFile(blob, FileReaderFormatEnum_default.dataURL);
     }
     readAsText(blob, encoding = null) {
       if (!(blob instanceof Blob)) {
-        throw new this[window2].TypeError(`Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'.`);
+        throw new this[window].TypeError(`Failed to execute 'readAsText' on 'FileReader': parameter 1 is not of type 'Blob'.`);
       }
       this.#readFile(blob, FileReaderFormatEnum_default.text, encoding || "UTF-8");
     }
     abort() {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.#loadTimeout) {
-        window3.clearTimeout(this.#loadTimeout);
+        window2.clearTimeout(this.#loadTimeout);
       }
       if (this.#parseTimeout) {
-        window3.clearTimeout(this.#parseTimeout);
+        window2.clearTimeout(this.#parseTimeout);
       }
       if (this.readyState === FileReaderReadyStateEnum_default.empty || this.readyState === FileReaderReadyStateEnum_default.done) {
         this.result = null;
@@ -207738,12 +207835,12 @@ var init_FileReader = __esm(() => {
       this.dispatchEvent(new ProgressEvent(FileReaderEventTypeEnum_default.loadend));
     }
     #readFile(blob, format, encoding = null) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.readyState === FileReaderReadyStateEnum_default.loading) {
-        throw new window3.DOMException("The object is in an invalid state.", DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException("The object is in an invalid state.", DOMExceptionNameEnum_default.invalidStateError);
       }
       this.readyState = FileReaderReadyStateEnum_default.loading;
-      this.#loadTimeout = window3.setTimeout(() => {
+      this.#loadTimeout = window2.setTimeout(() => {
         if (this.#isTerminated) {
           this.#isTerminated = false;
           return;
@@ -207758,7 +207855,7 @@ var init_FileReader = __esm(() => {
           total: blob.size,
           loaded: data2.length
         }));
-        this.#parseTimeout = window3.setTimeout(() => {
+        this.#parseTimeout = window2.setTimeout(() => {
           if (this.#isTerminated) {
             this.#isTerminated = false;
             return;
@@ -207844,7 +207941,7 @@ var init_MediaStreamTrack = __esm(() => {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      if (!this[window2]) {
+      if (!this[window]) {
         throw new TypeError(`Failed to construct '${this.constructor.name}': '${this.constructor.name}' was constructed outside a Window context.`);
       }
     }
@@ -207954,15 +208051,15 @@ var init_WebSocket = __esm(() => {
     [webSocket] = null;
     constructor(url2, protocols) {
       super();
-      const window3 = this[window2];
+      const window2 = this[window];
       let parsedURL;
       try {
         parsedURL = new URL(url2);
       } catch {
-        throw new window3.DOMException(`The URL '${url2}' is invalid.`, DOMExceptionNameEnum_default.syntaxError);
+        throw new window2.DOMException(`The URL '${url2}' is invalid.`, DOMExceptionNameEnum_default.syntaxError);
       }
       if (parsedURL.protocol !== "ws:" && parsedURL.protocol !== "wss:") {
-        throw new window3.DOMException(`The URL's protocol must be either 'ws' or 'wss'. '${parsedURL.protocol}' is not allowed.`, DOMExceptionNameEnum_default.syntaxError);
+        throw new window2.DOMException(`The URL's protocol must be either 'ws' or 'wss'. '${parsedURL.protocol}' is not allowed.`, DOMExceptionNameEnum_default.syntaxError);
       }
       if (parsedURL.hash) {
         parsedURL.hash = "";
@@ -207971,10 +208068,10 @@ var init_WebSocket = __esm(() => {
       const protocolList = protocols !== undefined ? Array.isArray(protocols) ? protocols : [protocols] : [];
       for (const protocol of protocolList) {
         if (!this.#validateSecureProtocol(protocol)) {
-          throw new window3.DOMException(`The subprotocol '${protocol}' is invalid.`, DOMExceptionNameEnum_default.syntaxError);
+          throw new window2.DOMException(`The subprotocol '${protocol}' is invalid.`, DOMExceptionNameEnum_default.syntaxError);
         }
         if (protocolSet.has(protocol)) {
-          throw new window3.DOMException(`The subprotocol '${protocol}' is duplicated.`, DOMExceptionNameEnum_default.syntaxError);
+          throw new window2.DOMException(`The subprotocol '${protocol}' is duplicated.`, DOMExceptionNameEnum_default.syntaxError);
         }
         protocolSet.add(protocol);
       }
@@ -208003,19 +208100,19 @@ var init_WebSocket = __esm(() => {
       return this.#url.href;
     }
     close(code, reason2) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (code !== undefined && code !== 1000 && !(code >= 3000 && code <= 4999)) {
-        throw new window3.DOMException(`The code must be either 1000, or between 3000 and 4999. ${code} is neither.`, DOMExceptionNameEnum_default.invalidAccessError);
+        throw new window2.DOMException(`The code must be either 1000, or between 3000 and 4999. ${code} is neither.`, DOMExceptionNameEnum_default.invalidAccessError);
       }
       if (reason2 !== undefined && Buffer.byteLength(reason2, "utf8") > 123) {
-        throw new window3.DOMException(`The message must not be greater than 123 bytes.`, DOMExceptionNameEnum_default.syntaxError);
+        throw new window2.DOMException(`The message must not be greater than 123 bytes.`, DOMExceptionNameEnum_default.syntaxError);
       }
       this.#close(code, reason2 ? Buffer.from(reason2) : undefined);
     }
     send(data2) {
-      const window3 = this[window2];
+      const window2 = this[window];
       if (this.#readyState === WebSocketReadyStateEnum_default.connecting) {
-        throw new window3.DOMException("Still in CONNECTING state.", DOMExceptionNameEnum_default.invalidStateError);
+        throw new window2.DOMException("Still in CONNECTING state.", DOMExceptionNameEnum_default.invalidStateError);
       }
       if (this.#readyState !== WebSocketReadyStateEnum_default.open) {
         return;
@@ -208043,17 +208140,17 @@ var init_WebSocket = __esm(() => {
       this.#close(1001);
     }
     #connect(url2, protocols) {
-      const window3 = this[window2];
-      const browserContext = new WindowBrowserContext(window3).getBrowserContext();
+      const window2 = this[window];
+      const browserContext = new WindowBrowserContext(window2).getBrowserContext();
       if (!browserContext) {
         return;
       }
-      const originURL = new URL(window3.location.href);
+      const originURL = new URL(window2.location.href);
       const cookies = browserContext.cookieContainer.getCookies(originURL, false);
       this.#readyState = WebSocketReadyStateEnum_default.connecting;
       this[webSocket] = new WS(url2, protocols, {
         headers: {
-          "user-agent": window3.navigator.userAgent,
+          "user-agent": window2.navigator.userAgent,
           cookie: CookieStringUtility.cookiesToString(cookies),
           origin: originURL.origin
         },
@@ -208080,7 +208177,7 @@ var init_WebSocket = __esm(() => {
       this[webSocket].once("error", (error2) => {
         this.#error = error2;
       });
-      window3[openWebSockets].push(this);
+      window2[openWebSockets].push(this);
     }
     #close(code, reason2) {
       if (this.readyState === WebSocketReadyStateEnum_default.connecting) {
@@ -208099,16 +208196,16 @@ var init_WebSocket = __esm(() => {
         this.#extensions = Object.keys(this[webSocket].extensions).join(", ");
       }
       this.#readyState = WebSocketReadyStateEnum_default.open;
-      this.dispatchEvent(new this[window2].Event("open"));
+      this.dispatchEvent(new this[window].Event("open"));
     }
     #onConnectionClosed(code, reason2) {
-      const window3 = this[window2];
-      const index = window3[openWebSockets].indexOf(this);
+      const window2 = this[window];
+      const index = window2[openWebSockets].indexOf(this);
       if (index !== -1) {
-        window3[openWebSockets].splice(index, 1);
+        window2[openWebSockets].splice(index, 1);
       }
       this.#readyState = WebSocketReadyStateEnum_default.closed;
-      this.dispatchEvent(new this[window2].CloseEvent("close", {
+      this.dispatchEvent(new this[window].CloseEvent("close", {
         wasClean: this.#error === null,
         code,
         reason: reason2.toString()
@@ -208118,12 +208215,12 @@ var init_WebSocket = __esm(() => {
       if (this.#readyState !== WebSocketReadyStateEnum_default.open) {
         return;
       }
-      const window3 = this[window2];
+      const window2 = this[window];
       let dataForEvent;
       if (isBinary) {
         switch (this.binaryType) {
           case "arraybuffer":
-            if (data2 instanceof window3.ArrayBuffer) {
+            if (data2 instanceof window2.ArrayBuffer) {
               dataForEvent = data2;
             } else if (Array.isArray(data2)) {
               dataForEvent = this.#convertToArrayBuffer(Buffer.concat(data2));
@@ -208136,20 +208233,20 @@ var init_WebSocket = __esm(() => {
             if (!Array.isArray(data2)) {
               data2 = [data2];
             }
-            dataForEvent = new window3.Blob(data2);
+            dataForEvent = new window2.Blob(data2);
             break;
         }
       } else {
         dataForEvent = String(data2);
       }
-      this.dispatchEvent(new window3.MessageEvent("message", {
+      this.dispatchEvent(new window2.MessageEvent("message", {
         data: dataForEvent,
         origin: this.#url.origin
       }));
     }
     #convertToArrayBuffer(buffer2) {
-      const window3 = this[window2];
-      const arrayBuffer = new window3.ArrayBuffer(buffer2.byteLength);
+      const window2 = this[window];
+      const arrayBuffer = new window2.ArrayBuffer(buffer2.byteLength);
       const view = new Uint8Array(arrayBuffer);
       view.set(buffer2);
       return arrayBuffer;
@@ -208162,187 +208259,187 @@ var init_WebSocket = __esm(() => {
 
 // ../../node_modules/happy-dom/lib/window/WindowContextClassExtender.js
 class WindowContextClassExtender {
-  static extendClasses(window3) {
+  static extendClasses(window2) {
     class Document2 extends Document {
     }
-    Document2.prototype[window2] = window3;
-    window3.Document = Document2;
+    Document2.prototype[window] = window2;
+    window2.Document = Document2;
 
     class HTMLDocument2 extends HTMLDocument {
     }
-    HTMLDocument2.prototype[window2] = window3;
-    window3.HTMLDocument = HTMLDocument2;
+    HTMLDocument2.prototype[window] = window2;
+    window2.HTMLDocument = HTMLDocument2;
 
     class XMLDocument2 extends XMLDocument {
     }
-    XMLDocument2.prototype[window2] = window3;
-    window3.XMLDocument = XMLDocument2;
+    XMLDocument2.prototype[window] = window2;
+    window2.XMLDocument = XMLDocument2;
 
     class DocumentFragment2 extends DocumentFragment {
     }
-    DocumentFragment2.prototype[window2] = window3;
-    window3.DocumentFragment = DocumentFragment2;
+    DocumentFragment2.prototype[window] = window2;
+    window2.DocumentFragment = DocumentFragment2;
 
     class Text2 extends Text {
     }
-    Text2.prototype[window2] = window3;
-    window3.Text = Text2;
+    Text2.prototype[window] = window2;
+    window2.Text = Text2;
 
     class Comment2 extends Comment {
     }
-    Comment2.prototype[window2] = window3;
-    window3.Comment = Comment2;
+    Comment2.prototype[window] = window2;
+    window2.Comment = Comment2;
 
     class Image2 extends Image {
     }
-    Image2.prototype[window2] = window3;
-    window3.Image = Image2;
+    Image2.prototype[window] = window2;
+    window2.Image = Image2;
 
     class Audio2 extends Audio {
     }
-    Audio2.prototype[window2] = window3;
-    window3.Audio = Audio2;
+    Audio2.prototype[window] = window2;
+    window2.Audio = Audio2;
 
     class MutationObserver2 extends MutationObserver {
     }
-    MutationObserver2.prototype[window2] = window3;
-    window3.MutationObserver = MutationObserver2;
+    MutationObserver2.prototype[window] = window2;
+    window2.MutationObserver = MutationObserver2;
 
     class MessagePort2 extends MessagePort {
     }
-    MessagePort2.prototype[window2] = window3;
-    window3.MessagePort = MessagePort2;
+    MessagePort2.prototype[window] = window2;
+    window2.MessagePort = MessagePort2;
 
     class CSSStyleSheet2 extends CSSStyleSheet {
     }
-    CSSStyleSheet2.prototype[window2] = window3;
-    window3.CSSStyleSheet = CSSStyleSheet2;
+    CSSStyleSheet2.prototype[window] = window2;
+    window2.CSSStyleSheet = CSSStyleSheet2;
 
     class DOMException2 extends DOMException {
     }
-    window3.DOMException = DOMException2;
+    window2.DOMException = DOMException2;
 
     class Headers2 extends Headers {
     }
-    Headers2.prototype[window2] = window3;
-    window3.Headers = Headers2;
+    Headers2.prototype[window] = window2;
+    window2.Headers = Headers2;
 
     class Request2 extends Request {
     }
-    Request2.prototype[window2] = window3;
-    window3.Request = Request2;
+    Request2.prototype[window] = window2;
+    window2.Request = Request2;
 
     class Response3 extends Response2 {
     }
-    Response3.prototype[window2] = window3;
-    Response3[window2] = window3;
-    window3.Response = Response3;
+    Response3.prototype[window] = window2;
+    Response3[window] = window2;
+    window2.Response = Response3;
 
     class EventTarget2 extends EventTarget {
     }
-    EventTarget2.prototype[window2] = window3;
-    window3.EventTarget = EventTarget2;
+    EventTarget2.prototype[window] = window2;
+    window2.EventTarget = EventTarget2;
 
     class XMLHttpRequestUpload2 extends XMLHttpRequestUpload {
     }
-    XMLHttpRequestUpload2.prototype[window2] = window3;
-    window3.XMLHttpRequestUpload = XMLHttpRequestUpload2;
+    XMLHttpRequestUpload2.prototype[window] = window2;
+    window2.XMLHttpRequestUpload = XMLHttpRequestUpload2;
 
     class XMLHttpRequestEventTarget2 extends XMLHttpRequestEventTarget {
     }
-    XMLHttpRequestEventTarget2.prototype[window2] = window3;
-    window3.XMLHttpRequestEventTarget = XMLHttpRequestEventTarget2;
+    XMLHttpRequestEventTarget2.prototype[window] = window2;
+    window2.XMLHttpRequestEventTarget = XMLHttpRequestEventTarget2;
 
     class AbortController2 extends AbortController {
     }
-    AbortController2.prototype[window2] = window3;
-    window3.AbortController = AbortController2;
+    AbortController2.prototype[window] = window2;
+    window2.AbortController = AbortController2;
 
     class AbortSignal2 extends AbortSignal {
     }
-    AbortSignal2.prototype[window2] = window3;
-    AbortSignal2[window2] = window3;
-    window3.AbortSignal = AbortSignal2;
+    AbortSignal2.prototype[window] = window2;
+    AbortSignal2[window] = window2;
+    window2.AbortSignal = AbortSignal2;
 
     class FormData2 extends FormData {
     }
-    FormData2.prototype[window2] = window3;
-    window3.FormData = FormData2;
+    FormData2.prototype[window] = window2;
+    window2.FormData = FormData2;
 
     class PermissionStatus2 extends PermissionStatus {
     }
-    PermissionStatus2.prototype[window2] = window3;
-    window3.PermissionStatus = PermissionStatus2;
+    PermissionStatus2.prototype[window] = window2;
+    window2.PermissionStatus = PermissionStatus2;
 
     class XMLHttpRequest2 extends XMLHttpRequest {
     }
-    XMLHttpRequest2.prototype[window2] = window3;
-    window3.XMLHttpRequest = XMLHttpRequest2;
+    XMLHttpRequest2.prototype[window] = window2;
+    window2.XMLHttpRequest = XMLHttpRequest2;
 
     class DOMParser2 extends DOMParser {
     }
-    DOMParser2.prototype[window2] = window3;
-    window3.DOMParser = DOMParser2;
+    DOMParser2.prototype[window] = window2;
+    window2.DOMParser = DOMParser2;
 
     class Range2 extends Range {
     }
-    Range2.prototype[window2] = window3;
-    window3.Range = Range2;
+    Range2.prototype[window] = window2;
+    window2.Range = Range2;
 
     class VTTCue2 extends VTTCue {
     }
-    VTTCue2.prototype[window2] = window3;
-    window3.VTTCue = VTTCue2;
+    VTTCue2.prototype[window] = window2;
+    window2.VTTCue = VTTCue2;
 
     class TextTrack2 extends TextTrack {
     }
-    TextTrack2.prototype[window2] = window3;
-    window3.TextTrack = TextTrack2;
+    TextTrack2.prototype[window] = window2;
+    window2.TextTrack = TextTrack2;
 
     class TextTrackList2 extends TextTrackList {
     }
-    TextTrackList2.prototype[window2] = window3;
-    window3.TextTrackList = TextTrackList2;
+    TextTrackList2.prototype[window] = window2;
+    window2.TextTrackList = TextTrackList2;
 
     class TextTrackCue2 extends TextTrackCue {
     }
-    TextTrackCue2.prototype[window2] = window3;
-    window3.TextTrackCue = TextTrackCue2;
+    TextTrackCue2.prototype[window] = window2;
+    window2.TextTrackCue = TextTrackCue2;
 
     class RemotePlayback2 extends RemotePlayback {
     }
-    RemotePlayback2.prototype[window2] = window3;
-    window3.RemotePlayback = RemotePlayback2;
+    RemotePlayback2.prototype[window] = window2;
+    window2.RemotePlayback = RemotePlayback2;
 
     class FileReader2 extends FileReader {
     }
-    FileReader2.prototype[window2] = window3;
-    window3.FileReader = FileReader2;
+    FileReader2.prototype[window] = window2;
+    window2.FileReader = FileReader2;
 
     class MediaStream2 extends MediaStream {
     }
-    MediaStream2.prototype[window2] = window3;
-    window3.MediaStream = MediaStream2;
+    MediaStream2.prototype[window] = window2;
+    window2.MediaStream = MediaStream2;
 
     class MediaStreamTrack2 extends MediaStreamTrack {
     }
-    MediaStreamTrack2.prototype[window2] = window3;
-    window3.MediaStreamTrack = MediaStreamTrack2;
+    MediaStreamTrack2.prototype[window] = window2;
+    window2.MediaStreamTrack = MediaStreamTrack2;
 
     class CanvasCaptureMediaStreamTrack2 extends CanvasCaptureMediaStreamTrack {
     }
-    CanvasCaptureMediaStreamTrack2.prototype[window2] = window3;
-    window3.CanvasCaptureMediaStreamTrack = CanvasCaptureMediaStreamTrack2;
+    CanvasCaptureMediaStreamTrack2.prototype[window] = window2;
+    window2.CanvasCaptureMediaStreamTrack = CanvasCaptureMediaStreamTrack2;
 
     class URL13 extends URL2 {
     }
-    URL13.prototype[window2] = window3;
-    window3.URL = URL13;
+    URL13.prototype[window] = window2;
+    window2.URL = URL13;
 
     class WebSocket2 extends WebSocket {
     }
-    WebSocket2.prototype[window2] = window3;
-    window3.WebSocket = WebSocket2;
+    WebSocket2.prototype[window] = window2;
+    window2.WebSocket = WebSocket2;
   }
 }
 var init_WindowContextClassExtender = __esm(() => {
@@ -209545,7 +209642,7 @@ var init_SVGStringList = __esm(() => {
   init_PropertySymbol();
   ATTRIBUTE_SPLIT_REGEXP2 = /[\t\f\n\r ,]+/;
   SVGStringList = class SVGStringList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [readOnly] = false;
@@ -209553,11 +209650,11 @@ var init_SVGStringList = __esm(() => {
       items: [],
       attributeValue: ""
     };
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[readOnly] = !!options2.readOnly;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
@@ -209656,10 +209753,10 @@ var init_SVGStringList = __esm(() => {
     }
     initialize(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGStringList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGStringList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGStringList': 1 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGStringList': 1 arguments required, but only ${arguments.length} present.`);
       }
       newItem = String(newItem);
       if (!newItem) {
@@ -209680,10 +209777,10 @@ var init_SVGStringList = __esm(() => {
     }
     insertItemBefore(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGStringList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGStringList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`);
       }
       newItem = String(newItem);
       if (!newItem) {
@@ -209705,10 +209802,10 @@ var init_SVGStringList = __esm(() => {
     }
     replaceItem(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGStringList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGStringList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only ${arguments.length} present.`);
       }
       newItem = String(newItem);
       if (!newItem) {
@@ -209727,10 +209824,10 @@ var init_SVGStringList = __esm(() => {
     }
     removeItem(index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGStringList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGStringList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       index = Number(index);
@@ -209738,10 +209835,10 @@ var init_SVGStringList = __esm(() => {
         index = 0;
       }
       if (index >= items2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index < 0) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGStringList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const removedItem = items2[index];
       items2.splice(index, 1);
@@ -209750,10 +209847,10 @@ var init_SVGStringList = __esm(() => {
     }
     appendItem(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGStringList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGStringList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGStringList': 1 argument required, but only ${arguments.length} present.`);
       }
       newItem = String(newItem);
       if (!newItem) {
@@ -209798,16 +209895,16 @@ var init_SVGMatrix = __esm(() => {
   TRANSFORM_REGEXP2 = /([a-zA-Z0-9]+)\(([^)]+)\)/;
   TRANSFORM_PARAMETER_SPLIT_REGEXP2 = /[\s,]+/;
   SVGMatrix = class SVGMatrix {
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -209882,80 +209979,80 @@ var init_SVGMatrix = __esm(() => {
     }
     multiply(secondMatrix) {
       if (!(secondMatrix instanceof SVGMatrix)) {
-        throw new this[window2].TypeError("Failed to execute 'multiply' on 'SVGMatrix': parameter 1 is not of type 'SVGMatrix'.");
+        throw new this[window].TypeError("Failed to execute 'multiply' on 'SVGMatrix': parameter 1 is not of type 'SVGMatrix'.");
       }
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.multiplySelf(secondMatrix[getDOMMatrix]());
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     translate(x3 = 0, y3 = 0) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.translateSelf(x3, y3);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     scale(scale2) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.scaleSelf(scale2);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     scaleNonUniform(scaleX = 1, scaleY = 1) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.scaleNonUniformSelf(scaleX, scaleY);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     rotate(angle2) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.rotateSelf(angle2);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     rotateFromVector(x3 = 0, y3 = 0) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.rotateFromVectorSelf(x3, y3);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     skewX(angle2) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.skewXSelf(angle2);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     skewY(angle2) {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.skewYSelf(angle2);
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     flipX() {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.flipXSelf();
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     flipY() {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.flipYSelf();
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
     }
     inverse() {
       const domMatrix2 = this[getDOMMatrix]();
-      const svgMatrix = new SVGMatrix(illegalConstructor, this[window2]);
+      const svgMatrix = new SVGMatrix(illegalConstructor, this[window]);
       domMatrix2.invertSelf();
       svgMatrix[setDOMMatrix](domMatrix2);
       return svgMatrix;
@@ -209973,32 +210070,32 @@ var init_SVGMatrix = __esm(() => {
       for (const parameter of match[2].trim().split(TRANSFORM_PARAMETER_SPLIT_REGEXP2)) {
         const value2 = Number(parameter);
         if (isNaN(value2)) {
-          throw new this[window2].TypeError(`Failed to parse transform attribute: Expected number, but got "${parameter}" in "${attribute}".`);
+          throw new this[window].TypeError(`Failed to parse transform attribute: Expected number, but got "${parameter}" in "${attribute}".`);
         }
         parameters.push(value2);
       }
       switch (match[1]) {
         case "matrix":
           if (parameters.length !== 6) {
-            throw new this[window2].TypeError(`Failed to parse transform attribute: Expected 6 parameters in "${attribute}".`);
+            throw new this[window].TypeError(`Failed to parse transform attribute: Expected 6 parameters in "${attribute}".`);
           }
           return DOMMatrix[fromString](attribute);
         case "scale":
         case "translate":
           if (parameters.length !== 1 && parameters.length !== 2) {
-            throw new this[window2].TypeError(`Failed to parse transform attribute: Expected 1 or 2 parameters in "${attribute}".`);
+            throw new this[window].TypeError(`Failed to parse transform attribute: Expected 1 or 2 parameters in "${attribute}".`);
           }
           return DOMMatrix[fromString](attribute);
         case "skewY":
         case "skewX":
           if (parameters.length !== 1) {
-            throw new this[window2].TypeError(`Failed to parse transform attribute: Expected 1 parameter in "${attribute}".`);
+            throw new this[window].TypeError(`Failed to parse transform attribute: Expected 1 parameter in "${attribute}".`);
           }
           return DOMMatrix[fromString](attribute);
         case "rotate":
           const domMatrix2 = new DOMMatrix;
           if (parameters.length !== 1 && parameters.length !== 3) {
-            throw new this[window2].TypeError(`Failed to parse transform attribute: Expected 1 or 3 parameters in "${attribute}".`);
+            throw new this[window].TypeError(`Failed to parse transform attribute: Expected 1 or 3 parameters in "${attribute}".`);
           }
           const [angle2, x3, y3] = parameters;
           if (x3 || y3) {
@@ -210018,7 +210115,7 @@ var init_SVGMatrix = __esm(() => {
           }
           return domMatrix2;
         default:
-          throw new this[window2].TypeError(`Failed to parse transform attribute: Unknown transformation "${attribute}".`);
+          throw new this[window].TypeError(`Failed to parse transform attribute: Unknown transformation "${attribute}".`);
       }
     }
     [setDOMMatrix](domMatrix2) {
@@ -210061,17 +210158,17 @@ var init_SVGTransform = __esm(() => {
     static SVG_TRANSFORM_ROTATE = SVGTransformTypeEnum_default.rotate;
     static SVG_TRANSFORM_SKEWX = SVGTransformTypeEnum_default.skewX;
     static SVG_TRANSFORM_SKEWY = SVGTransformTypeEnum_default.skewY;
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
     [matrix] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -210120,7 +210217,7 @@ var init_SVGTransform = __esm(() => {
     }
     get matrix() {
       if (!this[matrix]) {
-        this[matrix] = new SVGMatrix(illegalConstructor, this[window2], {
+        this[matrix] = new SVGMatrix(illegalConstructor, this[window], {
           readOnly: this[readOnly],
           getAttribute: () => {
             if (this[getAttribute]) {
@@ -210266,7 +210363,7 @@ var init_SVGTransformList = __esm(() => {
   init_SVGTransform();
   TRANSFORM_REGEXP4 = /([a-zA-Z0-9]+)\(([^)]+)\)/gm;
   SVGTransformList = class SVGTransformList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [readOnly] = false;
@@ -210274,11 +210371,11 @@ var init_SVGTransformList = __esm(() => {
       items: [],
       attributeValue: ""
     };
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[readOnly] = !!options2.readOnly;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
@@ -210369,7 +210466,7 @@ var init_SVGTransformList = __esm(() => {
     }
     clear() {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'clear' on 'SVGTransformList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'clear' on 'SVGTransformList': The object is read-only.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -210381,13 +210478,13 @@ var init_SVGTransformList = __esm(() => {
     }
     initialize(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGTransformList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGTransformList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGTransformList': 1 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGTransformList': 1 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGTransform)) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -210414,13 +210511,13 @@ var init_SVGTransformList = __esm(() => {
     }
     insertItemBefore(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGTransformList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGTransformList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGTransform)) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -210444,13 +210541,13 @@ var init_SVGTransformList = __esm(() => {
     }
     replaceItem(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGTransformList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGTransformList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGTransform)) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -210482,10 +210579,10 @@ var init_SVGTransformList = __esm(() => {
     }
     removeItem(index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGTransformList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGTransformList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       index = Number(index);
@@ -210493,10 +210590,10 @@ var init_SVGTransformList = __esm(() => {
         index = 0;
       }
       if (index >= items2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGTransformList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGTransformList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index < 0) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGTransformList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGTransformList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const removedItem = items2[index];
       if (removedItem) {
@@ -210510,13 +210607,13 @@ var init_SVGTransformList = __esm(() => {
     }
     appendItem(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': 1 argument required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGTransform)) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -210551,7 +210648,7 @@ var init_SVGTransformList = __esm(() => {
         const regexp = new RegExp(TRANSFORM_REGEXP4);
         let match;
         while (match = regexp.exec(trimmed)) {
-          const item = new SVGTransform(illegalConstructor, this[window2], {
+          const item = new SVGTransform(illegalConstructor, this[window], {
             readOnly: this[readOnly],
             getAttribute: () => item[attributeValue],
             setAttribute: () => {
@@ -210576,22 +210673,22 @@ var init_SVGAnimatedTransformList = __esm(() => {
   init_SVGTransformList();
   init_PropertySymbol();
   SVGAnimatedTransformList = class SVGAnimatedTransformList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGTransformList(illegalConstructor, this[window2], {
+        this[animVal] = new SVGTransformList(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute],
           setAttribute: () => {}
@@ -210602,7 +210699,7 @@ var init_SVGAnimatedTransformList = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGTransformList(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGTransformList(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -210647,7 +210744,7 @@ var init_SVGGraphicsElement = __esm(() => {
     }
     get requiredExtensions() {
       if (!this[requiredExtensions]) {
-        this[requiredExtensions] = new SVGStringList(illegalConstructor, this[window2], {
+        this[requiredExtensions] = new SVGStringList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("requiredExtensions"),
           setAttribute: (value2) => this.setAttribute("requiredExtensions", value2)
         });
@@ -210656,7 +210753,7 @@ var init_SVGGraphicsElement = __esm(() => {
     }
     get systemLanguage() {
       if (!this[systemLanguage]) {
-        this[systemLanguage] = new SVGStringList(illegalConstructor, this[window2], {
+        this[systemLanguage] = new SVGStringList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("systemLanguage"),
           setAttribute: (value2) => this.setAttribute("systemLanguage", value2)
         });
@@ -210665,7 +210762,7 @@ var init_SVGGraphicsElement = __esm(() => {
     }
     get transform() {
       if (!this[transform]) {
-        this[transform] = new SVGAnimatedTransformList(illegalConstructor, this[window2], {
+        this[transform] = new SVGAnimatedTransformList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("transform"),
           setAttribute: (value2) => this.setAttribute("transform", value2)
         });
@@ -210689,16 +210786,16 @@ var SVGRect;
 var init_SVGRect = __esm(() => {
   init_PropertySymbol();
   SVGRect = class SVGRect {
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -210716,7 +210813,7 @@ var init_SVGRect = __esm(() => {
     }
     set x(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'x' property on 'SVGRect': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'x' property on 'SVGRect': The object is read-only.`);
       }
       this[attributeValue] = `${String(typeof value2 === "number" ? value2 : parseFloat(value2))} ${this.y} ${this.width} ${this.height}`;
       if (this[setAttribute]) {
@@ -210734,7 +210831,7 @@ var init_SVGRect = __esm(() => {
     }
     set y(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'y' property on 'SVGRect': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'y' property on 'SVGRect': The object is read-only.`);
       }
       this[attributeValue] = `${this.x} ${String(typeof value2 === "number" ? value2 : parseFloat(value2))} ${this.width} ${this.height}`;
       if (this[setAttribute]) {
@@ -210752,7 +210849,7 @@ var init_SVGRect = __esm(() => {
     }
     set width(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'width' property on 'SVGRect': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'width' property on 'SVGRect': The object is read-only.`);
       }
       this[attributeValue] = `${this.x} ${this.y} ${String(typeof value2 === "number" ? value2 : parseFloat(value2))} ${this.height}`;
       if (this[setAttribute]) {
@@ -210770,7 +210867,7 @@ var init_SVGRect = __esm(() => {
     }
     set height(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'height' property on 'SVGRect': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'height' property on 'SVGRect': The object is read-only.`);
       }
       this[attributeValue] = `${this.x} ${this.y} ${this.width} ${String(typeof value2 === "number" ? value2 : parseFloat(value2))}`;
       if (this[setAttribute]) {
@@ -210786,16 +210883,16 @@ var init_SVGPoint = __esm(() => {
   init_PropertySymbol();
   ATTRIBUTE_SEPARATOR_REGEXP = /[\t\f\n\r, ]+/;
   SVGPoint = class SVGPoint {
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -210809,7 +210906,7 @@ var init_SVGPoint = __esm(() => {
     }
     set x(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'x' property on 'SVGPoint': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'x' property on 'SVGPoint': The object is read-only.`);
       }
       this[attributeValue] = `${value2} ${this.y}`;
       if (this[setAttribute]) {
@@ -210823,7 +210920,7 @@ var init_SVGPoint = __esm(() => {
     }
     set y(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'y' property on 'SVGPoint': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'y' property on 'SVGPoint': The object is read-only.`);
       }
       this[attributeValue] = `${this.x} ${value2}`;
       if (this[setAttribute]) {
@@ -210870,16 +210967,16 @@ var init_SVGLength = __esm(() => {
     static SVG_LENGTHTYPE_IN = SVGLengthTypeEnum_default.in;
     static SVG_LENGTHTYPE_PT = SVGLengthTypeEnum_default.pt;
     static SVG_LENGTHTYPE_PC = SVGLengthTypeEnum_default.pc;
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -210913,7 +211010,7 @@ var init_SVGLength = __esm(() => {
         case "em":
         case "ex":
         case "%":
-          throw new this[window2].TypeError(`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`);
+          throw new this[window].TypeError(`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`);
         default:
           return SVGLengthTypeEnum_default.unknown;
       }
@@ -210946,18 +211043,18 @@ var init_SVGLength = __esm(() => {
         case "em":
         case "ex":
         case "%":
-          throw new this[window2].TypeError(`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`);
+          throw new this[window].TypeError(`Failed to execute 'value' on 'SVGLength': Could not resolve relative length.`);
         default:
           return 0;
       }
     }
     set value(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'value' property on 'SVGLength': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'value' property on 'SVGLength': The object is read-only.`);
       }
       value2 = typeof value2 !== "number" ? parseFloat(String(value2)) : value2;
       if (isNaN(value2)) {
-        throw new this[window2].TypeError(`Failed to set the 'value' property on 'SVGLength': The provided float value is non-finite.`);
+        throw new this[window].TypeError(`Failed to set the 'value' property on 'SVGLength': The provided float value is non-finite.`);
       }
       let unitType2 = "";
       let valueInSpecifiedUnits = value2;
@@ -210993,7 +211090,7 @@ var init_SVGLength = __esm(() => {
         case SVGLengthTypeEnum_default.percentage:
         case SVGLengthTypeEnum_default.ems:
         case SVGLengthTypeEnum_default.exs:
-          throw new this[window2].TypeError(`Failed to set the 'value' property on 'SVGLength': Could not resolve relative length.`);
+          throw new this[window].TypeError(`Failed to set the 'value' property on 'SVGLength': Could not resolve relative length.`);
         default:
           break;
       }
@@ -211011,14 +211108,14 @@ var init_SVGLength = __esm(() => {
     }
     newValueSpecifiedUnits(unitType2, value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The object is read-only.`);
       }
       if (typeof unitType2 !== "number") {
-        throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`);
+        throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`);
       }
       value2 = typeof value2 !== "number" ? parseFloat(String(value2)) : value2;
       if (isNaN(value2)) {
-        throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite.`);
+        throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite.`);
       }
       let unit = "";
       switch (unitType2) {
@@ -211046,7 +211143,7 @@ var init_SVGLength = __esm(() => {
         case SVGLengthTypeEnum_default.ems:
         case SVGLengthTypeEnum_default.exs:
         case SVGLengthTypeEnum_default.percentage:
-          throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`);
+          throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`);
         default:
           break;
       }
@@ -211057,10 +211154,10 @@ var init_SVGLength = __esm(() => {
     }
     convertToSpecifiedUnits(unitType2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': The object is read-only.`);
       }
       if (typeof unitType2 !== "number") {
-        throw new this[window2].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`);
+        throw new this[window].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': parameter 1 ('unitType') is not of type 'number'.`);
       }
       let value2 = this.value;
       let unit = "";
@@ -211094,7 +211191,7 @@ var init_SVGLength = __esm(() => {
         case SVGLengthTypeEnum_default.percentage:
         case SVGLengthTypeEnum_default.ems:
         case SVGLengthTypeEnum_default.exs:
-          throw new this[window2].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`);
+          throw new this[window].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGLength': Could not resolve relative length.`);
         default:
           break;
       }
@@ -211131,16 +211228,16 @@ var init_SVGAngle = __esm(() => {
     static SVG_ANGLETYPE_DEG = SVGAngleTypeEnum_default.deg;
     static SVG_ANGLETYPE_RAD = SVGAngleTypeEnum_default.rad;
     static SVG_ANGLETYPE_GRAD = SVGAngleTypeEnum_default.grad;
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = "";
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -211198,11 +211295,11 @@ var init_SVGAngle = __esm(() => {
     }
     set value(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'value' property on 'SVGAngle': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'value' property on 'SVGAngle': The object is read-only.`);
       }
       value2 = typeof value2 !== "number" ? parseFloat(String(value2)) : value2;
       if (isNaN(value2)) {
-        throw new this[window2].TypeError(`Failed to set the 'value' property on 'SVGAngle': The provided float value is non-finite.`);
+        throw new this[window].TypeError(`Failed to set the 'value' property on 'SVGAngle': The provided float value is non-finite.`);
       }
       let unitType2 = "";
       let valueInSpecifiedUnits = value2;
@@ -211243,14 +211340,14 @@ var init_SVGAngle = __esm(() => {
     }
     newValueSpecifiedUnits(unitType2, value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': The object is read-only.`);
       }
       if (typeof unitType2 !== "number") {
-        throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': parameter 1 ('unitType') is not of type 'number'.`);
+        throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': parameter 1 ('unitType') is not of type 'number'.`);
       }
       value2 = typeof value2 !== "number" ? parseFloat(value2) : value2;
       if (isNaN(value2)) {
-        throw new this[window2].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': The provided float value is non-finite.`);
+        throw new this[window].TypeError(`Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': The provided float value is non-finite.`);
       }
       let unit = "";
       switch (unitType2) {
@@ -211279,10 +211376,10 @@ var init_SVGAngle = __esm(() => {
     }
     convertToSpecifiedUnits(unitType2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': The object is read-only.`);
       }
       if (typeof unitType2 !== "number") {
-        throw new this[window2].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': parameter 1 ('unitType') is not of type 'number'.`);
+        throw new this[window].TypeError(`Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': parameter 1 ('unitType') is not of type 'number'.`);
       }
       let value2 = this.value;
       let unit = "";
@@ -211321,16 +211418,16 @@ var SVGNumber;
 var init_SVGNumber = __esm(() => {
   init_PropertySymbol();
   SVGNumber = class SVGNumber {
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -211363,22 +211460,22 @@ var init_SVGAnimatedRect = __esm(() => {
   init_PropertySymbol();
   init_SVGRect();
   SVGAnimatedRect = class SVGAnimatedRect {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGRect(illegalConstructor, this[window2], {
+        this[animVal] = new SVGRect(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute]
         });
@@ -211388,7 +211485,7 @@ var init_SVGAnimatedRect = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGRect(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGRect(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -211454,16 +211551,16 @@ var init_SVGPreserveAspectRatio = __esm(() => {
     static SVG_PRESERVEASPECTRATIO_XMINYMAX = SVGPreserveAspectRatioAlignEnum_default.xMinYMax;
     static SVG_PRESERVEASPECTRATIO_XMIDYMAX = SVGPreserveAspectRatioAlignEnum_default.xMidYMax;
     static SVG_PRESERVEASPECTRATIO_XMAXYMAX = SVGPreserveAspectRatioAlignEnum_default.xMaxYMax;
-    [window2];
+    [window];
     [getAttribute] = null;
     [setAttribute] = null;
     [attributeValue] = null;
     [readOnly] = false;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       if (options2) {
         this[readOnly] = !!options2.readOnly;
         this[getAttribute] = options2.getAttribute || null;
@@ -211483,11 +211580,11 @@ var init_SVGPreserveAspectRatio = __esm(() => {
     }
     set align(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The object is read-only.`);
       }
       const parsedValue = Number(value2);
       if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > ALIGN_KEYS.length) {
-        throw new this[window2].TypeError(`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid.`);
+        throw new this[window].TypeError(`Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid.`);
       }
       this[attributeValue] = `${ALIGN_KEYS[parsedValue]} ${MEET_OR_SLICE_KEYS[this.meetOrSlice]}`;
       if (this[setAttribute]) {
@@ -211507,11 +211604,11 @@ var init_SVGPreserveAspectRatio = __esm(() => {
     }
     set meetOrSlice(value2) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The object is read-only.`);
       }
       const parsedValue = Number(value2);
       if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > 2) {
-        throw new this[window2].TypeError(`Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid.`);
+        throw new this[window].TypeError(`Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid.`);
       }
       this[attributeValue] = `${ALIGN_KEYS[this.align]} ${MEET_OR_SLICE_KEYS[parsedValue]}`;
       if (this[setAttribute]) {
@@ -211527,22 +211624,22 @@ var init_SVGAnimatedPreserveAspectRatio = __esm(() => {
   init_PropertySymbol();
   init_SVGPreserveAspectRatio();
   SVGAnimatedPreserveAspectRatio = class SVGAnimatedPreserveAspectRatio {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGPreserveAspectRatio(illegalConstructor, this[window2], {
+        this[animVal] = new SVGPreserveAspectRatio(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute]
         });
@@ -211552,7 +211649,7 @@ var init_SVGAnimatedPreserveAspectRatio = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGPreserveAspectRatio(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGPreserveAspectRatio(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -211569,22 +211666,22 @@ var init_SVGAnimatedLength = __esm(() => {
   init_PropertySymbol();
   init_SVGLength();
   SVGAnimatedLength = class SVGAnimatedLength {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGLength(illegalConstructor, this[window2], {
+        this[animVal] = new SVGLength(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute]
         });
@@ -211594,7 +211691,7 @@ var init_SVGAnimatedLength = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGLength(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGLength(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -211741,7 +211838,7 @@ var init_SVGSVGElement = __esm(() => {
     }
     get preserveAspectRatio() {
       if (!this[preserveAspectRatio]) {
-        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window2], {
+        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("preserveAspectRatio"),
           setAttribute: (value2) => this.setAttribute("preserveAspectRatio", value2)
         });
@@ -211750,7 +211847,7 @@ var init_SVGSVGElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -211759,7 +211856,7 @@ var init_SVGSVGElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -211768,7 +211865,7 @@ var init_SVGSVGElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -211777,7 +211874,7 @@ var init_SVGSVGElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -211790,7 +211887,7 @@ var init_SVGSVGElement = __esm(() => {
     set currentScale(currentScale2) {
       const parsed = typeof currentScale2 !== "number" ? parseFloat(String(currentScale2)) : currentScale2;
       if (isNaN(parsed)) {
-        throw this[window2].TypeError(`Failed to set the 'currentScale' property on 'SVGSVGElement': The provided float value is non-finite.`);
+        throw this[window].TypeError(`Failed to set the 'currentScale' property on 'SVGSVGElement': The provided float value is non-finite.`);
       }
       if (parsed < 1) {
         return;
@@ -211798,11 +211895,11 @@ var init_SVGSVGElement = __esm(() => {
       this[currentScale] = parsed;
     }
     get currentTranslate() {
-      return new SVGPoint(illegalConstructor, this[window2]);
+      return new SVGPoint(illegalConstructor, this[window]);
     }
     get viewBox() {
       if (!this[viewBox]) {
-        this[viewBox] = new SVGAnimatedRect(illegalConstructor, this[window2], {
+        this[viewBox] = new SVGAnimatedRect(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("viewBox"),
           setAttribute: (value2) => this.setAttribute("viewBox", value2)
         });
@@ -211832,28 +211929,28 @@ var init_SVGSVGElement = __esm(() => {
     }
     deselectAll() {}
     createSVGNumber() {
-      return new SVGNumber(illegalConstructor, this[window2]);
+      return new SVGNumber(illegalConstructor, this[window]);
     }
     createSVGLength() {
-      return new SVGLength(illegalConstructor, this[window2]);
+      return new SVGLength(illegalConstructor, this[window]);
     }
     createSVGAngle() {
-      return new SVGAngle(illegalConstructor, this[window2]);
+      return new SVGAngle(illegalConstructor, this[window]);
     }
     createSVGPoint() {
-      return new SVGPoint(illegalConstructor, this[window2]);
+      return new SVGPoint(illegalConstructor, this[window]);
     }
     createSVGMatrix() {
-      return new SVGMatrix(illegalConstructor, this[window2]);
+      return new SVGMatrix(illegalConstructor, this[window]);
     }
     createSVGRect() {
-      return new SVGRect(illegalConstructor, this[window2]);
+      return new SVGRect(illegalConstructor, this[window]);
     }
     createSVGTransform() {
-      return new SVGTransform(illegalConstructor, this[window2]);
+      return new SVGTransform(illegalConstructor, this[window]);
     }
     createSVGTransformFromMatrix(matrix2) {
-      const transform2 = new SVGTransform(illegalConstructor, this[window2]);
+      const transform2 = new SVGTransform(illegalConstructor, this[window]);
       transform2.setMatrix(matrix2);
       return transform2;
     }
@@ -211905,7 +212002,7 @@ var init_SVGAnimationElement = __esm(() => {
     }
     get requiredExtensions() {
       if (!this[requiredExtensions]) {
-        this[requiredExtensions] = new SVGStringList(illegalConstructor, this[window2], {
+        this[requiredExtensions] = new SVGStringList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("requiredExtensions"),
           setAttribute: (value2) => this.setAttribute("requiredExtensions", value2)
         });
@@ -211914,7 +212011,7 @@ var init_SVGAnimationElement = __esm(() => {
     }
     get systemLanguage() {
       if (!this[systemLanguage]) {
-        this[systemLanguage] = new SVGStringList(illegalConstructor, this[window2], {
+        this[systemLanguage] = new SVGStringList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("systemLanguage"),
           setAttribute: (value2) => this.setAttribute("systemLanguage", value2)
         });
@@ -211956,15 +212053,15 @@ var SVGAnimatedNumber;
 var init_SVGAnimatedNumber = __esm(() => {
   init_PropertySymbol();
   SVGAnimatedNumber = class SVGAnimatedNumber {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [defaultValue] = 0;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
       this[defaultValue] = options2.defaultValue || 0;
@@ -211987,7 +212084,7 @@ var init_SVGAnimatedNumber = __esm(() => {
     set baseVal(value2) {
       const parsedValue = typeof value2 !== "number" ? parseFloat(value2) : value2;
       if (isNaN(parsedValue)) {
-        throw new this[window2].TypeError(`TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedNumber': The provided float value is non-finite.`);
+        throw new this[window].TypeError(`TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedNumber': The provided float value is non-finite.`);
       }
       this[setAttribute](String(parsedValue));
     }
@@ -212005,7 +212102,7 @@ var init_SVGGeometryElement = __esm(() => {
     [pathLength] = null;
     get pathLength() {
       if (!this[pathLength]) {
-        this[pathLength] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[pathLength] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("pathLength"),
           setAttribute: (value2) => this.setAttribute("pathLength", value2)
         });
@@ -212028,7 +212125,7 @@ var init_SVGGeometryElement = __esm(() => {
       return 0;
     }
     getPointAtLength(_distance) {
-      return new SVGPoint(illegalConstructor, this[window2]);
+      return new SVGPoint(illegalConstructor, this[window]);
     }
   };
 });
@@ -212045,7 +212142,7 @@ var init_SVGCircleElement = __esm(() => {
     [r] = null;
     get cx() {
       if (!this[cx]) {
-        this[cx] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[cx] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("cx"),
           setAttribute: (value2) => this.setAttribute("cx", value2)
         });
@@ -212054,7 +212151,7 @@ var init_SVGCircleElement = __esm(() => {
     }
     get cy() {
       if (!this[cy]) {
-        this[cy] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[cy] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("cy"),
           setAttribute: (value2) => this.setAttribute("cy", value2)
         });
@@ -212063,7 +212160,7 @@ var init_SVGCircleElement = __esm(() => {
     }
     get r() {
       if (!this[r]) {
-        this[r] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[r] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("r"),
           setAttribute: (value2) => this.setAttribute("r", value2)
         });
@@ -212078,16 +212175,16 @@ var SVGAnimatedEnumeration;
 var init_SVGAnimatedEnumeration = __esm(() => {
   init_PropertySymbol();
   SVGAnimatedEnumeration = class SVGAnimatedEnumeration {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [values];
     [defaultValue];
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
       this[values] = options2.values;
@@ -212140,7 +212237,7 @@ var init_SVGClipPathElement = __esm(() => {
     [clipPathUnits] = null;
     get clipPathUnits() {
       if (!this[clipPathUnits]) {
-        this[clipPathUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[clipPathUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("clipPathUnits"),
           setAttribute: (value2) => this.setAttribute("clipPathUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -212181,7 +212278,7 @@ var init_SVGEllipseElement = __esm(() => {
     [ry] = null;
     get cx() {
       if (!this[cx]) {
-        this[cx] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[cx] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("cx"),
           setAttribute: (value2) => this.setAttribute("cx", value2)
         });
@@ -212190,7 +212287,7 @@ var init_SVGEllipseElement = __esm(() => {
     }
     get cy() {
       if (!this[cy]) {
-        this[cy] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[cy] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("cy"),
           setAttribute: (value2) => this.setAttribute("cy", value2)
         });
@@ -212199,7 +212296,7 @@ var init_SVGEllipseElement = __esm(() => {
     }
     get rx() {
       if (!this[rx]) {
-        this[rx] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[rx] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("rx"),
           setAttribute: (value2) => this.setAttribute("rx", value2)
         });
@@ -212208,7 +212305,7 @@ var init_SVGEllipseElement = __esm(() => {
     }
     get ry() {
       if (!this[ry]) {
-        this[ry] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[ry] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("ry"),
           setAttribute: (value2) => this.setAttribute("ry", value2)
         });
@@ -212223,14 +212320,14 @@ var SVGAnimatedString;
 var init_SVGAnimatedString = __esm(() => {
   init_PropertySymbol();
   SVGAnimatedString = class SVGAnimatedString {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
@@ -212286,7 +212383,7 @@ var init_SVGFEBlendElement = __esm(() => {
     [width] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -212295,7 +212392,7 @@ var init_SVGFEBlendElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -212304,7 +212401,7 @@ var init_SVGFEBlendElement = __esm(() => {
     }
     get in2() {
       if (!this[in2]) {
-        this[in2] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in2] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in2"),
           setAttribute: (value2) => this.setAttribute("in2", value2)
         });
@@ -212313,7 +212410,7 @@ var init_SVGFEBlendElement = __esm(() => {
     }
     get mode() {
       if (!this[mode]) {
-        this[mode] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[mode] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("mode"),
           setAttribute: (value2) => this.setAttribute("mode", value2),
           values: [
@@ -212341,7 +212438,7 @@ var init_SVGFEBlendElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -212350,7 +212447,7 @@ var init_SVGFEBlendElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -212359,7 +212456,7 @@ var init_SVGFEBlendElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -212377,7 +212474,7 @@ var init_SVGNumberList = __esm(() => {
   init_SVGNumber();
   ATTRIBUTE_SEPARATOR_REGEXP2 = /[\t\f\n\r, ]+/;
   SVGNumberList = class SVGNumberList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [readOnly] = false;
@@ -212385,11 +212482,11 @@ var init_SVGNumberList = __esm(() => {
       items: [],
       attributeValue: ""
     };
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[readOnly] = !!options2.readOnly;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
@@ -212483,7 +212580,7 @@ var init_SVGNumberList = __esm(() => {
     }
     clear() {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'clear' on 'SVGNumberList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'clear' on 'SVGNumberList': The object is read-only.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -212495,10 +212592,10 @@ var init_SVGNumberList = __esm(() => {
     }
     initialize(newItem) {
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGNumberList': 1 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGNumberList': 1 arguments required, but only ${arguments.length} present.`);
       }
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGNumberList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGNumberList': The object is read-only.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -212525,13 +212622,13 @@ var init_SVGNumberList = __esm(() => {
     }
     insertItemBefore(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGNumberList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGNumberList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGNumber)) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -212555,13 +212652,13 @@ var init_SVGNumberList = __esm(() => {
     }
     replaceItem(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGNumberList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGNumberList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGNumberList': 2 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGNumber)) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -212593,10 +212690,10 @@ var init_SVGNumberList = __esm(() => {
     }
     removeItem(index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGNumberList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGNumberList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       index = Number(index);
@@ -212604,10 +212701,10 @@ var init_SVGNumberList = __esm(() => {
         index = 0;
       }
       if (index >= items2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGNumberList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGNumberList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index < 0) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGNumberList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGNumberList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const removedItem = items2[index];
       if (removedItem) {
@@ -212620,13 +212717,13 @@ var init_SVGNumberList = __esm(() => {
     }
     appendItem(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGNumberList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGNumberList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGNumberList': 1 argument required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGNumber)) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -212660,7 +212757,7 @@ var init_SVGNumberList = __esm(() => {
       if (trimmed) {
         const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP2);
         for (let i = 0, max = parts.length;i < max; i++) {
-          const item = new SVGNumber(illegalConstructor, this[window2], {
+          const item = new SVGNumber(illegalConstructor, this[window], {
             readOnly: this[readOnly],
             getAttribute: () => item[attributeValue],
             setAttribute: () => {
@@ -212685,22 +212782,22 @@ var init_SVGAnimatedNumberList = __esm(() => {
   init_SVGNumberList();
   init_PropertySymbol();
   SVGAnimatedNumberList = class SVGAnimatedNumberList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGNumberList(illegalConstructor, this[window2], {
+        this[animVal] = new SVGNumberList(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute],
           setAttribute: () => {}
@@ -212711,7 +212808,7 @@ var init_SVGAnimatedNumberList = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGNumberList(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGNumberList(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -212748,7 +212845,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     [width] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -212757,7 +212854,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -212766,7 +212863,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get in2() {
       if (!this[in2]) {
-        this[in2] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in2] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in2"),
           setAttribute: (value2) => this.setAttribute("in2", value2)
         });
@@ -212775,7 +212872,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -212784,7 +212881,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get type() {
       if (!this[type]) {
-        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("type"),
           setAttribute: (value2) => this.setAttribute("type", value2),
           values: ["matrix", "saturate", "huerotate", "luminancetoalpha"],
@@ -212795,7 +212892,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get values() {
       if (!this[values]) {
-        this[values] = new SVGAnimatedNumberList(illegalConstructor, this[window2], {
+        this[values] = new SVGAnimatedNumberList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("values"),
           setAttribute: (value2) => this.setAttribute("values", value2)
         });
@@ -212804,7 +212901,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -212813,7 +212910,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -212822,7 +212919,7 @@ var init_SVGFEColorMatrixElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -212848,7 +212945,7 @@ var init_SVGFEComponentTransferElement = __esm(() => {
     [width] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -212857,7 +212954,7 @@ var init_SVGFEComponentTransferElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -212866,7 +212963,7 @@ var init_SVGFEComponentTransferElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -212875,7 +212972,7 @@ var init_SVGFEComponentTransferElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -212884,7 +212981,7 @@ var init_SVGFEComponentTransferElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -212893,7 +212990,7 @@ var init_SVGFEComponentTransferElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -212930,7 +213027,7 @@ var init_SVGFECompositeElement = __esm(() => {
     [width] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -212939,7 +213036,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -212948,7 +213045,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -212957,7 +213054,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get type() {
       if (!this[type]) {
-        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("type"),
           setAttribute: (value2) => this.setAttribute("type", value2),
           values: ["over", "in", "out", "atop", "xor", "arithmetic"],
@@ -212968,7 +213065,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get values() {
       if (!this[values]) {
-        this[values] = new SVGAnimatedNumberList(illegalConstructor, this[window2], {
+        this[values] = new SVGAnimatedNumberList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("values"),
           setAttribute: (value2) => this.setAttribute("values", value2)
         });
@@ -212977,7 +213074,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -212986,7 +213083,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -212995,7 +213092,7 @@ var init_SVGFECompositeElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213010,14 +213107,14 @@ var SVGAnimatedBoolean;
 var init_SVGAnimatedBoolean = __esm(() => {
   init_PropertySymbol();
   SVGAnimatedBoolean = class SVGAnimatedBoolean {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
@@ -213040,14 +213137,14 @@ var SVGAnimatedInteger;
 var init_SVGAnimatedInteger = __esm(() => {
   init_PropertySymbol();
   SVGAnimatedInteger = class SVGAnimatedInteger {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
@@ -213069,7 +213166,7 @@ var init_SVGAnimatedInteger = __esm(() => {
     set baseVal(value2) {
       const parsedValue = parseInt(String(value2));
       if (isNaN(parsedValue)) {
-        throw new this[window2].TypeError(`TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedInteger': The provided float value is non-finite.`);
+        throw new this[window].TypeError(`TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedInteger': The provided float value is non-finite.`);
       }
       this[setAttribute](String(parsedValue));
     }
@@ -213112,7 +213209,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     [y] = null;
     get bias() {
       if (!this[bias]) {
-        this[bias] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[bias] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("bias"),
           setAttribute: (value2) => this.setAttribute("bias", value2)
         });
@@ -213121,7 +213218,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get divisor() {
       if (!this[divisor]) {
-        this[divisor] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[divisor] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("divisor"),
           setAttribute: (value2) => this.setAttribute("divisor", value2)
         });
@@ -213130,7 +213227,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get edgeMode() {
       if (!this[edgeMode]) {
-        this[edgeMode] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[edgeMode] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("edgeMode"),
           setAttribute: (value2) => this.setAttribute("edgeMode", value2),
           values: ["duplicate", "wrap", "none"],
@@ -213141,7 +213238,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213150,7 +213247,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -213159,7 +213256,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get kernelMatrix() {
       if (!this[kernelMatrix]) {
-        this[kernelMatrix] = new SVGAnimatedNumberList(illegalConstructor, this[window2], {
+        this[kernelMatrix] = new SVGAnimatedNumberList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelMatrix"),
           setAttribute: (value2) => this.setAttribute("kernelMatrix", value2)
         });
@@ -213168,7 +213265,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get kernelUnitLengthX() {
       if (!this[kernelUnitLengthX]) {
-        this[kernelUnitLengthX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[kernelUnitLengthX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelUnitLengthX"),
           setAttribute: (value2) => this.setAttribute("kernelUnitLengthX", value2)
         });
@@ -213177,7 +213274,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get kernelUnitLengthY() {
       if (!this[kernelUnitLengthY]) {
-        this[kernelUnitLengthY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[kernelUnitLengthY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelUnitLengthY"),
           setAttribute: (value2) => this.setAttribute("kernelUnitLengthY", value2)
         });
@@ -213186,7 +213283,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get orderX() {
       if (!this[orderX]) {
-        this[orderX] = new SVGAnimatedInteger(illegalConstructor, this[window2], {
+        this[orderX] = new SVGAnimatedInteger(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("orderX"),
           setAttribute: (value2) => this.setAttribute("orderX", value2)
         });
@@ -213195,7 +213292,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get orderY() {
       if (!this[orderY]) {
-        this[orderY] = new SVGAnimatedInteger(illegalConstructor, this[window2], {
+        this[orderY] = new SVGAnimatedInteger(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("orderY"),
           setAttribute: (value2) => this.setAttribute("orderY", value2)
         });
@@ -213204,7 +213301,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get preserveAlpha() {
       if (!this[preserveAlpha]) {
-        this[preserveAlpha] = new SVGAnimatedBoolean(illegalConstructor, this[window2], {
+        this[preserveAlpha] = new SVGAnimatedBoolean(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("preserveAlpha"),
           setAttribute: (value2) => this.setAttribute("preserveAlpha", value2)
         });
@@ -213213,7 +213310,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -213222,7 +213319,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get targetX() {
       if (!this[targetX]) {
-        this[targetX] = new SVGAnimatedInteger(illegalConstructor, this[window2], {
+        this[targetX] = new SVGAnimatedInteger(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("targetX"),
           setAttribute: (value2) => this.setAttribute("targetX", value2)
         });
@@ -213231,7 +213328,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get targetY() {
       if (!this[targetY]) {
-        this[targetY] = new SVGAnimatedInteger(illegalConstructor, this[window2], {
+        this[targetY] = new SVGAnimatedInteger(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("targetY"),
           setAttribute: (value2) => this.setAttribute("targetY", value2)
         });
@@ -213240,7 +213337,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -213249,7 +213346,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -213258,7 +213355,7 @@ var init_SVGFEConvolveMatrixElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213289,7 +213386,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     [y] = null;
     get diffuseConstant() {
       if (!this[diffuseConstant]) {
-        this[diffuseConstant] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[diffuseConstant] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("diffuseConstant"),
           setAttribute: (value2) => this.setAttribute("diffuseConstant", value2)
         });
@@ -213298,7 +213395,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213307,7 +213404,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -213316,7 +213413,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get kernelUnitLengthX() {
       if (!this[kernelUnitLengthX]) {
-        this[kernelUnitLengthX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[kernelUnitLengthX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelUnitLengthX"),
           setAttribute: (value2) => this.setAttribute("kernelUnitLengthX", value2)
         });
@@ -213325,7 +213422,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get kernelUnitLengthY() {
       if (!this[kernelUnitLengthY]) {
-        this[kernelUnitLengthY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[kernelUnitLengthY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelUnitLengthY"),
           setAttribute: (value2) => this.setAttribute("kernelUnitLengthY", value2)
         });
@@ -213334,7 +213431,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -213343,7 +213440,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get surfaceScale() {
       if (!this[surfaceScale]) {
-        this[surfaceScale] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[surfaceScale] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("surfaceScale"),
           setAttribute: (value2) => this.setAttribute("surfaceScale", value2)
         });
@@ -213352,7 +213449,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -213361,7 +213458,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -213370,7 +213467,7 @@ var init_SVGFEDiffuseLightingElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213407,7 +213504,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     [yChannelSelector] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213416,7 +213513,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -213425,7 +213522,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get in2() {
       if (!this[in2]) {
-        this[in2] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in2] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in2"),
           setAttribute: (value2) => this.setAttribute("in2", value2)
         });
@@ -213434,7 +213531,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -213443,7 +213540,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get scale() {
       if (!this[scale]) {
-        this[scale] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[scale] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("scale"),
           setAttribute: (value2) => this.setAttribute("scale", value2)
         });
@@ -213452,7 +213549,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -213461,7 +213558,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -213470,7 +213567,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get xChannelSelector() {
       if (!this[xChannelSelector]) {
-        this[xChannelSelector] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[xChannelSelector] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("xChannelSelector"),
           setAttribute: (value2) => this.setAttribute("xChannelSelector", value2),
           values: ["r", "g", "b", "a"],
@@ -213481,7 +213578,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213490,7 +213587,7 @@ var init_SVGFEDisplacementMapElement = __esm(() => {
     }
     get yChannelSelector() {
       if (!this[yChannelSelector]) {
-        this[yChannelSelector] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[yChannelSelector] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("yChannelSelector"),
           setAttribute: (value2) => this.setAttribute("yChannelSelector", value2),
           values: ["r", "g", "b", "a"],
@@ -213513,7 +213610,7 @@ var init_SVGFEDistantLightElement = __esm(() => {
     [elevation] = null;
     get azimuth() {
       if (!this[azimuth]) {
-        this[azimuth] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[azimuth] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("azimuth"),
           setAttribute: (value2) => this.setAttribute("azimuth", value2)
         });
@@ -213522,7 +213619,7 @@ var init_SVGFEDistantLightElement = __esm(() => {
     }
     get elevation() {
       if (!this[elevation]) {
-        this[elevation] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[elevation] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("elevation"),
           setAttribute: (value2) => this.setAttribute("elevation", value2)
         });
@@ -213553,7 +213650,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     [y] = null;
     get dx() {
       if (!this[dx]) {
-        this[dx] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[dx] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("dx"),
           setAttribute: (value2) => this.setAttribute("dx", value2)
         });
@@ -213562,7 +213659,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get dy() {
       if (!this[dy]) {
-        this[dy] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[dy] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("dy"),
           setAttribute: (value2) => this.setAttribute("dy", value2)
         });
@@ -213571,7 +213668,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213580,7 +213677,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -213589,7 +213686,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -213598,7 +213695,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get stdDeviationX() {
       if (!this[stdDeviationX]) {
-        this[stdDeviationX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[stdDeviationX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("stdDeviationX"),
           setAttribute: (value2) => this.setAttribute("stdDeviationX", value2),
           defaultValue: 2
@@ -213608,7 +213705,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get stdDeviationY() {
       if (!this[stdDeviationY]) {
-        this[stdDeviationY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[stdDeviationY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("stdDeviationY"),
           setAttribute: (value2) => this.setAttribute("stdDeviationY", value2),
           defaultValue: 2
@@ -213618,7 +213715,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -213627,7 +213724,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -213636,7 +213733,7 @@ var init_SVGFEDropShadowElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213665,7 +213762,7 @@ var init_SVGFEFloodElement = __esm(() => {
     [y] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213674,7 +213771,7 @@ var init_SVGFEFloodElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -213683,7 +213780,7 @@ var init_SVGFEFloodElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -213692,7 +213789,7 @@ var init_SVGFEFloodElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -213701,7 +213798,7 @@ var init_SVGFEFloodElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213735,7 +213832,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     [offset] = null;
     get type() {
       if (!this[type]) {
-        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("type"),
           setAttribute: (value2) => this.setAttribute("type", value2),
           values: ["identity", "table", "discrete", "linear", "gamma"],
@@ -213746,7 +213843,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     }
     get tableValues() {
       if (!this[tableValues]) {
-        this[tableValues] = new SVGAnimatedNumberList(illegalConstructor, this[window2], {
+        this[tableValues] = new SVGAnimatedNumberList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("tableValues"),
           setAttribute: (value2) => this.setAttribute("tableValues", value2)
         });
@@ -213755,7 +213852,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     }
     get slope() {
       if (!this[slope]) {
-        this[slope] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[slope] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("slope"),
           setAttribute: (value2) => this.setAttribute("slope", value2),
           defaultValue: 1
@@ -213765,7 +213862,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     }
     get intercept() {
       if (!this[intercept]) {
-        this[intercept] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[intercept] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("intercept"),
           setAttribute: (value2) => this.setAttribute("intercept", value2)
         });
@@ -213774,7 +213871,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     }
     get amplitude() {
       if (!this[amplitude]) {
-        this[amplitude] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[amplitude] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("amplitude"),
           setAttribute: (value2) => this.setAttribute("amplitude", value2),
           defaultValue: 1
@@ -213784,7 +213881,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     }
     get exponent() {
       if (!this[exponent]) {
-        this[exponent] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[exponent] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("exponent"),
           setAttribute: (value2) => this.setAttribute("exponent", value2),
           defaultValue: 1
@@ -213794,7 +213891,7 @@ var init_SVGComponentTransferFunctionElement = __esm(() => {
     }
     get offset() {
       if (!this[offset]) {
-        this[offset] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[offset] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("offset"),
           setAttribute: (value2) => this.setAttribute("offset", value2)
         });
@@ -213861,7 +213958,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     [y] = null;
     get edgeMode() {
       if (!this[edgeMode]) {
-        this[edgeMode] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[edgeMode] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("edgeMode"),
           setAttribute: (value2) => this.setAttribute("edgeMode", value2),
           values: ["duplicate", "wrap", "none"],
@@ -213872,7 +213969,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213881,7 +213978,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -213890,7 +213987,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -213899,7 +213996,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get stdDeviationX() {
       if (!this[stdDeviationX]) {
-        this[stdDeviationX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[stdDeviationX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("stdDeviationX") || "2",
           setAttribute: (value2) => this.setAttribute("stdDeviationX", value2)
         });
@@ -213908,7 +214005,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get stdDeviationY() {
       if (!this[stdDeviationY]) {
-        this[stdDeviationY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[stdDeviationY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("stdDeviationY") || "2",
           setAttribute: (value2) => this.setAttribute("stdDeviationY", value2)
         });
@@ -213917,7 +214014,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -213926,7 +214023,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -213935,7 +214032,7 @@ var init_SVGFEGaussianBlurElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -213974,7 +214071,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -213983,7 +214080,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -213992,7 +214089,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get preserveAspectRatio() {
       if (!this[preserveAspectRatio]) {
-        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window2], {
+        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("preserveAspectRatio"),
           setAttribute: (value2) => this.setAttribute("preserveAspectRatio", value2)
         });
@@ -214001,7 +214098,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214010,7 +214107,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214019,7 +214116,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214028,7 +214125,7 @@ var init_SVGFEImageElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214053,7 +214150,7 @@ var init_SVGFEMergeElement = __esm(() => {
     [y] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214062,7 +214159,7 @@ var init_SVGFEMergeElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214071,7 +214168,7 @@ var init_SVGFEMergeElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214080,7 +214177,7 @@ var init_SVGFEMergeElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214089,7 +214186,7 @@ var init_SVGFEMergeElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214109,7 +214206,7 @@ var init_SVGFEMergeNodeElement = __esm(() => {
     [in1] = null;
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -214143,7 +214240,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     [y] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214152,7 +214249,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -214161,7 +214258,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get operator() {
       if (!this[operator]) {
-        this[operator] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[operator] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("operator"),
           setAttribute: (value2) => this.setAttribute("operator", value2),
           values: ["erode", "dilate"],
@@ -214172,7 +214269,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get radiusX() {
       if (!this[radiusX]) {
-        this[radiusX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[radiusX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("radiusX"),
           setAttribute: (value2) => this.setAttribute("radiusX", value2)
         });
@@ -214181,7 +214278,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get radiusY() {
       if (!this[radiusY]) {
-        this[radiusY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[radiusY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("radiusY"),
           setAttribute: (value2) => this.setAttribute("radiusY", value2)
         });
@@ -214190,7 +214287,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214199,7 +214296,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214208,7 +214305,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214217,7 +214314,7 @@ var init_SVGFEMorphologyElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214246,7 +214343,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     [y] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214255,7 +214352,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -214264,7 +214361,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get dx() {
       if (!this[dx]) {
-        this[dx] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[dx] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("dx"),
           setAttribute: (value2) => this.setAttribute("dx", value2)
         });
@@ -214273,7 +214370,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get dy() {
       if (!this[dy]) {
-        this[dy] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[dy] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("dy"),
           setAttribute: (value2) => this.setAttribute("dy", value2)
         });
@@ -214282,7 +214379,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214291,7 +214388,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214300,7 +214397,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214309,7 +214406,7 @@ var init_SVGFEOffsetElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214331,7 +214428,7 @@ var init_SVGFEPointLightElement = __esm(() => {
     [z] = null;
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214340,7 +214437,7 @@ var init_SVGFEPointLightElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214349,7 +214446,7 @@ var init_SVGFEPointLightElement = __esm(() => {
     }
     get z() {
       if (!this[z]) {
-        this[z] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[z] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("z"),
           setAttribute: (value2) => this.setAttribute("z", value2)
         });
@@ -214381,7 +214478,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     [y] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214390,7 +214487,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -214399,7 +214496,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get kernelUnitLengthX() {
       if (!this[kernelUnitLengthX]) {
-        this[kernelUnitLengthX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[kernelUnitLengthX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelUnitLengthX"),
           setAttribute: (value2) => this.setAttribute("kernelUnitLengthX", value2)
         });
@@ -214408,7 +214505,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get kernelUnitLengthY() {
       if (!this[kernelUnitLengthY]) {
-        this[kernelUnitLengthY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[kernelUnitLengthY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("kernelUnitLengthY"),
           setAttribute: (value2) => this.setAttribute("kernelUnitLengthY", value2)
         });
@@ -214417,7 +214514,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214426,7 +214523,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get specularConstant() {
       if (!this[specularConstant]) {
-        this[specularConstant] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[specularConstant] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("specularConstant"),
           setAttribute: (value2) => this.setAttribute("specularConstant", value2),
           defaultValue: 1
@@ -214436,7 +214533,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get specularExponent() {
       if (!this[specularExponent]) {
-        this[specularExponent] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[specularExponent] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("specularExponent"),
           setAttribute: (value2) => this.setAttribute("specularExponent", value2),
           defaultValue: 1
@@ -214446,7 +214543,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get surfaceScale() {
       if (!this[surfaceScale]) {
-        this[surfaceScale] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[surfaceScale] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("surfaceScale"),
           setAttribute: (value2) => this.setAttribute("surfaceScale", value2),
           defaultValue: 1
@@ -214456,7 +214553,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214465,7 +214562,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214474,7 +214571,7 @@ var init_SVGFESpecularLightingElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214501,7 +214598,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     [limitingConeAngle] = null;
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214510,7 +214607,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214519,7 +214616,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get z() {
       if (!this[z]) {
-        this[z] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[z] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("z"),
           setAttribute: (value2) => this.setAttribute("z", value2)
         });
@@ -214528,7 +214625,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get pointsAtX() {
       if (!this[pointsAtX]) {
-        this[pointsAtX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[pointsAtX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("pointsAtX"),
           setAttribute: (value2) => this.setAttribute("pointsAtX", value2)
         });
@@ -214537,7 +214634,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get pointsAtY() {
       if (!this[pointsAtY]) {
-        this[pointsAtY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[pointsAtY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("pointsAtY"),
           setAttribute: (value2) => this.setAttribute("pointsAtY", value2)
         });
@@ -214546,7 +214643,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get pointsAtZ() {
       if (!this[pointsAtZ]) {
-        this[pointsAtZ] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[pointsAtZ] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("pointsAtZ"),
           setAttribute: (value2) => this.setAttribute("pointsAtZ", value2)
         });
@@ -214555,7 +214652,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get specularExponent() {
       if (!this[specularExponent]) {
-        this[specularExponent] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[specularExponent] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("specularExponent"),
           setAttribute: (value2) => this.setAttribute("specularExponent", value2),
           defaultValue: 1
@@ -214565,7 +214662,7 @@ var init_SVGFESpotLightElement = __esm(() => {
     }
     get limitingConeAngle() {
       if (!this[limitingConeAngle]) {
-        this[limitingConeAngle] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[limitingConeAngle] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("limitingConeAngle"),
           setAttribute: (value2) => this.setAttribute("limitingConeAngle", value2)
         });
@@ -214591,7 +214688,7 @@ var init_SVGFETileElement = __esm(() => {
     [y] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214600,7 +214697,7 @@ var init_SVGFETileElement = __esm(() => {
     }
     get in1() {
       if (!this[in1]) {
-        this[in1] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[in1] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("in"),
           setAttribute: (value2) => this.setAttribute("in", value2)
         });
@@ -214609,7 +214706,7 @@ var init_SVGFETileElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214618,7 +214715,7 @@ var init_SVGFETileElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214627,7 +214724,7 @@ var init_SVGFETileElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214636,7 +214733,7 @@ var init_SVGFETileElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214676,7 +214773,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     [y] = null;
     get baseFrequencyX() {
       if (!this[baseFrequencyX]) {
-        this[baseFrequencyX] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[baseFrequencyX] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("baseFrequencyX"),
           setAttribute: (value2) => this.setAttribute("baseFrequencyX", value2)
         });
@@ -214685,7 +214782,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get baseFrequencyY() {
       if (!this[baseFrequencyY]) {
-        this[baseFrequencyY] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[baseFrequencyY] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("baseFrequencyY"),
           setAttribute: (value2) => this.setAttribute("baseFrequencyY", value2)
         });
@@ -214694,7 +214791,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214703,7 +214800,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get numOctaves() {
       if (!this[numOctaves]) {
-        this[numOctaves] = new SVGAnimatedInteger(illegalConstructor, this[window2], {
+        this[numOctaves] = new SVGAnimatedInteger(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("numOctaves"),
           setAttribute: (value2) => this.setAttribute("numOctaves", value2)
         });
@@ -214712,7 +214809,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get result() {
       if (!this[result]) {
-        this[result] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[result] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("result"),
           setAttribute: (value2) => this.setAttribute("result", value2)
         });
@@ -214721,7 +214818,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get seed() {
       if (!this[seed]) {
-        this[seed] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[seed] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("seed"),
           setAttribute: (value2) => this.setAttribute("seed", value2)
         });
@@ -214730,7 +214827,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get stitchTiles() {
       if (!this[stitchTiles]) {
-        this[stitchTiles] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[stitchTiles] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("stitchTiles"),
           setAttribute: (value2) => this.setAttribute("stitchTiles", value2),
           values: ["stitch", "noStitch"],
@@ -214741,7 +214838,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get type() {
       if (!this[type]) {
-        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[type] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("type"),
           setAttribute: (value2) => this.setAttribute("type", value2),
           values: ["fractalNoise", "turbulence"],
@@ -214752,7 +214849,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214761,7 +214858,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214770,7 +214867,7 @@ var init_SVGFETurbulenceElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214798,7 +214895,7 @@ var init_SVGFilterElement = __esm(() => {
     [height] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -214807,7 +214904,7 @@ var init_SVGFilterElement = __esm(() => {
     }
     get filterUnits() {
       if (!this[filterUnits]) {
-        this[filterUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[filterUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("filterUnits"),
           setAttribute: (value2) => this.setAttribute("filterUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -214818,7 +214915,7 @@ var init_SVGFilterElement = __esm(() => {
     }
     get primitiveUnits() {
       if (!this[primitiveUnits]) {
-        this[primitiveUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[primitiveUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("primitiveUnits"),
           setAttribute: (value2) => this.setAttribute("primitiveUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -214829,7 +214926,7 @@ var init_SVGFilterElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214838,7 +214935,7 @@ var init_SVGFilterElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214847,7 +214944,7 @@ var init_SVGFilterElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214856,7 +214953,7 @@ var init_SVGFilterElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214879,7 +214976,7 @@ var init_SVGForeignObjectElement = __esm(() => {
     [height] = null;
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214888,7 +214985,7 @@ var init_SVGForeignObjectElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214897,7 +214994,7 @@ var init_SVGForeignObjectElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -214906,7 +215003,7 @@ var init_SVGForeignObjectElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -214947,7 +215044,7 @@ var init_SVGImageElement = __esm(() => {
     }
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -214970,7 +215067,7 @@ var init_SVGImageElement = __esm(() => {
     }
     get preserveAspectRatio() {
       if (!this[preserveAspectRatio]) {
-        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window2], {
+        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("preserveAspectRatio"),
           setAttribute: (value2) => this.setAttribute("preserveAspectRatio", value2)
         });
@@ -214979,7 +215076,7 @@ var init_SVGImageElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -214988,7 +215085,7 @@ var init_SVGImageElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -214997,7 +215094,7 @@ var init_SVGImageElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -215006,7 +215103,7 @@ var init_SVGImageElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -215032,7 +215129,7 @@ var init_SVGLineElement = __esm(() => {
     [y2] = null;
     get x1() {
       if (!this[x1]) {
-        this[x1] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x1] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x1"),
           setAttribute: (value2) => this.setAttribute("x1", value2)
         });
@@ -215041,7 +215138,7 @@ var init_SVGLineElement = __esm(() => {
     }
     get y1() {
       if (!this[y1]) {
-        this[y1] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y1] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y1"),
           setAttribute: (value2) => this.setAttribute("y1", value2)
         });
@@ -215050,7 +215147,7 @@ var init_SVGLineElement = __esm(() => {
     }
     get x2() {
       if (!this[x2]) {
-        this[x2] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x2] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x2"),
           setAttribute: (value2) => this.setAttribute("x2", value2)
         });
@@ -215059,7 +215156,7 @@ var init_SVGLineElement = __esm(() => {
     }
     get y2() {
       if (!this[y2]) {
-        this[y2] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y2] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y2"),
           setAttribute: (value2) => this.setAttribute("y2", value2)
         });
@@ -215088,7 +215185,7 @@ var init_SVGGradientElement = __esm(() => {
     [spreadMethod] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -215097,7 +215194,7 @@ var init_SVGGradientElement = __esm(() => {
     }
     get gradientUnits() {
       if (!this[gradientUnits]) {
-        this[gradientUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[gradientUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("gradientUnits"),
           setAttribute: (value2) => this.setAttribute("gradientUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -215108,7 +215205,7 @@ var init_SVGGradientElement = __esm(() => {
     }
     get gradientTransform() {
       if (!this[gradientTransform]) {
-        this[gradientTransform] = new SVGAnimatedTransformList(illegalConstructor, this[window2], {
+        this[gradientTransform] = new SVGAnimatedTransformList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("gradientTransform"),
           setAttribute: (value2) => this.setAttribute("gradientTransform", value2)
         });
@@ -215117,7 +215214,7 @@ var init_SVGGradientElement = __esm(() => {
     }
     get spreadMethod() {
       if (!this[spreadMethod]) {
-        this[spreadMethod] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[spreadMethod] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("spreadMethod"),
           setAttribute: (value2) => this.setAttribute("spreadMethod", value2),
           values: ["pad", "reflect", "repeat"],
@@ -215142,7 +215239,7 @@ var init_SVGLinearGradientElement = __esm(() => {
     [y2] = null;
     get x1() {
       if (!this[x1]) {
-        this[x1] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x1] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x1"),
           setAttribute: (value2) => this.setAttribute("x1", value2)
         });
@@ -215151,7 +215248,7 @@ var init_SVGLinearGradientElement = __esm(() => {
     }
     get y1() {
       if (!this[y1]) {
-        this[y1] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y1] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y1"),
           setAttribute: (value2) => this.setAttribute("y1", value2)
         });
@@ -215160,7 +215257,7 @@ var init_SVGLinearGradientElement = __esm(() => {
     }
     get x2() {
       if (!this[x2]) {
-        this[x2] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x2] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x2"),
           setAttribute: (value2) => this.setAttribute("x2", value2)
         });
@@ -215169,7 +215266,7 @@ var init_SVGLinearGradientElement = __esm(() => {
     }
     get y2() {
       if (!this[y2]) {
-        this[y2] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y2] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y2"),
           setAttribute: (value2) => this.setAttribute("y2", value2)
         });
@@ -215185,22 +215282,22 @@ var init_SVGAnimatedAngle = __esm(() => {
   init_PropertySymbol();
   init_SVGAngle();
   SVGAnimatedAngle = class SVGAnimatedAngle {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGAngle(illegalConstructor, this[window2], {
+        this[animVal] = new SVGAngle(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute]
         });
@@ -215210,7 +215307,7 @@ var init_SVGAnimatedAngle = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGAngle(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGAngle(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -215252,7 +215349,7 @@ var init_SVGMarkerElement = __esm(() => {
     [preserveAspectRatio] = null;
     get markerUnits() {
       if (!this[markerUnits]) {
-        this[markerUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[markerUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("markerUnits"),
           setAttribute: (value2) => this.setAttribute("markerUnits", value2),
           values: ["userSpaceOnUse", "strokeWidth"],
@@ -215263,7 +215360,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get markerWidth() {
       if (!this[markerWidth]) {
-        this[markerWidth] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[markerWidth] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("markerWidth"),
           setAttribute: (value2) => this.setAttribute("markerWidth", value2)
         });
@@ -215272,7 +215369,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get markerHeight() {
       if (!this[markerHeight]) {
-        this[markerHeight] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[markerHeight] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("markerHeight"),
           setAttribute: (value2) => this.setAttribute("markerHeight", value2)
         });
@@ -215281,7 +215378,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get orientType() {
       if (!this[orientType]) {
-        this[orientType] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[orientType] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("orient"),
           setAttribute: (value2) => this.setAttribute("orient", value2),
           values: ["auto", null],
@@ -215292,7 +215389,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get orientAngle() {
       if (!this[orientAngle]) {
-        this[orientAngle] = new SVGAnimatedAngle(illegalConstructor, this[window2], {
+        this[orientAngle] = new SVGAnimatedAngle(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("orient"),
           setAttribute: (value2) => this.setAttribute("orient", value2)
         });
@@ -215301,7 +215398,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get refX() {
       if (!this[refX]) {
-        this[refX] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[refX] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("refX"),
           setAttribute: (value2) => this.setAttribute("refX", value2)
         });
@@ -215310,7 +215407,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get refY() {
       if (!this[refY]) {
-        this[refY] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[refY] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("refY"),
           setAttribute: (value2) => this.setAttribute("refY", value2)
         });
@@ -215319,7 +215416,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get viewBox() {
       if (!this[viewBox]) {
-        this[viewBox] = new SVGAnimatedRect(illegalConstructor, this[window2], {
+        this[viewBox] = new SVGAnimatedRect(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("viewBox"),
           setAttribute: (value2) => this.setAttribute("viewBox", value2)
         });
@@ -215328,7 +215425,7 @@ var init_SVGMarkerElement = __esm(() => {
     }
     get preserveAspectRatio() {
       if (!this[preserveAspectRatio]) {
-        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window2], {
+        this[preserveAspectRatio] = new SVGAnimatedPreserveAspectRatio(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("preserveAspectRatio"),
           setAttribute: (value2) => this.setAttribute("preserveAspectRatio", value2)
         });
@@ -215360,7 +215457,7 @@ var init_SVGMaskElement = __esm(() => {
     [height] = null;
     get maskUnits() {
       if (!this[maskUnits]) {
-        this[maskUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[maskUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("maskUnits"),
           setAttribute: (value2) => this.setAttribute("maskUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -215371,7 +215468,7 @@ var init_SVGMaskElement = __esm(() => {
     }
     get maskContentUnits() {
       if (!this[maskContentUnits]) {
-        this[maskContentUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[maskContentUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("maskContentUnits"),
           setAttribute: (value2) => this.setAttribute("maskContentUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -215382,7 +215479,7 @@ var init_SVGMaskElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -215391,7 +215488,7 @@ var init_SVGMaskElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -215400,7 +215497,7 @@ var init_SVGMaskElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -215409,7 +215506,7 @@ var init_SVGMaskElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -215437,7 +215534,7 @@ var init_SVGMPathElement = __esm(() => {
     [href] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -215475,7 +215572,7 @@ var init_SVGPatternElement = __esm(() => {
     [height] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -215484,7 +215581,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get patternUnits() {
       if (!this[patternUnits]) {
-        this[patternUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[patternUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("patternUnits"),
           setAttribute: (value2) => this.setAttribute("patternUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -215495,7 +215592,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get patternContentUnits() {
       if (!this[patternContentUnits]) {
-        this[patternContentUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[patternContentUnits] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("patternContentUnits"),
           setAttribute: (value2) => this.setAttribute("patternContentUnits", value2),
           values: ["userSpaceOnUse", "objectBoundingBox"],
@@ -215506,7 +215603,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get patternTransform() {
       if (!this[patternTransform]) {
-        this[patternTransform] = new SVGAnimatedTransformList(illegalConstructor, this[window2], {
+        this[patternTransform] = new SVGAnimatedTransformList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("patternTransform"),
           setAttribute: (value2) => this.setAttribute("patternTransform", value2)
         });
@@ -215515,7 +215612,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -215524,7 +215621,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -215533,7 +215630,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -215542,7 +215639,7 @@ var init_SVGPatternElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -215560,7 +215657,7 @@ var init_SVGPointList = __esm(() => {
   init_SVGPoint();
   ATTRIBUTE_SEPARATOR_REGEXP3 = /[\t\f\n\r, ]+/;
   SVGPointList = class SVGPointList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [readOnly] = false;
@@ -215568,11 +215665,11 @@ var init_SVGPointList = __esm(() => {
       items: [],
       attributeValue: ""
     };
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[readOnly] = !!options2.readOnly;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
@@ -215663,7 +215760,7 @@ var init_SVGPointList = __esm(() => {
     }
     clear() {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'clear' on 'SVGPointList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'clear' on 'SVGPointList': The object is read-only.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -215675,13 +215772,13 @@ var init_SVGPointList = __esm(() => {
     }
     initialize(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGPointList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGPointList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGPointList': 1 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGPointList': 1 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGPoint)) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -215708,13 +215805,13 @@ var init_SVGPointList = __esm(() => {
     }
     insertItemBefore(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGPointList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGPointList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGPointList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGPointList': 2 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGPoint)) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -215738,13 +215835,13 @@ var init_SVGPointList = __esm(() => {
     }
     replaceItem(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGPointList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGPointList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGPointList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGPointList': 2 arguments required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGPoint)) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -215776,10 +215873,10 @@ var init_SVGPointList = __esm(() => {
     }
     removeItem(index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGPointList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGPointList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGPointList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGPointList': 1 argument required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       index = Number(index);
@@ -215787,10 +215884,10 @@ var init_SVGPointList = __esm(() => {
         index = 0;
       }
       if (index >= items2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGPointList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGPointList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index < 0) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGPointList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGPointList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const removedItem = items2[index];
       if (removedItem) {
@@ -215803,13 +215900,13 @@ var init_SVGPointList = __esm(() => {
     }
     appendItem(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': 1 argument required, but only ${arguments.length} present.`);
       }
       if (!(newItem instanceof SVGPoint)) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -215845,7 +215942,7 @@ var init_SVGPointList = __esm(() => {
         for (let i = 0, max = parts.length;i < max; i += 2) {
           const x3 = parseFloat(parts[i]);
           const y3 = parts[i + 1] !== undefined ? " " + parseFloat(parts[i + 1]) : "";
-          const item = new SVGPoint(illegalConstructor, this[window2], {
+          const item = new SVGPoint(illegalConstructor, this[window], {
             readOnly: this[readOnly],
             getAttribute: () => item[attributeValue],
             setAttribute: () => {
@@ -215875,7 +215972,7 @@ var init_SVGPolygonElement = __esm(() => {
     [points] = null;
     get animatedPoints() {
       if (!this[animatedPoints]) {
-        this[animatedPoints] = new SVGPointList(illegalConstructor, this[window2], {
+        this[animatedPoints] = new SVGPointList(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: () => this.getAttribute("points"),
           setAttribute: () => {}
@@ -215885,7 +215982,7 @@ var init_SVGPolygonElement = __esm(() => {
     }
     get points() {
       if (!this[points]) {
-        this[points] = new SVGPointList(illegalConstructor, this[window2], {
+        this[points] = new SVGPointList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("points"),
           setAttribute: (value2) => this.setAttribute("points", value2)
         });
@@ -215906,7 +216003,7 @@ var init_SVGPolylineElement = __esm(() => {
     [points] = null;
     get animatedPoints() {
       if (!this[animatedPoints]) {
-        this[animatedPoints] = new SVGPointList(illegalConstructor, this[window2], {
+        this[animatedPoints] = new SVGPointList(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: () => this.getAttribute("points"),
           setAttribute: () => {}
@@ -215916,7 +216013,7 @@ var init_SVGPolylineElement = __esm(() => {
     }
     get points() {
       if (!this[points]) {
-        this[points] = new SVGPointList(illegalConstructor, this[window2], {
+        this[points] = new SVGPointList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("points"),
           setAttribute: (value2) => this.setAttribute("points", value2)
         });
@@ -215940,7 +216037,7 @@ var init_SVGRadialGradientElement = __esm(() => {
     [fy] = null;
     get cx() {
       if (!this[cx]) {
-        this[cx] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[cx] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("cx"),
           setAttribute: (value2) => this.setAttribute("cx", value2)
         });
@@ -215949,7 +216046,7 @@ var init_SVGRadialGradientElement = __esm(() => {
     }
     get cy() {
       if (!this[cy]) {
-        this[cy] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[cy] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("cy"),
           setAttribute: (value2) => this.setAttribute("cy", value2)
         });
@@ -215958,7 +216055,7 @@ var init_SVGRadialGradientElement = __esm(() => {
     }
     get r() {
       if (!this[r]) {
-        this[r] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[r] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("r"),
           setAttribute: (value2) => this.setAttribute("r", value2)
         });
@@ -215967,7 +216064,7 @@ var init_SVGRadialGradientElement = __esm(() => {
     }
     get fx() {
       if (!this[fx]) {
-        this[fx] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[fx] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("fx"),
           setAttribute: (value2) => this.setAttribute("fx", value2)
         });
@@ -215976,7 +216073,7 @@ var init_SVGRadialGradientElement = __esm(() => {
     }
     get fy() {
       if (!this[fy]) {
-        this[fy] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[fy] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("fy"),
           setAttribute: (value2) => this.setAttribute("fy", value2)
         });
@@ -216001,7 +216098,7 @@ var init_SVGRectElement = __esm(() => {
     [ry] = null;
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -216010,7 +216107,7 @@ var init_SVGRectElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -216019,7 +216116,7 @@ var init_SVGRectElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -216028,7 +216125,7 @@ var init_SVGRectElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -216037,7 +216134,7 @@ var init_SVGRectElement = __esm(() => {
     }
     get rx() {
       if (!this[rx]) {
-        this[rx] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[rx] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("rx"),
           setAttribute: (value2) => this.setAttribute("rx", value2)
         });
@@ -216046,7 +216143,7 @@ var init_SVGRectElement = __esm(() => {
     }
     get ry() {
       if (!this[ry]) {
-        this[ry] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[ry] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("ry"),
           setAttribute: (value2) => this.setAttribute("ry", value2)
         });
@@ -216066,7 +216163,7 @@ var init_SVGScriptElement = __esm(() => {
     [href] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -216100,7 +216197,7 @@ var init_SVGStopElement = __esm(() => {
     [offset] = null;
     get offset() {
       if (!this[offset]) {
-        this[offset] = new SVGAnimatedNumber(illegalConstructor, this[window2], {
+        this[offset] = new SVGAnimatedNumber(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("offset"),
           setAttribute: (value2) => this.setAttribute("offset", value2)
         });
@@ -216148,7 +216245,7 @@ var init_SVGStyleElement = __esm(() => {
         return null;
       }
       if (!this[sheet]) {
-        this[sheet] = new this[ownerDocument][window2].CSSStyleSheet;
+        this[sheet] = new this[ownerDocument][window].CSSStyleSheet;
         this[sheet].replaceSync(this.textContent);
       }
       return this[sheet];
@@ -216202,7 +216299,7 @@ var init_SVGTextContentElement = __esm(() => {
     [lengthAdjust] = null;
     get textLength() {
       if (!this[textLength]) {
-        this[textLength] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[textLength] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("textLength"),
           setAttribute: (value2) => this.setAttribute("textLength", value2)
         });
@@ -216211,7 +216308,7 @@ var init_SVGTextContentElement = __esm(() => {
     }
     get lengthAdjust() {
       if (!this[lengthAdjust]) {
-        this[lengthAdjust] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[lengthAdjust] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("lengthAdjust"),
           setAttribute: (value2) => this.setAttribute("lengthAdjust", value2),
           values: ["spacing", "spacingAndGlyphs"],
@@ -216230,13 +216327,13 @@ var init_SVGTextContentElement = __esm(() => {
       return 0;
     }
     getStartPositionOfChar(_charnum) {
-      return new SVGPoint(illegalConstructor, this[window2]);
+      return new SVGPoint(illegalConstructor, this[window]);
     }
     getEndPositionOfChar(_charnum) {
-      return new SVGPoint(illegalConstructor, this[window2]);
+      return new SVGPoint(illegalConstructor, this[window]);
     }
     getExtentOfChar(_charnum) {
-      return new SVGRect(illegalConstructor, this[window2]);
+      return new SVGRect(illegalConstructor, this[window]);
     }
     getRotationOfChar(_charnum) {
       return 0;
@@ -216255,7 +216352,7 @@ var init_SVGLengthList = __esm(() => {
   init_SVGLength();
   ATTRIBUTE_SEPARATOR_REGEXP4 = /[\t\f\n\r, ]+/;
   SVGLengthList = class SVGLengthList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [readOnly] = false;
@@ -216263,11 +216360,11 @@ var init_SVGLengthList = __esm(() => {
       items: [],
       attributeValue: ""
     };
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[readOnly] = !!options2.readOnly;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
@@ -216361,10 +216458,10 @@ var init_SVGLengthList = __esm(() => {
     }
     initialize(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGLengthList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGLengthList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'initialize' on 'SVGLengthList': 1 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'initialize' on 'SVGLengthList': 1 arguments required, but only ${arguments.length} present.`);
       }
       for (const item of this[cache].items) {
         item[getAttribute] = null;
@@ -216391,10 +216488,10 @@ var init_SVGLengthList = __esm(() => {
     }
     insertItemBefore(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGLengthList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGLengthList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'insertItemBefore' on 'SVGLengthList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'insertItemBefore' on 'SVGLengthList': 2 arguments required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -216418,10 +216515,10 @@ var init_SVGLengthList = __esm(() => {
     }
     replaceItem(newItem, index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGLengthList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGLengthList': The object is read-only.`);
       }
       if (arguments.length < 2) {
-        throw new this[window2].TypeError(`Failed to execute 'replaceItem' on 'SVGLengthList': 2 arguments required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'replaceItem' on 'SVGLengthList': 2 arguments required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -216453,10 +216550,10 @@ var init_SVGLengthList = __esm(() => {
     }
     removeItem(index) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGLengthList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGLengthList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'removeItem' on 'SVGLengthList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'removeItem' on 'SVGLengthList': 1 argument required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       index = Number(index);
@@ -216464,10 +216561,10 @@ var init_SVGLengthList = __esm(() => {
         index = 0;
       }
       if (index >= items2.length) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGLengthList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGLengthList':  The index provided (${index}) is greater than the maximum bound.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       if (index < 0) {
-        throw new this[window2].DOMException(`Failed to execute 'removeItem' on 'SVGLengthList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
+        throw new this[window].DOMException(`Failed to execute 'removeItem' on 'SVGLengthList':  The index provided (${index}) is negative.`, DOMExceptionNameEnum_default.indexSizeError);
       }
       const removedItem = items2[index];
       if (removedItem) {
@@ -216480,10 +216577,10 @@ var init_SVGLengthList = __esm(() => {
     }
     appendItem(newItem) {
       if (this[readOnly]) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGLengthList': The object is read-only.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGLengthList': The object is read-only.`);
       }
       if (arguments.length < 1) {
-        throw new this[window2].TypeError(`Failed to execute 'appendItem' on 'SVGLengthList': 1 argument required, but only ${arguments.length} present.`);
+        throw new this[window].TypeError(`Failed to execute 'appendItem' on 'SVGLengthList': 1 argument required, but only ${arguments.length} present.`);
       }
       const items2 = this[getItemList]();
       const existingIndex = items2.indexOf(newItem);
@@ -216517,7 +216614,7 @@ var init_SVGLengthList = __esm(() => {
       if (trimmed) {
         const parts = trimmed.split(ATTRIBUTE_SEPARATOR_REGEXP4);
         for (let i = 0, max = parts.length;i < max; i++) {
-          const item = new SVGLength(illegalConstructor, this[window2], {
+          const item = new SVGLength(illegalConstructor, this[window], {
             readOnly: this[readOnly],
             getAttribute: () => item[attributeValue],
             setAttribute: (value2) => {
@@ -216544,22 +216641,22 @@ var init_SVGAnimatedLengthList = __esm(() => {
   init_PropertySymbol();
   init_SVGLengthList();
   SVGAnimatedLengthList = class SVGAnimatedLengthList {
-    [window2];
+    [window];
     [getAttribute];
     [setAttribute];
     [baseVal] = null;
     [animVal] = null;
-    constructor(illegalConstructorSymbol, window3, options2) {
+    constructor(illegalConstructorSymbol, window2, options2) {
       if (illegalConstructorSymbol !== illegalConstructor) {
         throw new TypeError("Illegal constructor");
       }
-      this[window2] = window3;
+      this[window] = window2;
       this[getAttribute] = options2.getAttribute;
       this[setAttribute] = options2.setAttribute;
     }
     get animVal() {
       if (!this[animVal]) {
-        this[animVal] = new SVGLengthList(illegalConstructor, this[window2], {
+        this[animVal] = new SVGLengthList(illegalConstructor, this[window], {
           readOnly: true,
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
@@ -216570,7 +216667,7 @@ var init_SVGAnimatedLengthList = __esm(() => {
     set animVal(_value) {}
     get baseVal() {
       if (!this[baseVal]) {
-        this[baseVal] = new SVGLengthList(illegalConstructor, this[window2], {
+        this[baseVal] = new SVGLengthList(illegalConstructor, this[window], {
           getAttribute: this[getAttribute],
           setAttribute: this[setAttribute]
         });
@@ -216596,7 +216693,7 @@ var init_SVGTextPositioningElement = __esm(() => {
     [rotate] = null;
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLengthList(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLengthList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -216605,7 +216702,7 @@ var init_SVGTextPositioningElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLengthList(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLengthList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -216614,7 +216711,7 @@ var init_SVGTextPositioningElement = __esm(() => {
     }
     get dx() {
       if (!this[dx]) {
-        this[dx] = new SVGAnimatedLengthList(illegalConstructor, this[window2], {
+        this[dx] = new SVGAnimatedLengthList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("dx"),
           setAttribute: (value2) => this.setAttribute("dx", value2)
         });
@@ -216623,7 +216720,7 @@ var init_SVGTextPositioningElement = __esm(() => {
     }
     get dy() {
       if (!this[dy]) {
-        this[dy] = new SVGAnimatedLengthList(illegalConstructor, this[window2], {
+        this[dy] = new SVGAnimatedLengthList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("dy"),
           setAttribute: (value2) => this.setAttribute("dy", value2)
         });
@@ -216632,7 +216729,7 @@ var init_SVGTextPositioningElement = __esm(() => {
     }
     get rotate() {
       if (!this[rotate]) {
-        this[rotate] = new SVGAnimatedNumberList(illegalConstructor, this[window2], {
+        this[rotate] = new SVGAnimatedNumberList(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("rotate"),
           setAttribute: (value2) => this.setAttribute("rotate", value2)
         });
@@ -216671,7 +216768,7 @@ var init_SVGTextPathElement = __esm(() => {
     [spacing] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -216680,7 +216777,7 @@ var init_SVGTextPathElement = __esm(() => {
     }
     get startOffset() {
       if (!this[startOffset]) {
-        this[startOffset] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[startOffset] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("startOffset"),
           setAttribute: (value2) => this.setAttribute("startOffset", value2)
         });
@@ -216689,7 +216786,7 @@ var init_SVGTextPathElement = __esm(() => {
     }
     get method() {
       if (!this[method]) {
-        this[method] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[method] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("method"),
           setAttribute: (value2) => this.setAttribute("method", value2),
           values: ["align", "stretch"],
@@ -216700,7 +216797,7 @@ var init_SVGTextPathElement = __esm(() => {
     }
     get spacing() {
       if (!this[spacing]) {
-        this[spacing] = new SVGAnimatedEnumeration(illegalConstructor, this[window2], {
+        this[spacing] = new SVGAnimatedEnumeration(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("spacing"),
           setAttribute: (value2) => this.setAttribute("spacing", value2),
           values: ["auto", "exact"],
@@ -216743,7 +216840,7 @@ var init_SVGUseElement = __esm(() => {
     [height] = null;
     get href() {
       if (!this[href]) {
-        this[href] = new SVGAnimatedString(illegalConstructor, this[window2], {
+        this[href] = new SVGAnimatedString(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("href"),
           setAttribute: (value2) => this.setAttribute("href", value2)
         });
@@ -216752,7 +216849,7 @@ var init_SVGUseElement = __esm(() => {
     }
     get x() {
       if (!this[x]) {
-        this[x] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[x] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("x"),
           setAttribute: (value2) => this.setAttribute("x", value2)
         });
@@ -216761,7 +216858,7 @@ var init_SVGUseElement = __esm(() => {
     }
     get y() {
       if (!this[y]) {
-        this[y] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[y] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("y"),
           setAttribute: (value2) => this.setAttribute("y", value2)
         });
@@ -216770,7 +216867,7 @@ var init_SVGUseElement = __esm(() => {
     }
     get width() {
       if (!this[width]) {
-        this[width] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[width] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("width"),
           setAttribute: (value2) => this.setAttribute("width", value2)
         });
@@ -216779,7 +216876,7 @@ var init_SVGUseElement = __esm(() => {
     }
     get height() {
       if (!this[height]) {
-        this[height] = new SVGAnimatedLength(illegalConstructor, this[window2], {
+        this[height] = new SVGAnimatedLength(illegalConstructor, this[window], {
           getAttribute: () => this.getAttribute("height"),
           setAttribute: (value2) => this.setAttribute("height", value2)
         });
@@ -216818,8 +216915,8 @@ var init_SVGUnitTypes = __esm(() => {
 // ../../node_modules/happy-dom/lib/custom-element/CustomElementReactionStack.js
 class CustomElementReactionStack {
   window;
-  constructor(window3) {
-    this.window = window3;
+  constructor(window2) {
+    this.window = window2;
   }
   enqueueReaction(element, callbackName, args) {
     const definition = this.window.customElements[registry]?.get(element.localName);
@@ -217518,8 +217615,8 @@ var init_BrowserWindow = __esm(() => {
     Buffer = Buffer8;
     [mutationObservers] = [];
     [readyStateManager];
-    [location2];
-    [history2];
+    [location];
+    [history];
     [navigator];
     [screen];
     [sessionStorage];
@@ -217527,7 +217624,7 @@ var init_BrowserWindow = __esm(() => {
     [self] = this;
     [top] = this;
     [parent] = this;
-    [window2] = this;
+    [window] = this;
     [frames] = this;
     [internalId] = -1;
     [customElementReactionStack] = new CustomElementReactionStack(this);
@@ -217558,9 +217655,9 @@ var init_BrowserWindow = __esm(() => {
       this[screen] = new Screen;
       this[sessionStorage] = new Storage;
       this[localStorage] = new Storage;
-      this[location2] = new Location(this.#browserFrame, options2?.url ?? "about:blank");
-      this[history2] = new History(this.#browserFrame, this);
-      browserFrame[history2].currentItem.href = options2?.url ?? "about:blank";
+      this[location] = new Location(this.#browserFrame, options2?.url ?? "about:blank");
+      this[history] = new History(this.#browserFrame, this);
+      browserFrame[history].currentItem.href = options2?.url ?? "about:blank";
       WindowBrowserContext.setWindowBrowserFrameRelation(this, this.#browserFrame);
       this[setupVMContext]();
       WindowContextClassExtender.extendClasses(this);
@@ -218354,13 +218451,13 @@ var init_BrowserWindow = __esm(() => {
       this[parent] = frames2;
     }
     get location() {
-      return this[location2];
+      return this[location];
     }
     set location(href2) {
-      this[location2].href = href2;
+      this[location].href = href2;
     }
     get history() {
-      return this[history2];
+      return this[history];
     }
     get navigator() {
       return this[navigator];
@@ -218894,22 +218991,22 @@ class BrowserFrameScriptEvaluator {
     if (!frame.window) {
       throw new Error('The frame has been destroyed, the "window" property is not set.');
     }
-    const window3 = frame.window;
+    const window2 = frame.window;
     if (options2?.code) {
-      const url2 = options2.url ? new URL(options2.url, window3.location.href) : window3.location;
+      const url2 = options2.url ? new URL(options2.url, window2.location.href) : window2.location;
       const source = options2.code;
       switch (options2?.type || "esm") {
         case "esm":
-          const factory = new ModuleFactory(window3, url2);
-          return await new ECMAScriptModule({ window: window3, url: url2, source, factory }).evaluate();
+          const factory = new ModuleFactory(window2, url2);
+          return await new ECMAScriptModule({ window: window2, url: url2, source, factory }).evaluate();
         case "json":
-          return await new JSONModule({ window: window3, url: url2, source }).evaluate();
+          return await new JSONModule({ window: window2, url: url2, source }).evaluate();
         case "css":
-          return await new CSSModule({ window: window3, url: url2, source }).evaluate();
+          return await new CSSModule({ window: window2, url: url2, source }).evaluate();
       }
     }
     if (options2?.url) {
-      const module = await new ModuleFactory(window3, window3.location).getModule(options2.url, {
+      const module = await new ModuleFactory(window2, window2.location).getModule(options2.url, {
         with: { type: options2.type || "esm" }
       });
       return await module.evaluate();
@@ -218992,7 +219089,7 @@ var init_BrowserFrame = __esm(() => {
     [openerFrame] = null;
     [openerWindow] = null;
     [popup] = false;
-    [history2] = new HistoryItemList;
+    [history] = new HistoryItemList;
     constructor(page) {
       this.page = page;
       this.window = new BrowserWindow(this);
@@ -219013,7 +219110,7 @@ var init_BrowserFrame = __esm(() => {
       return this.window.location.href;
     }
     set url(url2) {
-      this.window[location2][setURL](this, BrowserFrameURL.getRelativeURL(this, url2).href);
+      this.window[location][setURL](this, BrowserFrameURL.getRelativeURL(this, url2).href);
     }
     get document() {
       return this.window?.document ?? null;
@@ -219652,11 +219749,11 @@ class BrowserExceptionObserver {
   observedWindows = [];
   uncaughtExceptionListener = null;
   uncaughtRejectionListener = null;
-  observe(window3) {
-    if (this.observedWindows.includes(window3)) {
+  observe(window2) {
+    if (this.observedWindows.includes(window2)) {
       throw new Error("Browser window is already being observed.");
     }
-    this.observedWindows.push(window3);
+    this.observedWindows.push(window2);
     if (this.uncaughtExceptionListener) {
       return;
     }
@@ -219665,9 +219762,9 @@ class BrowserExceptionObserver {
         return;
       }
       let targetWindow = null;
-      for (const window4 of this.observedWindows) {
-        if (error2 instanceof window4.Error || error2 instanceof window4.DOMException) {
-          targetWindow = window4;
+      for (const window3 of this.observedWindows) {
+        if (error2 instanceof window3.Error || error2 instanceof window3.DOMException) {
+          targetWindow = window3;
           break;
         }
       }
@@ -219684,9 +219781,9 @@ class BrowserExceptionObserver {
     };
     this.uncaughtRejectionListener = (error2) => {
       let targetWindow = null;
-      for (const window4 of this.observedWindows) {
-        if (error2 instanceof window4.Error || error2 instanceof window4.DOMException) {
-          targetWindow = window4;
+      for (const window3 of this.observedWindows) {
+        if (error2 instanceof window3.Error || error2 instanceof window3.DOMException) {
+          targetWindow = window3;
           break;
         }
       }
@@ -219705,8 +219802,8 @@ class BrowserExceptionObserver {
     process.on("uncaughtException", this.uncaughtExceptionListener);
     process.on("unhandledRejection", this.uncaughtRejectionListener);
   }
-  disconnect(window3) {
-    const index = this.observedWindows.indexOf(window3);
+  disconnect(window2) {
+    const index = this.observedWindows.indexOf(window2);
     if (index === -1) {
       return;
     }
@@ -219750,7 +219847,7 @@ var init_DetachedBrowserFrame = __esm(() => {
     [openerFrame] = null;
     [openerWindow] = null;
     [popup] = false;
-    [history2] = new HistoryItemList;
+    [history] = new HistoryItemList;
     constructor(page) {
       this.page = page;
       if (page.context.browser.contexts[0]?.pages[0]?.mainFrame) {
@@ -219785,7 +219882,7 @@ var init_DetachedBrowserFrame = __esm(() => {
       if (!this.window) {
         throw new Error('The frame has been destroyed, the "window" property is not set.');
       }
-      this.window[location2][setURL](this, BrowserFrameURL.getRelativeURL(this, url2).href);
+      this.window[location][setURL](this, BrowserFrameURL.getRelativeURL(this, url2).href);
     }
     get document() {
       return this.window?.document ?? null;
@@ -220416,17 +220513,17 @@ class GlobalRegistrator {
     if (this.#registered !== null) {
       throw new Error("Failed to register. Happy DOM has already been globally registered.");
     }
-    const window3 = new GlobalWindow({ ...options2, console: globalThis.console });
+    const window2 = new GlobalWindow({ ...options2, console: globalThis.console });
     this.#registered = {};
-    const propertyDescriptors = Object.getOwnPropertyDescriptors(window3);
+    const propertyDescriptors = Object.getOwnPropertyDescriptors(window2);
     for (const key of Object.keys(propertyDescriptors)) {
       if (!IGNORE_LIST.includes(key)) {
         const windowPropertyDescriptor = propertyDescriptors[key];
         const globalPropertyDescriptor = Object.getOwnPropertyDescriptor(globalThis, key);
         if (globalPropertyDescriptor?.value === undefined || globalPropertyDescriptor?.value !== windowPropertyDescriptor.value) {
           this.#registered[key] = globalPropertyDescriptor || null;
-          if (windowPropertyDescriptor.value === window3) {
-            window3[key] = globalThis;
+          if (windowPropertyDescriptor.value === window2) {
+            window2[key] = globalThis;
             windowPropertyDescriptor.value = globalThis;
           }
           Object.defineProperty(globalThis, key, {
@@ -220436,12 +220533,12 @@ class GlobalRegistrator {
         }
       }
     }
-    const propertySymbols = Object.getOwnPropertySymbols(window3);
+    const propertySymbols = Object.getOwnPropertySymbols(window2);
     for (const key of propertySymbols) {
-      const propertyDescriptor = Object.getOwnPropertyDescriptor(window3, key);
+      const propertyDescriptor = Object.getOwnPropertyDescriptor(window2, key);
       this.#registered[key] = null;
-      if (propertyDescriptor.value === window3) {
-        window3[key] = globalThis;
+      if (propertyDescriptor.value === window2) {
+        window2[key] = globalThis;
         propertyDescriptor.value = globalThis;
       }
       Object.defineProperty(globalThis, key, {
@@ -220484,681 +220581,6 @@ var init_lib2 = __esm(() => {
   init_GlobalRegistrator();
 });
 
-// ../core/node_modules/@preact/signals-core/dist/signals-core.mjs
-function t() {
-  if (f > 1) {
-    f--;
-    return;
-  }
-  let i2, t2 = false;
-  while (s !== undefined) {
-    let n = s;
-    s = undefined;
-    e++;
-    while (n !== undefined) {
-      const o = n.o;
-      n.o = undefined;
-      n.f &= -3;
-      if (!(8 & n.f) && l(n))
-        try {
-          n.c();
-        } catch (n2) {
-          if (!t2) {
-            i2 = n2;
-            t2 = true;
-          }
-        }
-      n = o;
-    }
-  }
-  e = 0;
-  f--;
-  if (t2)
-    throw i2;
-}
-function h(i2) {
-  const t2 = o;
-  o = undefined;
-  try {
-    return i2();
-  } finally {
-    o = t2;
-  }
-}
-function c(i2) {
-  if (o === undefined)
-    return;
-  let t2 = i2.n;
-  if (t2 === undefined || t2.t !== o) {
-    t2 = { i: 0, S: i2, p: o.s, n: undefined, t: o, e: undefined, x: undefined, r: t2 };
-    if (o.s !== undefined)
-      o.s.n = t2;
-    o.s = t2;
-    i2.n = t2;
-    if (32 & o.f)
-      i2.S(t2);
-    return t2;
-  } else if (t2.i === -1) {
-    t2.i = 0;
-    if (t2.n !== undefined) {
-      t2.n.p = t2.p;
-      if (t2.p !== undefined)
-        t2.p.n = t2.n;
-      t2.p = o.s;
-      t2.n = undefined;
-      o.s.n = t2;
-      o.s = t2;
-    }
-    return t2;
-  }
-}
-function d(i2, t2) {
-  this.v = i2;
-  this.i = 0;
-  this.n = undefined;
-  this.t = undefined;
-  this.W = t2 == null ? undefined : t2.watched;
-  this.Z = t2 == null ? undefined : t2.unwatched;
-  this.name = t2 == null ? undefined : t2.name;
-}
-function v(i2, t2) {
-  return new d(i2, t2);
-}
-function l(i2) {
-  for (let t2 = i2.s;t2 !== undefined; t2 = t2.n)
-    if (t2.S.i !== t2.i || !t2.S.h() || t2.S.i !== t2.i)
-      return true;
-  return false;
-}
-function y3(i2) {
-  for (let t2 = i2.s;t2 !== undefined; t2 = t2.n) {
-    const n = t2.S.n;
-    if (n !== undefined)
-      t2.r = n;
-    t2.S.n = t2;
-    t2.i = -1;
-    if (t2.n === undefined) {
-      i2.s = t2;
-      break;
-    }
-  }
-}
-function a(i2) {
-  let t2, n = i2.s;
-  while (n !== undefined) {
-    const i3 = n.p;
-    if (n.i === -1) {
-      n.S.U(n);
-      if (i3 !== undefined)
-        i3.n = n.n;
-      if (n.n !== undefined)
-        n.n.p = i3;
-    } else
-      t2 = n;
-    n.S.n = n.r;
-    if (n.r !== undefined)
-      n.r = undefined;
-    n = i3;
-  }
-  i2.s = t2;
-}
-function w2(i2, t2) {
-  d.call(this, undefined);
-  this.x = i2;
-  this.s = undefined;
-  this.g = u - 1;
-  this.f = 4;
-  this.W = t2 == null ? undefined : t2.watched;
-  this.Z = t2 == null ? undefined : t2.unwatched;
-  this.name = t2 == null ? undefined : t2.name;
-}
-function b(i2, t2) {
-  return new w2(i2, t2);
-}
-function _(i2) {
-  const n = i2.u;
-  i2.u = undefined;
-  if (typeof n == "function") {
-    f++;
-    const s2 = o;
-    o = undefined;
-    try {
-      n();
-    } catch (t2) {
-      i2.f &= -2;
-      i2.f |= 8;
-      p(i2);
-      throw t2;
-    } finally {
-      o = s2;
-      t();
-    }
-  }
-}
-function p(i2) {
-  for (let t2 = i2.s;t2 !== undefined; t2 = t2.n)
-    t2.S.U(t2);
-  i2.x = undefined;
-  i2.s = undefined;
-  _(i2);
-}
-function g(i2) {
-  if (o !== this)
-    throw new Error("Out-of-order effect");
-  a(this);
-  o = i2;
-  this.f &= -2;
-  if (8 & this.f)
-    p(this);
-  t();
-}
-function S(i2, t2) {
-  this.x = i2;
-  this.u = undefined;
-  this.s = undefined;
-  this.o = undefined;
-  this.f = 32;
-  this.name = t2 == null ? undefined : t2.name;
-  if (r2)
-    r2.push(this);
-}
-function m(i2, t2) {
-  const n = new S(i2, t2);
-  try {
-    n.c();
-  } catch (i3) {
-    n.d();
-    throw i3;
-  }
-  const o2 = n.d.bind(n);
-  o2[Symbol.dispose] = o2;
-  return o2;
-}
-var i, o, s, r2, f = 0, e = 0, u = 0;
-var init_signals_core = __esm(() => {
-  i = Symbol.for("preact-signals");
-  d.prototype.brand = i;
-  d.prototype.h = function() {
-    return true;
-  };
-  d.prototype.S = function(i2) {
-    const t2 = this.t;
-    if (t2 !== i2 && i2.e === undefined) {
-      i2.x = t2;
-      this.t = i2;
-      if (t2 !== undefined)
-        t2.e = i2;
-      else
-        h(() => {
-          var i3;
-          (i3 = this.W) == null || i3.call(this);
-        });
-    }
-  };
-  d.prototype.U = function(i2) {
-    if (this.t !== undefined) {
-      const { e: t2, x: n } = i2;
-      if (t2 !== undefined) {
-        t2.x = n;
-        i2.e = undefined;
-      }
-      if (n !== undefined) {
-        n.e = t2;
-        i2.x = undefined;
-      }
-      if (i2 === this.t) {
-        this.t = n;
-        if (n === undefined)
-          h(() => {
-            var i3;
-            (i3 = this.Z) == null || i3.call(this);
-          });
-      }
-    }
-  };
-  d.prototype.subscribe = function(i2) {
-    return m(() => {
-      const t2 = this.value, n = o;
-      o = undefined;
-      try {
-        i2(t2);
-      } finally {
-        o = n;
-      }
-    }, { name: "sub" });
-  };
-  d.prototype.valueOf = function() {
-    return this.value;
-  };
-  d.prototype.toString = function() {
-    return this.value + "";
-  };
-  d.prototype.toJSON = function() {
-    return this.value;
-  };
-  d.prototype.peek = function() {
-    const i2 = o;
-    o = undefined;
-    try {
-      return this.value;
-    } finally {
-      o = i2;
-    }
-  };
-  Object.defineProperty(d.prototype, "value", { get() {
-    const i2 = c(this);
-    if (i2 !== undefined)
-      i2.i = this.i;
-    return this.v;
-  }, set(i2) {
-    if (i2 !== this.v) {
-      if (e > 100)
-        throw new Error("Cycle detected");
-      this.v = i2;
-      this.i++;
-      u++;
-      f++;
-      try {
-        for (let i3 = this.t;i3 !== undefined; i3 = i3.x)
-          i3.t.N();
-      } finally {
-        t();
-      }
-    }
-  } });
-  w2.prototype = new d;
-  w2.prototype.h = function() {
-    this.f &= -3;
-    if (1 & this.f)
-      return false;
-    if ((36 & this.f) == 32)
-      return true;
-    this.f &= -5;
-    if (this.g === u)
-      return true;
-    this.g = u;
-    this.f |= 1;
-    if (this.i > 0 && !l(this)) {
-      this.f &= -2;
-      return true;
-    }
-    const i2 = o;
-    try {
-      y3(this);
-      o = this;
-      const i3 = this.x();
-      if (16 & this.f || this.v !== i3 || this.i === 0) {
-        this.v = i3;
-        this.f &= -17;
-        this.i++;
-      }
-    } catch (i3) {
-      this.v = i3;
-      this.f |= 16;
-      this.i++;
-    }
-    o = i2;
-    a(this);
-    this.f &= -2;
-    return true;
-  };
-  w2.prototype.S = function(i2) {
-    if (this.t === undefined) {
-      this.f |= 36;
-      for (let i3 = this.s;i3 !== undefined; i3 = i3.n)
-        i3.S.S(i3);
-    }
-    d.prototype.S.call(this, i2);
-  };
-  w2.prototype.U = function(i2) {
-    if (this.t !== undefined) {
-      d.prototype.U.call(this, i2);
-      if (this.t === undefined) {
-        this.f &= -33;
-        for (let i3 = this.s;i3 !== undefined; i3 = i3.n)
-          i3.S.U(i3);
-      }
-    }
-  };
-  w2.prototype.N = function() {
-    if (!(2 & this.f)) {
-      this.f |= 6;
-      for (let i2 = this.t;i2 !== undefined; i2 = i2.x)
-        i2.t.N();
-    }
-  };
-  Object.defineProperty(w2.prototype, "value", { get() {
-    if (1 & this.f)
-      throw new Error("Cycle detected");
-    const i2 = c(this);
-    this.h();
-    if (i2 !== undefined)
-      i2.i = this.i;
-    if (16 & this.f)
-      throw this.v;
-    return this.v;
-  } });
-  S.prototype.c = function() {
-    const i2 = this.S();
-    try {
-      if (8 & this.f)
-        return;
-      if (this.x === undefined)
-        return;
-      const t2 = this.x();
-      if (typeof t2 == "function")
-        this.u = t2;
-    } finally {
-      i2();
-    }
-  };
-  S.prototype.S = function() {
-    if (1 & this.f)
-      throw new Error("Cycle detected");
-    this.f |= 1;
-    this.f &= -9;
-    _(this);
-    y3(this);
-    f++;
-    const i2 = o;
-    o = this;
-    return g.bind(this, i2);
-  };
-  S.prototype.N = function() {
-    if (!(2 & this.f)) {
-      this.f |= 2;
-      this.o = s;
-      s = this;
-    }
-  };
-  S.prototype.d = function() {
-    this.f |= 8;
-    if (!(1 & this.f))
-      p(this);
-  };
-  S.prototype.dispose = function() {
-    this.d();
-  };
-});
-
-// ../core/src/directives.ts
-function wireMustaches(root2, logic) {
-  const walker = document.createTreeWalker(root2, NodeFilter.SHOW_TEXT);
-  const textNodes = [];
-  let tNode;
-  while (tNode = walker.nextNode()) {
-    if (tNode.textContent?.includes("{{")) {
-      textNodes.push({ node: tNode, original: tNode.textContent });
-    }
-  }
-  textNodes.forEach(({ node, original }) => {
-    const allPaths = [...original.matchAll(/\{\{\s*([\w.]+)\s*\}\}/g)].map((m2) => m2[1]);
-    const valid = allPaths.filter((p2) => {
-      const rk = p2.split(".")[0];
-      return logic[rk] && "value" in logic[rk];
-    });
-    if (valid.length === 0)
-      return;
-    m(() => {
-      node.textContent = original.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_2, p2) => {
-        const rk = p2.split(".")[0];
-        if (!logic[rk] || !("value" in logic[rk]))
-          return `{{ ${p2} }}`;
-        return String(resolveArg(p2, logic) ?? "");
-      });
-    });
-  });
-}
-function wireConditionals(root2, logic) {
-  Array.from(root2.querySelectorAll("[ax-if]")).forEach((el) => {
-    const element = el;
-    const key = element.getAttribute("ax-if");
-    const sig = logic[key];
-    if (!sig || !("value" in sig))
-      return;
-    const placeholder = document.createComment(` ax-if: ${key} `);
-    let isMounted = true;
-    m(() => {
-      const show = !!sig.value;
-      if (show && !isMounted) {
-        placeholder.parentNode?.replaceChild(element, placeholder);
-        isMounted = true;
-      } else if (!show && isMounted) {
-        element.parentNode?.replaceChild(placeholder, element);
-        isMounted = false;
-      }
-    });
-  });
-}
-function processLoops(root2, logic) {
-  Array.from(root2.querySelectorAll("[ax-for]")).forEach((el) => {
-    const element = el;
-    const expr = element.getAttribute("ax-for");
-    const [alias, source] = expr.split(/\s+in\s+/).map((s2) => s2.trim());
-    const sig = logic[source];
-    if (!sig || !("value" in sig))
-      return;
-    element.removeAttribute("ax-for");
-    const template = element.cloneNode(true);
-    const placeholder = document.createComment(` ax-for: ${alias} in ${source} `);
-    element.parentNode.replaceChild(placeholder, element);
-    const rendered = [];
-    m(() => {
-      const items2 = sig.value ?? [];
-      const parent2 = placeholder.parentNode;
-      items2.forEach((item, i2) => {
-        if (i2 < rendered.length) {
-          if (rendered[i2].data !== item) {
-            const fresh = hydrateClone(template, alias, item, logic);
-            parent2.replaceChild(fresh, rendered[i2].node);
-            rendered[i2] = { node: fresh, data: item };
-          }
-        } else {
-          const fresh = hydrateClone(template, alias, item, logic);
-          parent2.insertBefore(fresh, placeholder);
-          rendered.push({ node: fresh, data: item });
-        }
-      });
-      while (rendered.length > items2.length) {
-        parent2.removeChild(rendered.pop().node);
-      }
-    });
-  });
-}
-function hydrateClone(template, alias, item, logic) {
-  const clone2 = template.cloneNode(true);
-  const aliasRe = new RegExp(`\\{\\{\\s*${alias}(\\.[\\w.]+)?\\s*\\}\\}`, "g");
-  const walker = document.createTreeWalker(clone2, NodeFilter.SHOW_TEXT);
-  let t2;
-  while (t2 = walker.nextNode()) {
-    if (!t2.textContent?.includes("{{"))
-      continue;
-    t2.textContent = t2.textContent.replace(aliasRe, (_2, sub) => {
-      if (!sub)
-        return String(item);
-      let cur = item;
-      for (const p2 of sub.slice(1).split(".")) {
-        if (cur == null)
-          return "";
-        cur = cur[p2];
-      }
-      return String(cur ?? "");
-    });
-  }
-  wireEvents(clone2, logic, { [alias]: item });
-  return clone2;
-}
-function wireEvents(root2, logic, scope) {
-  const targets = [root2, ...Array.from(root2.querySelectorAll("*"))];
-  for (const el of targets) {
-    for (const attr of Array.from(el.attributes)) {
-      if (!attr.name.startsWith("ax-on:"))
-        continue;
-      const m2 = attr.value.match(AX_ON_RE);
-      if (!m2)
-        continue;
-      const fn = logic[m2[1]];
-      if (typeof fn !== "function")
-        continue;
-      const event = attr.name.slice(6);
-      el.removeAttribute(attr.name);
-      if (m2[2] === undefined) {
-        el.addEventListener(event, () => fn());
-      } else {
-        const exprs = splitArgs2(m2[2]);
-        el.addEventListener(event, () => fn(...exprs.map((a2) => resolveArg(a2, logic, scope))));
-      }
-    }
-  }
-}
-function wireModels(root2, logic) {
-  root2.querySelectorAll("[ax-model]").forEach((el) => {
-    const name2 = el.getAttribute("ax-model");
-    const sig = logic[name2];
-    if (!sig || !("value" in sig))
-      return;
-    el.removeAttribute("ax-model");
-    const input = el;
-    m(() => {
-      const v2 = String(sig.value ?? "");
-      if (input.value !== v2)
-        input.value = v2;
-    });
-    const sync = () => {
-      sig.value = input.value;
-    };
-    ["input", "change"].forEach((e2) => input.addEventListener(e2, sync));
-    if (input.value)
-      sync();
-  });
-}
-function resolveArg(expr, logic, scope) {
-  const s2 = expr.trim();
-  if (!s2)
-    return;
-  const c2 = s2.charCodeAt(0);
-  if (c2 === 34 || c2 === 39)
-    return s2.slice(1, -1);
-  if (c2 >= 48 && c2 <= 57 || c2 === 45 && s2.length > 1)
-    return Number(s2);
-  if (s2 === "true")
-    return true;
-  if (s2 === "false")
-    return false;
-  if (s2 === "null")
-    return null;
-  const parts = s2.split(".");
-  const head = parts[0];
-  let cur;
-  if (scope && head in scope) {
-    cur = scope[head];
-  } else {
-    const sig = logic[head];
-    if (!sig || !("value" in sig))
-      return;
-    cur = sig.value;
-  }
-  for (let i2 = 1;i2 < parts.length; i2++) {
-    if (cur == null)
-      return;
-    cur = cur[parts[i2]];
-  }
-  return cur;
-}
-function splitArgs2(s2) {
-  const out = [];
-  let buf = "", q = 0;
-  for (let i2 = 0;i2 < s2.length; i2++) {
-    const ch = s2.charCodeAt(i2);
-    if (q) {
-      if (ch === q)
-        q = 0;
-      buf += s2[i2];
-    } else if (ch === 34 || ch === 39) {
-      q = ch;
-      buf += s2[i2];
-    } else if (ch === 44) {
-      out.push(buf);
-      buf = "";
-    } else
-      buf += s2[i2];
-  }
-  if (buf.trim())
-    out.push(buf);
-  return out;
-}
-var AX_ON_RE;
-var init_directives2 = __esm(() => {
-  init_signals_core();
-  AX_ON_RE = /^(\w+)(?:\((.*)\))?$/;
-});
-
-// ../core/src/router.ts
-function initRouter(routes) {
-  const host2 = document.getElementById("router-view");
-  if (!host2)
-    return;
-  const styleTag = document.createElement("style");
-  styleTag.innerHTML = Object.values(routes).map((r3) => r3.style).join(`
-`);
-  document.head.appendChild(styleTag);
-  const render2 = (path10) => {
-    const r3 = routes[path10] || routes["/"];
-    if (!r3)
-      return;
-    host2.innerHTML = r3.view;
-    mount(host2, r3.logic);
-  };
-  document.addEventListener("click", (e2) => {
-    const a2 = e2.target.closest?.("a[ax-link]");
-    if (!a2)
-      return;
-    e2.preventDefault();
-    const path10 = a2.getAttribute("ax-link");
-    if (location.pathname !== path10)
-      history.pushState({}, "", path10);
-    render2(path10);
-  });
-  window.addEventListener("popstate", () => render2(location.pathname));
-  render2(location.pathname);
-}
-var init_router = __esm(() => {
-  init_runtime2();
-});
-
-// ../core/src/runtime.ts
-var exports_runtime = {};
-__export(exports_runtime, {
-  signal: () => v,
-  mount: () => mount,
-  initRouter: () => initRouter,
-  effect: () => m,
-  computed: () => b,
-  bootstrap: () => bootstrap
-});
-function mount(root2, logic) {
-  processLoops(root2, logic);
-  wireMustaches(root2, logic);
-  wireConditionals(root2, logic);
-  wireEvents(root2, logic);
-  wireModels(root2, logic);
-}
-function bootstrap(view, style2, logic) {
-  const styleTag = document.createElement("style");
-  styleTag.innerHTML = style2;
-  document.head.appendChild(styleTag);
-  const appDiv = document.getElementById("app");
-  if (appDiv) {
-    appDiv.innerHTML = view;
-    mount(appDiv, logic);
-  }
-}
-var init_runtime2 = __esm(() => {
-  init_signals_core();
-  init_directives2();
-  init_router();
-});
-
 // ../compiler/src/ssr.ts
 import fs10 from "fs";
 import path10 from "path";
@@ -221171,26 +220593,39 @@ async function registerDom() {
   domReady = true;
 }
 function isStaticView(view) {
-  const b2 = parseView(view);
-  return b2.mustaches.length === 0 && b2.conditionals.length === 0 && b2.events.length === 0 && b2.loops.length === 0 && b2.models.length === 0;
+  const b = parseView(view);
+  return b.mustaches.length === 0 && b.conditionals.length === 0 && b.events.length === 0 && b.loops.length === 0 && b.models.length === 0;
+}
+function resolveRuntime(logicPath) {
+  let dir = path10.dirname(logicPath);
+  for (let i = 0;i < 8; i++) {
+    const candidate = path10.join(dir, "src", "lib", "advanx", "runtime.ts");
+    if (fs10.existsSync(candidate))
+      return candidate;
+    const parent2 = path10.dirname(dir);
+    if (parent2 === dir)
+      break;
+    dir = parent2;
+  }
+  return path10.resolve(import.meta.dir, "..", "..", "core", "src", "runtime.ts");
 }
 async function renderToString(view, logicPath) {
   await registerDom();
-  const { mount: mount2 } = await Promise.resolve().then(() => (init_runtime2(), exports_runtime));
+  const { mount } = await import(resolveRuntime(logicPath));
   const logic = await import(logicPath);
   const container = document.createElement("div");
   container.innerHTML = view;
-  mount2(container, logic);
+  mount(container, logic);
   return container.innerHTML;
 }
-function pageHtml(o2) {
-  const styleTag = o2.style.trim() ? `
-<style>${o2.style}</style>` : "";
-  const scriptTag = o2.scriptSrc ? `<script src="${o2.scriptSrc}"></script>` : "";
+function pageHtml(o) {
+  const styleTag = o.style.trim() ? `
+<style>${o.style}</style>` : "";
+  const scriptTag = o.scriptSrc ? `<script src="${o.scriptSrc}"></script>` : "";
   return `<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8" /><title>${o2.title}</title>${styleTag}</head>
-<body><div id="${o2.hostId}">${o2.content}</div>${scriptTag}</body>
+<head><meta charset="utf-8" /><title>${o.title}</title>${styleTag}</head>
+<body><div id="${o.hostId}">${o.content}</div>${scriptTag}</body>
 </html>
 `;
 }
@@ -221211,7 +220646,7 @@ async function prerenderComponent(dir, outDir) {
 }
 async function prerenderPages(rootDir, outDir) {
   const pagesDir = path10.join(rootDir, "src", "pages");
-  const names = fs10.readdirSync(pagesDir, { withFileTypes: true }).filter((e2) => e2.isDirectory()).map((e2) => e2.name).sort();
+  const names = fs10.readdirSync(pagesDir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
   let count = 0;
   for (const name2 of names) {
     const pageDir = path10.join(pagesDir, name2);
@@ -221246,14 +220681,14 @@ import path11 from "path";
 function parseArgs(args) {
   let target2;
   let out = null;
-  for (let i2 = 0;i2 < args.length; i2++) {
-    const a2 = args[i2];
-    if (a2 === "--out" || a2 === "-o") {
-      out = args[++i2] ?? null;
-    } else if (a2.startsWith("--out=")) {
-      out = a2.slice("--out=".length);
+  for (let i = 0;i < args.length; i++) {
+    const a = args[i];
+    if (a === "--out" || a === "-o") {
+      out = args[++i] ?? null;
+    } else if (a.startsWith("--out=")) {
+      out = a.slice("--out=".length);
     } else if (!target2) {
-      target2 = a2;
+      target2 = a;
     }
   }
   return {

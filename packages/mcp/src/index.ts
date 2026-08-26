@@ -1,8 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { readdir, readFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import { join, resolve } from "path";
+import { listComponentDirs } from "./components.ts";
 
 const server = new McpServer({
   name: "advanx",
@@ -22,10 +23,7 @@ server.tool(
   async ({ components_dir }) => {
     const dir = resolve(components_dir ?? "src/components");
     try {
-      const entries = await readdir(dir, { withFileTypes: true });
-      const components = entries
-        .filter((e) => e.isDirectory())
-        .map((e) => e.name);
+      const components = await listComponentDirs(dir);
       return {
         content: [
           {
