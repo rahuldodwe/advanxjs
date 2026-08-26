@@ -196,7 +196,7 @@ export const COUNTER_INDEX_HTML = `<!DOCTYPE html>
 
     <ul class="next-steps">
       <li>Edit <code>src/components/counter/view.html</code> to change the UI.</li>
-      <li>Run <code>advanxjs explain src/components/counter</code> to inspect the contract.</li>
+      <li>Run <code>advanx explain src/components/counter</code> to inspect the contract.</li>
       <li>Read <code>CONSTITUTION.md</code> for the eight laws every component follows.</li>
     </ul>
   </main>

@@ -25,6 +25,10 @@
   ],
   "author": "Rahul Dodwe",
   "license": "MIT",
+  "scripts": {
+    "test": "bun test",
+    "size": "bun scripts/size-budget.ts"
+  },
   "dependencies": {
     "@preact/signals-core": "^1.13.0",
     "typescript": "^6.0.3"

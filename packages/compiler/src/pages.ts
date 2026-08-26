@@ -80,9 +80,9 @@ export async function compilePages(rootDir: string): Promise<number> {
   const dist = path.join(rootDir, "dist");
   if (!fs.existsSync(dist)) fs.mkdirSync(dist, { recursive: true });
 
-  const scaffoldedRuntime = path.join(rootDir, "lib", "advanx", "runtime.ts");
+  const scaffoldedRuntime = path.join(rootDir, "src", "lib", "advanx", "runtime.ts");
   const runtimeImport = fs.existsSync(scaffoldedRuntime)
-    ? "../lib/advanx/runtime.ts"
+    ? "../src/lib/advanx/runtime.ts"
     : "../../../packages/core/src/runtime.ts";
 
   const imports = pages

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Test suite
+        run: bun test
+
+      - name: Article VI — core runtime size budget (< 5KB gzipped)
+        run: bun scripts/size-budget.ts
+
+      - name: Smoke — scaffold, component build, pages build + static export
+        run: |
+          set -euo pipefail
+          CLI="$GITHUB_WORKSPACE/packages/cli/src/index.ts"
+          DEMO="$RUNNER_TEMP/demo"
+          bun "$CLI" create "$DEMO"
+          cd "$DEMO"
+          bun install
+          bun "$CLI" build src/components/counter
+          bun "$CLI" build          # pages mode (the SPA scaffold that used to break)
+          bun "$CLI" export
+          test -f dist/index.html
+          test -f dist/about/index.html
+          echo "✅ scaffold + component + pages + export all succeeded"

@@ -29,11 +29,29 @@ export function isStaticView(view: string): boolean {
   );
 }
 
+/**
+ * Resolve the runtime `mount` should be imported from. Prefers a scaffolded
+ * project's own runtime (src/lib/advanx/runtime.ts, found by walking up from the
+ * page/component) so SSR uses the exact same signals module the browser will —
+ * mirrors the fallback in index.ts / pages.ts. Falls back to the monorepo core.
+ */
+function resolveRuntime(logicPath: string): string {
+  let dir = path.dirname(logicPath);
+  for (let i = 0; i < 8; i++) {
+    const candidate = path.join(dir, "src", "lib", "advanx", "runtime.ts");
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return path.resolve(import.meta.dir, "..", "..", "core", "src", "runtime.ts");
+}
+
 /** Render a view to a fully-resolved HTML string using the real runtime. */
 export async function renderToString(view: string, logicPath: string): Promise<string> {
   await registerDom();
   // Imported after the DOM exists: directives.ts touches document/NodeFilter.
-  const { mount } = await import("../../core/src/runtime.ts");
+  const { mount } = await import(resolveRuntime(logicPath));
   const logic = await import(logicPath);
   const container = document.createElement("div");
   container.innerHTML = view;

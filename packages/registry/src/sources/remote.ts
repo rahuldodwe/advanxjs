@@ -3,7 +3,10 @@
  */
 import type { ComponentManifest, ResolvedComponent, ComponentListEntry } from "../manifest.ts";
 
-const REGISTRY_BASE = "https://raw.githubusercontent.com/rahuldodwe/advanxjs/main/packages/registry";
+// Overridable via ADVANX_REGISTRY_BASE so forks/mirrors can point elsewhere.
+const REGISTRY_BASE =
+  process.env.ADVANX_REGISTRY_BASE ??
+  "https://raw.githubusercontent.com/rahuldodwe/advanx-monorepo/main/packages/registry";
 const REGISTRY_INDEX = `${REGISTRY_BASE}/registry.json`;
 
 interface RegistryIndex {

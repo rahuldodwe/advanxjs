@@ -1,0 +1,4 @@
+[test]
+# Register a build-time DOM (happy-dom) before any test runs so runtime/directive
+# and SSR tests have document/NodeFilter/etc. available globally.
+preload = ["./tests/setup/happydom.ts"]
