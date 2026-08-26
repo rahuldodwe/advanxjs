@@ -169517,9 +169517,32 @@ var init_analyze = __esm(() => {
 });
 
 // ../compiler/src/parseView.ts
+function insideTag(html, index) {
+  return html.lastIndexOf("<", index) > html.lastIndexOf(">", index);
+}
+function attributeAt(html, index) {
+  const tagStart = html.lastIndexOf("<", index);
+  if (tagStart === -1)
+    return null;
+  return html.slice(tagStart, index).match(ATTR_BEFORE)?.[1] ?? null;
+}
 function parseView(html) {
+  const mustaches = [];
+  const attributeMustaches = [];
+  for (const m of html.matchAll(MUSTACHE)) {
+    const path = m[1];
+    if (insideTag(html, m.index)) {
+      attributeMustaches.push({
+        attribute: attributeAt(html, m.index) ?? "(unknown)",
+        expression: path
+      });
+    } else {
+      mustaches.push(path);
+    }
+  }
   return {
-    mustaches: [...html.matchAll(/\{\{\s*([\w.]+)\s*\}\}/g)].map((m) => m[1]),
+    mustaches,
+    attributeMustaches,
     conditionals: [...html.matchAll(/ax-if="([^"]+)"/g)].map((m) => m[1]),
     events: [...html.matchAll(/ax-on:(\w+)="([^"]+)"/g)].map((m) => ({
       event: m[1],
@@ -169529,9 +169552,16 @@ function parseView(html) {
       const [alias = "", source = ""] = m[1].split(/\s+in\s+/).map((s) => s.trim());
       return { alias, source };
     }),
-    models: [...html.matchAll(/ax-model="([^"]+)"/g)].map((m) => m[1])
+    models: [...html.matchAll(/ax-model="([^"]+)"/g)].map((m) => m[1]),
+    elses: [...html.matchAll(AX_ELSE)].filter((m) => insideTag(html, m.index)).length
   };
 }
+var MUSTACHE, AX_ELSE, ATTR_BEFORE;
+var init_parseView = __esm(() => {
+  MUSTACHE = /\{\{\s*([\w.]+)\s*\}\}/g;
+  AX_ELSE = /\bax-else\b/g;
+  ATTR_BEFORE = /([\w:.\-]+)\s*=\s*["'][^"']*$/;
+});
 
 // ../compiler/src/validate.ts
 function splitArgs(s) {
@@ -169570,6 +169600,14 @@ function parseHandler(handler) {
   return { name: m[1], args };
 }
 function validateBindings(view, logic) {
+  if (view.elses > 0) {
+    throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: 'ax-else' is not yet supported in the runtime. ` + `Use inverted 'ax-if' booleans in logic.ts (Article I/V).`);
+  }
+  const attrMustache = view.attributeMustaches[0];
+  if (attrMustache) {
+    throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: Attribute mustache interpolation is not yet supported. ` + `Use direct element bindings or directives (Article V).` + `
+  Found: ${attrMustache.attribute}="{{ ${attrMustache.expression} }}"`);
+  }
   for (const name of view.conditionals) {
     if (!IDENT.test(name))
       throw articleI("ax-if", name);
@@ -169757,6 +169795,7 @@ initRouter(routes);
 }
 var init_pages = __esm(() => {
   init_analyze();
+  init_parseView();
   init_validate();
 });
 
@@ -169833,6 +169872,7 @@ bootstrap(view, style, logic);
 }
 var init_src = __esm(() => {
   init_analyze();
+  init_parseView();
   init_validate();
   init_pages();
 });
@@ -220669,7 +220709,9 @@ async function prerenderPages(rootDir, outDir) {
   return count;
 }
 var domReady = false;
-var init_ssr = () => {};
+var init_ssr = __esm(() => {
+  init_parseView();
+});
 
 // src/commands/export.ts
 var exports_export = {};

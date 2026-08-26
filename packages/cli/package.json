@@ -1,6 +1,6 @@
 {
   "name": "advanxjs",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "The first Agent-Native (AX) frontend framework.",
   "type": "module",
   "main": "./src/index.ts",
