@@ -107,6 +107,12 @@ function hydrateClone(template: HTMLElement, alias: string, item: any, logic: an
 
 const AX_ON_RE = /^(\w+)(?:\((.*)\))?$/;
 
+// The native DOM event is always passed as the LAST argument, after any args
+// declared in the view. Handlers that take no parameters simply ignore it, so
+// every existing `ax-on:click="toggle"` is unaffected. This is the only channel
+// a handler has to the element it is bound to (`e.currentTarget`) — attribute
+// bindings, which would otherwise carry pointer state into CSS, are M2.
+
 export function wireEvents(root: Element, logic: any, scope?: any) {
   const targets: Element[] = [root, ...Array.from(root.querySelectorAll('*'))];
   for (const el of targets) {
@@ -119,11 +125,11 @@ export function wireEvents(root: Element, logic: any, scope?: any) {
       const event = attr.name.slice(6);
       el.removeAttribute(attr.name);
       if (m[2] === undefined) {
-        el.addEventListener(event, () => fn());
+        el.addEventListener(event, ev => fn(ev));
       } else {
         const exprs = splitArgs(m[2]);
-        el.addEventListener(event, () =>
-          fn(...exprs.map(a => resolveArg(a, logic, scope)))
+        el.addEventListener(event, ev =>
+          fn(...exprs.map(a => resolveArg(a, logic, scope)), ev)
         );
       }
     }
