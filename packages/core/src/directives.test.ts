@@ -37,6 +37,39 @@ describe("ax-on events", () => {
     root.querySelector("button")!.click();
     expect(total.value).toBe(5);
   });
+
+  // Without this, `ax-on:mousemove="onMouseMove"` compiles green and the handler
+  // silently receives `undefined` — the registry's spotlight-card depends on the
+  // event being real to reach `currentTarget`.
+  test("passes the native event to a handler that declares no args", () => {
+    let type: string | null = null;
+    let current: any = null;
+    const root = render(`<button ax-on:click="capture">go</button>`, {
+      // `currentTarget` is only non-null while the event is being dispatched,
+      // so it must be read inside the handler — which is exactly how
+      // spotlight-card reaches the element it is bound to.
+      capture: (e: any) => {
+        type = e?.type ?? null;
+        current = e?.currentTarget ?? null;
+      },
+    });
+    const button = root.querySelector("button")!;
+    button.click();
+    expect(type).toBe("click");
+    expect(current).toBe(button);
+  });
+
+  test("appends the native event after declared args", () => {
+    const seen: any[] = [];
+    const root = render(`<button ax-on:click="capture(7, 'x')">go</button>`, {
+      capture: (...args: any[]) => seen.push(...args),
+    });
+    root.querySelector("button")!.click();
+    expect(seen.length).toBe(3);
+    expect(seen[0]).toBe(7);
+    expect(seen[1]).toBe("x");
+    expect(seen[2].type).toBe("click");
+  });
 });
 
 describe("ax-if conditional", () => {

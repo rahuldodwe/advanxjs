@@ -1,0 +1,82 @@
+.shimmer-button {
+  --ax-inner: #0f172a;
+  --ax-text: #f1f5f9;
+  --ax-shine-a: #818cf8;
+  --ax-shine-b: #c4b5fd;
+  --ax-radius: 0.625rem;
+  --ax-rim: 1px;
+  --ax-glow: 0 8px 26px -8px rgba(129, 140, 248, 0.55);
+  --ax-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+  display: inline-block;
+  padding: var(--ax-rim);
+  border: none;
+  border-radius: var(--ax-radius);
+  background: rgba(148, 163, 184, 0.18);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.2s var(--ax-ease), box-shadow 0.3s var(--ax-ease);
+}
+
+.shimmer-button:hover {
+  box-shadow: var(--ax-glow);
+}
+
+.shimmer-button:active {
+  transform: translateY(1px);
+}
+
+.shimmer-button:focus-visible {
+  outline: 2px solid var(--ax-shine-b);
+  outline-offset: 3px;
+}
+
+/* Zero runtime animation: the rim shine is one rotating conic gradient.
+   Rotating an element (rather than an @property angle) keeps this working
+   without @property support, and transform-only keeps it on the GPU. */
+.shimmer-button-shine {
+  position: absolute;
+  inset: -150%;
+  z-index: -1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--ax-shine-a) 60deg,
+    var(--ax-shine-b) 110deg,
+    transparent 200deg,
+    transparent 360deg
+  );
+  will-change: transform;
+  animation: shimmer-button-spin 3s linear infinite;
+}
+
+@keyframes shimmer-button-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.shimmer-button-label {
+  position: relative;
+  display: block;
+  padding: 0.75rem 1.75rem;
+  background: var(--ax-inner);
+  border-radius: calc(var(--ax-radius) - var(--ax-rim));
+  color: var(--ax-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-button-shine {
+    animation: none;
+  }
+  .shimmer-button {
+    transition: none;
+  }
+}

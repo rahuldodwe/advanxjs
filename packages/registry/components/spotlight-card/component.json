@@ -1,0 +1,9 @@
+{
+  "name": "spotlight-card",
+  "version": "0.1.0",
+  "description": "Dark luxury card with a radial spotlight that tracks the cursor and fades out on leave",
+  "tags": ["motion", "card", "ui", "interactive"],
+  "tier": "free",
+  "category": "motion",
+  "suggestedFor": ["spa", "multi-page", "component"]
+}

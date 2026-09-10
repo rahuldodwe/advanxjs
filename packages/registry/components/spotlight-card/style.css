@@ -1,0 +1,86 @@
+.spotlight-card {
+  /* Defaults matter: with zero JS (SSG output, or before first pointer move)
+     the glow must be fully transparent rather than a stuck highlight. */
+  --ax-mouse-x: 50%;
+  --ax-mouse-y: 50%;
+  --ax-spotlight-opacity: 0;
+
+  --ax-surface: #0f172a;
+  --ax-border: rgba(148, 163, 184, 0.12);
+  --ax-border-lit: rgba(129, 140, 248, 0.35);
+  --ax-text: #f1f5f9;
+  --ax-text-dim: #94a3b8;
+  --ax-accent: #818cf8;
+  --ax-radius: 0.875rem;
+  --ax-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --ax-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+  isolation: isolate;
+  max-width: 22rem;
+  padding: 1.75rem;
+  background: var(--ax-surface);
+  border: 1px solid var(--ax-border);
+  border-radius: var(--ax-radius);
+  box-shadow: var(--ax-shadow);
+  overflow: hidden;
+  transition: border-color 0.4s var(--ax-ease), transform 0.4s var(--ax-ease);
+}
+
+.spotlight-card:hover {
+  border-color: var(--ax-border-lit);
+  transform: translateY(-2px);
+}
+
+.spotlight-card-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: var(--ax-spotlight-opacity);
+  background: radial-gradient(
+    400px circle at var(--ax-mouse-x) var(--ax-mouse-y),
+    rgba(129, 140, 248, 0.22),
+    rgba(139, 92, 246, 0.1) 40%,
+    transparent 65%
+  );
+  transition: opacity 0.4s var(--ax-ease);
+}
+
+.spotlight-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spotlight-card-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ax-accent);
+}
+
+.spotlight-card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ax-text);
+}
+
+.spotlight-card-desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--ax-text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight-card,
+  .spotlight-card-glow {
+    transition: none;
+  }
+}

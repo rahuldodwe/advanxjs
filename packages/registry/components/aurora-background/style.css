@@ -1,0 +1,109 @@
+.aurora-background {
+  --ax-bg: #020617;
+  --ax-text: #f1f5f9;
+  --ax-text-dim: #94a3b8;
+  --ax-orb-a: #6366f1;
+  --ax-orb-b: #8b5cf6;
+  --ax-orb-c: #22d3ee;
+  --ax-blur: 80px;
+  --ax-radius: 1rem;
+
+  position: relative;
+  isolation: isolate;
+  /* Orbs are pushed outside the box on purpose; clip so they never add scroll. */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24rem;
+  padding: 4rem 1.5rem;
+  background: var(--ax-bg);
+  border-radius: var(--ax-radius);
+}
+
+.aurora-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.aurora-orb {
+  position: absolute;
+  display: block;
+  width: 26rem;
+  height: 26rem;
+  border-radius: 50%;
+  /* filter is the expensive part, so it is painted once and only transform
+     is animated — that keeps every frame on the compositor. */
+  filter: blur(var(--ax-blur));
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.aurora-orb-1 {
+  top: -8rem;
+  left: -6rem;
+  background: var(--ax-orb-a);
+  animation: aurora-drift-1 18s ease-in-out infinite alternate;
+}
+
+.aurora-orb-2 {
+  top: 2rem;
+  right: -8rem;
+  background: var(--ax-orb-b);
+  animation: aurora-drift-2 22s ease-in-out infinite alternate;
+}
+
+.aurora-orb-3 {
+  bottom: -10rem;
+  left: 30%;
+  background: var(--ax-orb-c);
+  opacity: 0.35;
+  animation: aurora-drift-3 26s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift-1 {
+  to {
+    transform: translate3d(6rem, 4rem, 0) scale(1.15);
+  }
+}
+
+@keyframes aurora-drift-2 {
+  to {
+    transform: translate3d(-7rem, 3rem, 0) scale(0.9);
+  }
+}
+
+@keyframes aurora-drift-3 {
+  to {
+    transform: translate3d(-4rem, -5rem, 0) scale(1.2);
+  }
+}
+
+.aurora-content {
+  position: relative;
+  max-width: 34rem;
+  text-align: center;
+}
+
+.aurora-title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ax-text);
+}
+
+.aurora-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ax-text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-orb {
+    animation: none;
+  }
+}

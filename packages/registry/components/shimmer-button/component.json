@@ -1,0 +1,9 @@
+{
+  "name": "shimmer-button",
+  "version": "0.1.0",
+  "description": "High-end CTA button with a rotating conic-gradient border shine driven purely by CSS keyframes",
+  "tags": ["motion", "button", "ui", "cta"],
+  "tier": "free",
+  "category": "motion",
+  "suggestedFor": ["spa", "multi-page", "component"]
+}

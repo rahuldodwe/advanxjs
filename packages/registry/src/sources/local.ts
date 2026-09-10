@@ -30,6 +30,7 @@ export function listComponents(): ComponentListEntry[] {
         description: manifest.description,
         tags: manifest.tags,
         tier: manifest.tier,
+        category: manifest.category,
       });
     } catch {
       // Skip malformed manifests

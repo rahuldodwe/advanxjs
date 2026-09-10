@@ -1,0 +1,9 @@
+{
+  "name": "aurora-background",
+  "version": "0.1.0",
+  "description": "Wrapper with GPU-accelerated drifting aurora blur orbs; replace .aurora-content with your own markup",
+  "tags": ["motion", "background", "ui", "layout"],
+  "tier": "free",
+  "category": "motion",
+  "suggestedFor": ["spa", "multi-page", "component"]
+}

@@ -7,6 +7,8 @@ export interface ComponentManifest {
   description: string;
   tags: string[];
   tier: "free" | "premium";
+  /** Optional grouping (e.g. "motion"). Absent on components predating categories. */
+  category?: string;
   suggestedFor: ("spa" | "multi-page" | "component")[];
 }
 
@@ -30,4 +32,5 @@ export interface ComponentListEntry {
   description: string;
   tags: string[];
   tier: "free" | "premium";
+  category?: string;
 }
