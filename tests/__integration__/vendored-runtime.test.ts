@@ -14,7 +14,14 @@ const REPO = path.resolve(import.meta.dir, "../..");
 const CORE = path.join(REPO, "packages", "core", "src");
 const VENDORED = path.join(REPO, "packages", "cli", "src", "templates", "core");
 
-const MIRRORED = ["runtime.ts", "directives.ts", "router.ts"];
+const MIRRORED = [
+  "runtime.ts",
+  "directives.ts",
+  "attributes.ts",
+  "events.ts",
+  "resolve.ts",
+  "router.ts",
+];
 
 describe("the CLI's vendored runtime mirrors packages/core", () => {
   for (const file of MIRRORED) {

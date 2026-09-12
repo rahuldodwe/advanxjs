@@ -55,9 +55,14 @@ Text interpolation — text nodes only:
   <p>{{ count }}</p>
   <p>{{ user.name }}</p>
 
-ax-if — conditional rendering. Value is a BARE IDENTIFIER, never an expression:
+ax-if / ax-else — conditional rendering. The ax-if value is a BARE IDENTIFIER,
+never an expression; put the comparison in logic.ts as a computed and reference
+it by name. ax-else takes no value and MUST be the immediately following sibling
+element:
   <p ax-if="isEmpty">Nothing here yet.</p>
-  Put the comparison in logic.ts as a computed, then reference it by name.
+  <p ax-else>{{ count }} items.</p>
+  The inactive branch is replaced by a comment placeholder, so exactly one of
+  the two is in the DOM at any time.
 
 ax-for — list rendering. Exactly "alias in source", both bare identifiers:
   <li ax-for="item in items">{{ item }}</li>
@@ -77,28 +82,43 @@ ax-model — two-way binding on an input. Bare identifier naming a signal:
 ax-link — client-side SPA navigation on an anchor:
   <a ax-link="/about">About</a>
 
+ax-bind:<attr> / :<attr> — bind an attribute to a signal or computed. The value
+is a BARE IDENTIFIER; the prefixed attribute never reaches the rendered DOM:
+  <img :src="heroUrl" />
+  <button :disabled="loading">Save</button>
+  <a ax-bind:href="docsUrl">Docs</a>
+  Boolean attributes (:disabled, :checked, :hidden, :required, :open, ...) are
+  added when the value is truthy and removed when falsy — never disabled="false".
+  :class merges with the static class, so class="card" :class="theme" renders
+  both. :style takes an object (keys beginning with -- become CSS custom
+  properties) or a plain string, which is set as cssText:
+  <div class="card" :class="theme"></div>
+  <div :style="spotlightStyle"></div>
+  This is how pointer/scroll state reaches CSS: write signals in logic.ts and
+  let the view bind them. Never write element.style from logic.ts.
+
 # 5. WHAT DOES NOT WORK YET — the compiler will REJECT these
 
 Do not generate any of the following. Each one is a hard build failure or is
 silently inert at runtime. This list is the difference between code that ships
 and code that errors.
 
-  ax-else                     Not implemented. The build fails with a contract
-                              violation. Use a second ax-if on an inverted
-                              boolean computed in logic.ts instead.
-
   attribute mustaches         <a href="{{ url }}"> fails the build. Only text
-                              nodes are interpolated. Use a directive, or set
-                              the attribute from logic.ts.
+                              nodes are interpolated. Use a binding instead:
+                              <a :href="url">.
+
+  orphan ax-else              ax-else only compiles when the element directly
+                              before it carries ax-if. Anything in between —
+                              including a wrapper element — fails the build.
 
   expressions in directives   ax-if="count > 0", ax-on:click="count++", and
                               ax-for="i in items.slice(0,3)" all fail. Directive
                               values are bare identifiers (Article I).
 
   nesting inside ax-for       Within an ax-for element, only mustaches and
-                              ax-on:* are wired. A nested ax-if, ax-model, or
-                              ax-for will not react. Flatten the data in
-                              logic.ts with a computed instead.
+                              ax-on:* are wired. A nested ax-if, ax-model,
+                              ax-for, or :attr binding will not react. Flatten
+                              the data in logic.ts with a computed instead.
 
 ax-for is index-based, not keyed: reordering a list re-renders the changed rows.
 

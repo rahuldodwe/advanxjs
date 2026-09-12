@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals-core";
+import { signal, computed } from "../../lib/advanx/runtime.ts";
 
 export const eyebrow = signal("Advanx Motion");
 export const title = signal("Spotlight Card");
@@ -6,24 +6,32 @@ export const description = signal(
   "A radial highlight follows the pointer across the surface, then fades away when it leaves."
 );
 
-// Article I note — "No UI in the Logic."
-// Pointer position cannot reach CSS through a binding: mustaches interpolate
-// text nodes only, and attribute mustaches are a hard contract violation until
-// M2 lands attribute bindings. The native event (passed as the last handler
-// argument) is therefore the only channel, so these two actions write CSS
-// custom properties directly onto the element the listener is bound to.
-// `currentTarget` is valid here because the action runs during dispatch.
+// Pointer state is data, not UI. The actions below write only signals; the view
+// declares where that data lands via `:style`, so Article I holds both ways —
+// no UI in the logic, no logic in the view.
+export const mouseX = signal(0);
+export const mouseY = signal(0);
+export const lit = signal(false);
+
+export const spotlightStyle = computed(() => ({
+  "--ax-mouse-x": `${mouseX.value}px`,
+  "--ax-mouse-y": `${mouseY.value}px`,
+  "--ax-spotlight-opacity": lit.value ? "1" : "0",
+}));
+
+// `getBoundingClientRect` is a geometry read, not a style write: pointer
+// coordinates are viewport-relative and have to be rebased against the element
+// the listener sits on. `currentTarget` is valid because the action runs during
+// dispatch.
 export function onMouseMove(e: MouseEvent) {
   const el = e.currentTarget as HTMLElement | null;
   if (!el) return;
   const rect = el.getBoundingClientRect();
-  el.style.setProperty("--ax-mouse-x", `${e.clientX - rect.left}px`);
-  el.style.setProperty("--ax-mouse-y", `${e.clientY - rect.top}px`);
-  el.style.setProperty("--ax-spotlight-opacity", "1");
+  mouseX.value = e.clientX - rect.left;
+  mouseY.value = e.clientY - rect.top;
+  lit.value = true;
 }
 
-export function onMouseLeave(e: MouseEvent) {
-  const el = e.currentTarget as HTMLElement | null;
-  if (!el) return;
-  el.style.setProperty("--ax-spotlight-opacity", "0");
+export function onMouseLeave() {
+  lit.value = false;
 }

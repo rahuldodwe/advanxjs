@@ -19,7 +19,8 @@
       }
     ],
     "loops": [],
-    "models": []
+    "models": [],
+    "boundAttributes": []
   },
   "tokens_hint": "This component is AdvanxJS compliant. Logic and View are decoupled."
 }

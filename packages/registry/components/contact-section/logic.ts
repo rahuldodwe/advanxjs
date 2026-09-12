@@ -1,4 +1,4 @@
-import { signal, computed } from "@preact/signals-core";
+import { signal, computed } from "../../lib/advanx/runtime.ts";
 
 export const name = signal("");
 export const email = signal("");

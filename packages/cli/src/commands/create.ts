@@ -18,6 +18,9 @@ import {
 } from "../templates/pages.ts";
 import RUNTIME from "../templates/core/runtime.ts" with { type: "text" };
 import DIRECTIVES from "../templates/core/directives.ts" with { type: "text" };
+import ATTRIBUTES from "../templates/core/attributes.ts" with { type: "text" };
+import EVENTS from "../templates/core/events.ts" with { type: "text" };
+import RESOLVE from "../templates/core/resolve.ts" with { type: "text" };
 import ROUTER from "../templates/core/router.ts" with { type: "text" };
 
 export async function run(args: string[]): Promise<void> {
@@ -54,6 +57,9 @@ export async function run(args: string[]): Promise<void> {
 
   write("src/lib/advanx/runtime.ts", RUNTIME);
   write("src/lib/advanx/directives.ts", DIRECTIVES);
+  write("src/lib/advanx/attributes.ts", ATTRIBUTES);
+  write("src/lib/advanx/events.ts", EVENTS);
+  write("src/lib/advanx/resolve.ts", RESOLVE);
   write("src/lib/advanx/router.ts", ROUTER);
 
   // Example file-system SPA (pages mode). `advanx build`/`export` at the project

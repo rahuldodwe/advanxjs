@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseView } from "./parseView.ts";
+import { hasBindings, parseView } from "./parseView.ts";
 
 describe("parseView", () => {
   test("extracts all five directive families", () => {
@@ -37,7 +37,9 @@ describe("parseView", () => {
     expect(b.events).toEqual([]);
     expect(b.loops).toEqual([]);
     expect(b.models).toEqual([]);
-    expect(b.elses).toBe(0);
+    expect(b.boundAttributes).toEqual([]);
+    expect(b.elses).toEqual([]);
+    expect(hasBindings(b)).toBe(false);
   });
 });
 
@@ -66,12 +68,42 @@ describe("parseView — text vs attribute position", () => {
     expect(b.attributeMustaches).toEqual([]);
   });
 
-  test("counts ax-else in attribute position", () => {
-    expect(parseView(`<p ax-if="on">Y</p><p ax-else>N</p>`).elses).toBe(1);
-    expect(parseView(`<p ax-else>a</p><span ax-else>b</span>`).elses).toBe(2);
+  test("pairs ax-else with an immediately preceding ax-if sibling", () => {
+    expect(parseView(`<p ax-if="on">Y</p><p ax-else>N</p>`).elses)
+      .toEqual([{ followsIf: true, valued: false }]);
+    // Nesting is a real boundary: the ax-if below is a child, not a sibling.
+    expect(parseView(`<div><p ax-if="on">Y</p></div><p ax-else>N</p>`).elses)
+      .toEqual([{ followsIf: false, valued: false }]);
+    // A void element still counts as the previous sibling.
+    expect(parseView(`<img ax-if="on" /><p ax-else>N</p>`).elses)
+      .toEqual([{ followsIf: true, valued: false }]);
+  });
+
+  test("flags an ax-else that carries a value", () => {
+    expect(parseView(`<p ax-if="on">Y</p><p ax-else="x">N</p>`).elses)
+      .toEqual([{ followsIf: true, valued: true }]);
   });
 
   test("does not count the words 'ax-else' appearing in body text", () => {
-    expect(parseView(`<p>ax-else is not supported yet</p>`).elses).toBe(0);
+    expect(parseView(`<p>ax-else is a directive</p>`).elses).toEqual([]);
+  });
+
+  test("captures ax-bind: and : attribute bindings, but not ax-on:", () => {
+    const b = parseView(
+      `<button :disabled="loading" ax-bind:src="img" ax-on:click="go">x</button>`,
+    );
+    expect(b.boundAttributes).toEqual([
+      { attribute: "disabled", source: "loading" },
+      { attribute: "src", source: "img" },
+    ]);
+    expect(b.events).toEqual([{ event: "click", handler: "go" }]);
+  });
+
+  test("ignores a :attr= that appears in body text", () => {
+    expect(parseView(`<p>use :disabled="loading" here</p>`).boundAttributes).toEqual([]);
+  });
+
+  test("a bound attribute alone makes a view non-static", () => {
+    expect(hasBindings(parseView(`<img :src="hero" />`))).toBe(true);
   });
 });

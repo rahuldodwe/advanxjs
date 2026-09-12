@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals-core";
+import { signal } from "../../lib/advanx/runtime.ts";
 
 // The drift is entirely CSS @keyframes — no signal drives the motion, so this
 // component ships only the two content bindings.

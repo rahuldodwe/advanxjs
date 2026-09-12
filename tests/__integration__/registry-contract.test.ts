@@ -53,3 +53,30 @@ describe("every component in registry.json exists on disk", () => {
     });
   }
 });
+
+// Article II, "One Brain". Registry components used to import
+// "@preact/signals-core" directly. With a second copy of that package resolvable
+// (packages/core/node_modules), a component's signals came from a different
+// module instance than the runtime's `effect` — so nothing it rendered ever
+// updated. Every component initial-rendered fine, which is why it went unseen
+// until spotlight-card needed live pointer state. The import path below is the
+// one that resolves BOTH here and at src/components/<name>/ in a scaffolded app.
+describe("registry components share the runtime instance (Article II)", () => {
+  for (const name of names) {
+    test(`${name} imports from the advanx runtime, not signals-core`, () => {
+      const logic = fs.readFileSync(
+        path.join(COMPONENTS, name, "logic.ts"), "utf-8",
+      );
+      expect(logic).not.toContain("@preact/signals-core");
+      if (/\b(signal|computed|effect)\s*\(/.test(logic)) {
+        expect(logic).toContain(`from "../../lib/advanx/runtime.ts"`);
+      }
+    });
+  }
+
+  test("that import path resolves inside the monorepo too", () => {
+    expect(fs.existsSync(
+      path.join(REPO, "packages", "registry", "lib", "advanx", "runtime.ts"),
+    )).toBe(true);
+  });
+});

@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals-core";
+import { signal } from "../../lib/advanx/runtime.ts";
 
 // Hero content signals
 export const heroTitle = signal("Welcome to AdvanxJS");

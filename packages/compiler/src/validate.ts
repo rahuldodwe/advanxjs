@@ -1,58 +1,35 @@
 import type { LogicAnalysis } from "./analyze";
 import type { ViewBindings } from "./parseView";
-
-const IDENT = /^[A-Za-z_$][\w$]*$/;
-const PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
-const LITERAL = /^("[^"]*"|'[^']*'|-?\d+(\.\d+)?|true|false|null)$/;
-const CALL = /^([A-Za-z_$][\w$]*)(?:\((.*)\))?$/;
-
-type ParsedHandler = { name: string; args: string[] };
-
-function splitArgs(s: string): string[] {
-  const out: string[] = [];
-  let buf = "", q = 0;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s.charCodeAt(i);
-    if (q) { if (ch === q) q = 0; buf += s[i]; }
-    else if (ch === 34 || ch === 39) { q = ch; buf += s[i]; }
-    else if (ch === 44) { out.push(buf); buf = ""; }
-    else buf += s[i];
-  }
-  if (buf.trim()) out.push(buf);
-  return out;
-}
-
-function parseHandler(handler: string): ParsedHandler | null {
-  const m = handler.match(CALL);
-  if (!m) return null;
-  if (m[2] === undefined) return { name: m[1]!, args: [] };
-  const args = splitArgs(m[2]).map(a => a.trim());
-  for (const a of args) {
-    if (!LITERAL.test(a) && !PATH.test(a)) return null;
-  }
-  return { name: m[1]!, args };
-}
+import { IDENT, LITERAL, parseHandler, type ParsedHandler } from "./handlers";
 
 export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
-  // The compiler must never green-light syntax the runtime cannot execute. These
-  // two parse cleanly but are inert at runtime — `ax-else` has no handler in
-  // directives.ts, and no attribute is ever interpolated (wireMustaches and
-  // hydrateClone walk text nodes only). Checked first so the specific
+  // The compiler must never green-light syntax the runtime cannot execute.
+  // Attribute mustaches still parse cleanly but are inert: wireMustaches and
+  // hydrateClone walk text nodes only. Checked first so the specific
   // "not yet supported" message wins over a generic contract error.
-  if (view.elses > 0) {
-    throw new Error(
-      `🚨 ADVANXJS CONTRACT VIOLATION: 'ax-else' is not yet supported in the runtime. ` +
-      `Use inverted 'ax-if' booleans in logic.ts (Article I/V).`
-    );
-  }
-
   const attrMustache = view.attributeMustaches[0];
   if (attrMustache) {
     throw new Error(
       `🚨 ADVANXJS CONTRACT VIOLATION: Attribute mustache interpolation is not yet supported. ` +
-      `Use direct element bindings or directives (Article V).` +
+      `Use a binding instead: :${attrMustache.attribute}="${attrMustache.expression}" (Article V).` +
       `\n  Found: ${attrMustache.attribute}="{{ ${attrMustache.expression} }}"`
     );
+  }
+
+  // `ax-else` is a structural marker, not a binding: it carries no value and is
+  // only meaningful directly after an `ax-if` sibling, which is the exact pairing
+  // wireConditionals looks for at runtime.
+  for (const e of view.elses) {
+    if (e.valued) {
+      throw new Error(
+        `🚨 ADVANXJS CONTRACT VIOLATION: 'ax-else' takes no value — write it as a bare attribute (Article I).`
+      );
+    }
+    if (!e.followsIf) {
+      throw new Error(
+        `🚨 ADVANXJS CONTRACT VIOLATION: 'ax-else' must be an immediate sibling following an element with 'ax-if' (Article V).`
+      );
+    }
   }
 
   // Article I — No logic in the View. Directive values must be bare identifiers
@@ -73,6 +50,9 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
   }
   for (const name of view.models) {
     if (!IDENT.test(name)) throw articleI("ax-model", name);
+  }
+  for (const { attribute, source } of view.boundAttributes) {
+    if (!IDENT.test(source)) throw articleI(`:${attribute}`, source);
   }
 
   const signals = new Set(logic.signals);
@@ -96,6 +76,7 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
     }
   });
   view.models.forEach(n => { if (!declared.has(n)) missing.add(n); });
+  view.boundAttributes.forEach(b => { if (!declared.has(b.source)) missing.add(b.source); });
 
   if (missing.size) {
     throw new Error(
@@ -117,6 +98,15 @@ export function validateBindings(view: ViewBindings, logic: LogicAnalysis) {
       throw new Error(
         `🚨 ADVANXJS CONTRACT VIOLATION: ax-for="${alias} in ${source}" requires "${source}" ` +
         `to be a signal or computed exported from logic.ts.`
+      );
+    }
+  }
+
+  for (const { attribute, source } of view.boundAttributes) {
+    if (!reactive.has(source)) {
+      throw new Error(
+        `🚨 ADVANXJS CONTRACT VIOLATION: :${attribute}="${source}" requires "${source}" to be a ` +
+        `signal or computed exported from logic.ts.`
       );
     }
   }

@@ -58,3 +58,63 @@ describe("prerender writers", () => {
     expect(about).toContain("About");
   });
 });
+
+// Article III at build time for the two M2 directives. SSG runs the real
+// mount(), so what ships in the .html is whatever the runtime produced — the
+// active branch plus a comment marking the inactive one, and attributes already
+// resolved to their initial values.
+describe("SSG pre-renders ax-else and attribute bindings", () => {
+  const dir = fs.mkdtempSync(path.join(REPO, "tests", "ssg-m2-"));
+  afterAll(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  // Each fixture gets its own subdirectory: the module loader caches logic.ts by
+  // absolute path, so reusing one path would hand every case the first module.
+  let n = 0;
+  function fixture(view: string, logic: string) {
+    const sub = path.join(dir, `case-${n++}`);
+    fs.mkdirSync(sub, { recursive: true });
+    fs.writeFileSync(path.join(sub, "logic.ts"), logic);
+    fs.writeFileSync(path.join(sub, "view.html"), view);
+    fs.writeFileSync(path.join(sub, "style.css"), "");
+    return renderToString(view, path.join(sub, "logic.ts"));
+  }
+
+  const LOGIC = (flag: boolean) =>
+    `import { signal, computed } from "../../../packages/core/src/runtime.ts";\n` +
+    `export const flag = signal(${flag});\n` +
+    `export const loading = signal(true);\n` +
+    `export const hero = signal("/hero.png");\n` +
+    `export const box = computed(() => ({ "--ax-x": "7px" }));\n`;
+
+  test("renders the if branch and a comment for the else branch", async () => {
+    const html = await fixture(`<p ax-if="flag">YES</p><p ax-else>NO</p>`, LOGIC(true));
+    expect(html).toContain("YES");
+    expect(html).not.toContain("NO");
+    expect(html).toContain("<!-- ax-else -->");
+  });
+
+  test("renders the else branch when the condition starts falsy", async () => {
+    const html = await fixture(`<p ax-if="flag">YES</p><p ax-else>NO</p>`, LOGIC(false));
+    expect(html).toContain("NO");
+    expect(html).not.toContain("YES");
+    expect(html).toContain("<!-- ax-if -->");
+    expect(html).not.toContain("ax-else");
+  });
+
+  test("resolves bound attributes to their initial values", async () => {
+    const html = await fixture(
+      `<img :src="hero" /><button :disabled="loading">go</button><div :style="box"></div>`,
+      LOGIC(true),
+    );
+    expect(html).toContain(`src="/hero.png"`);
+    expect(html).toContain("disabled");
+    expect(html).toContain("--ax-x: 7px");
+    // No prefixed attribute survives into the shipped HTML.
+    expect(html).not.toContain(":src");
+    expect(html).not.toContain(":style");
+  });
+
+  test("a view whose only binding is an attribute still ships the runtime", () => {
+    expect(isStaticView(`<img :src="hero" />`)).toBe(false);
+  });
+});

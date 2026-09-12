@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { analyzeLogic } from "./analyze";
-import { parseView } from "./parseView";
+import { hasBindings, parseView } from "./parseView";
 import { validateBindings } from "./validate";
 
 export { compilePages } from "./pages";
@@ -27,6 +27,7 @@ export async function compileComponent(dir: string) {
       events: bindings.events,
       loops: bindings.loops,
       models: bindings.models,
+      boundAttributes: bindings.boundAttributes,
     },
     tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled.",
   };
@@ -36,12 +37,7 @@ export async function compileComponent(dir: string) {
   if (!fs.existsSync(dist)) fs.mkdirSync(dist);
 
   // Article III — Static by Default. Skip the runtime when nothing is reactive.
-  const isStatic =
-    bindings.mustaches.length === 0 &&
-    bindings.conditionals.length === 0 &&
-    bindings.events.length === 0 &&
-    bindings.loops.length === 0 &&
-    bindings.models.length === 0;
+  const isStatic = !hasBindings(bindings);
 
   const scaffoldedRuntime = path.join(dir, "..", "..", "lib", "advanx", "runtime.ts");
   const runtimeImport = fs.existsSync(scaffoldedRuntime)

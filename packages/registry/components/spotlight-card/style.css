@@ -1,10 +1,4 @@
 .spotlight-card {
-  /* Defaults matter: with zero JS (SSG output, or before first pointer move)
-     the glow must be fully transparent rather than a stuck highlight. */
-  --ax-mouse-x: 50%;
-  --ax-mouse-y: 50%;
-  --ax-spotlight-opacity: 0;
-
   --ax-surface: #0f172a;
   --ax-border: rgba(148, 163, 184, 0.12);
   --ax-border-lit: rgba(129, 140, 248, 0.35);
@@ -33,6 +27,13 @@
 }
 
 .spotlight-card-glow {
+  /* Defaults matter: before the first pointer move the glow must be fully
+     transparent rather than a stuck highlight. The `:style` binding overrides
+     these on the element itself once the runtime mounts. */
+  --ax-mouse-x: 50%;
+  --ax-mouse-y: 50%;
+  --ax-spotlight-opacity: 0;
+
   position: absolute;
   inset: 0;
   z-index: -1;

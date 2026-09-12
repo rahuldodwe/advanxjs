@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { parseView } from "./parseView";
+import { hasBindings, parseView } from "./parseView";
 
 // ── Article III, fully realized ────────────────────────────────────────────
 // SSR by running the REAL runtime against a build-time DOM (happy-dom). We
@@ -19,14 +19,7 @@ async function registerDom(): Promise<void> {
 
 /** A view with no bindings/directives ships zero JS (Article III). */
 export function isStaticView(view: string): boolean {
-  const b = parseView(view);
-  return (
-    b.mustaches.length === 0 &&
-    b.conditionals.length === 0 &&
-    b.events.length === 0 &&
-    b.loops.length === 0 &&
-    b.models.length === 0
-  );
+  return !hasBindings(parseView(view));
 }
 
 /**

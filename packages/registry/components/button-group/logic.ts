@@ -1,4 +1,4 @@
-import { signal } from "@preact/signals-core";
+import { signal } from "../../lib/advanx/runtime.ts";
 
 // Button labels
 export const primaryLabel = signal("Confirm");

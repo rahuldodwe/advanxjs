@@ -58,10 +58,11 @@ describe("Article V — a broken contract fails the build", () => {
   });
 });
 
-// The Honesty Compiler, end to end: `ax-else` and attribute mustaches parse
-// cleanly but are inert at runtime, so the build must stop rather than print
-// "Contract Satisfied". Exit code AND message are both asserted — a build that
-// fails for the wrong reason is still a broken promise.
+// The Honesty Compiler, end to end: syntax the runtime cannot execute must stop
+// the build rather than print "Contract Satisfied". Exit code AND message are
+// both asserted — a build that fails for the wrong reason is still a broken
+// promise. `ax-else` graduated to a real directive, so what is checked here is
+// the pairing rule that keeps it honest.
 describe("unimplemented syntax fails the build with the exact message", () => {
   // Sits beside the fixtures rather than under __integration__: compileComponent
   // emits a fixed `../../../packages/core/src/runtime.ts` into dist/entry.ts, so
@@ -77,6 +78,9 @@ describe("unimplemented syntax fails the build with the exact message", () => {
     `export const url = signal("/docs");\n`;
 
   function build(view: string) {
+    // Cases share one fixture dir, so a passing build would otherwise leave a
+    // .advanx-meta.json behind and mask the "rejected view emits none" check.
+    fs.rmSync(path.join(dir, ".advanx-meta.json"), { force: true });
     fs.writeFileSync(path.join(dir, "logic.ts"), LOGIC);
     fs.writeFileSync(path.join(dir, "view.html"), view);
     fs.writeFileSync(path.join(dir, "style.css"), ``);
@@ -88,14 +92,31 @@ describe("unimplemented syntax fails the build with the exact message", () => {
     };
   }
 
-  test("ax-else exits 1 and prints the ax-else violation", () => {
+  test("a paired ax-if / ax-else builds cleanly", () => {
     const r = build(`<p ax-if="flag">Y</p>\n<p ax-else>N</p>\n`);
+    expect(r.exitCode).toBe(0);
+    expect(r.stdout).toContain("Contract Satisfied");
+  });
+
+  test("an orphan ax-else exits 1 and prints the pairing violation", () => {
+    const r = build(`<p ax-else>N</p>\n`);
     expect(r.exitCode).toBe(1);
     expect(r.stderr).toContain(
-      "🚨 ADVANXJS CONTRACT VIOLATION: 'ax-else' is not yet supported in the runtime. " +
-      "Use inverted 'ax-if' booleans in logic.ts (Article I/V).",
+      "🚨 ADVANXJS CONTRACT VIOLATION: 'ax-else' must be an immediate sibling " +
+      "following an element with 'ax-if' (Article V).",
     );
     expect(r.stdout).not.toContain("Contract Satisfied");
+  });
+
+  test("a bound attribute builds and lands in .advanx-meta.json (Article VIII)", () => {
+    const r = build(`<a :href="url">docs</a>\n`);
+    expect(r.exitCode).toBe(0);
+    const meta = JSON.parse(
+      fs.readFileSync(path.join(dir, ".advanx-meta.json"), "utf-8"),
+    );
+    expect(meta.structure.boundAttributes).toEqual([
+      { attribute: "href", source: "url" },
+    ]);
   });
 
   test("an attribute mustache exits 1 and prints the attribute violation", () => {
@@ -103,7 +124,7 @@ describe("unimplemented syntax fails the build with the exact message", () => {
     expect(r.exitCode).toBe(1);
     expect(r.stderr).toContain(
       "🚨 ADVANXJS CONTRACT VIOLATION: Attribute mustache interpolation is not yet supported. " +
-      "Use direct element bindings or directives (Article V).",
+      'Use a binding instead: :src="url" (Article V).',
     );
     expect(r.stdout).not.toContain("Contract Satisfied");
   });

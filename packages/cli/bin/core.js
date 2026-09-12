@@ -169526,6 +169526,30 @@ function attributeAt(html, index) {
     return null;
   return html.slice(tagStart, index).match(ATTR_BEFORE)?.[1] ?? null;
 }
+function scanElses(html) {
+  const out = [];
+  const stack = [{ prev: null }];
+  for (const m of html.matchAll(TAG)) {
+    const [, closing, tag, attrs = "", selfClose] = m;
+    if (closing) {
+      if (stack.length > 1)
+        stack.pop();
+      continue;
+    }
+    const frame = stack[stack.length - 1];
+    const elseMatch = attrs.match(/(?:^|\s)ax-else(\s*=\s*"([^"]*)")?/);
+    if (elseMatch) {
+      out.push({
+        followsIf: /(?:^|\s)ax-if\s*=/.test(frame.prev ?? ""),
+        valued: elseMatch[1] !== undefined
+      });
+    }
+    frame.prev = attrs;
+    if (!selfClose && !VOID.has(tag.toLowerCase()))
+      stack.push({ prev: null });
+  }
+  return out;
+}
 function parseView(html) {
   const mustaches = [];
   const attributeMustaches = [];
@@ -169553,17 +169577,37 @@ function parseView(html) {
       return { alias, source };
     }),
     models: [...html.matchAll(/ax-model="([^"]+)"/g)].map((m) => m[1]),
-    elses: [...html.matchAll(AX_ELSE)].filter((m) => insideTag(html, m.index)).length
+    boundAttributes: [...html.matchAll(BOUND_ATTR)].filter((m) => insideTag(html, m.index)).map((m) => ({ attribute: m[1], source: m[2] })),
+    elses: scanElses(html)
   };
 }
-var MUSTACHE, AX_ELSE, ATTR_BEFORE;
+function hasBindings(b) {
+  return b.mustaches.length > 0 || b.conditionals.length > 0 || b.events.length > 0 || b.loops.length > 0 || b.models.length > 0 || b.boundAttributes.length > 0;
+}
+var MUSTACHE, ATTR_BEFORE, BOUND_ATTR, TAG, VOID;
 var init_parseView = __esm(() => {
   MUSTACHE = /\{\{\s*([\w.]+)\s*\}\}/g;
-  AX_ELSE = /\bax-else\b/g;
   ATTR_BEFORE = /([\w:.\-]+)\s*=\s*["'][^"']*$/;
+  BOUND_ATTR = /(?:^|\s)(?::|ax-bind:)([\w.-]+)\s*=\s*"([^"]*)"/g;
+  TAG = /<(\/?)([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)(\/?)>/g;
+  VOID = new Set([
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "source",
+    "track",
+    "wbr"
+  ]);
 });
 
-// ../compiler/src/validate.ts
+// ../compiler/src/handlers.ts
 function splitArgs(s) {
   const out = [];
   let buf = "", q = 0;
@@ -169599,14 +169643,28 @@ function parseHandler(handler) {
   }
   return { name: m[1], args };
 }
+var IDENT, PATH, LITERAL, CALL;
+var init_handlers = __esm(() => {
+  IDENT = /^[A-Za-z_$][\w$]*$/;
+  PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
+  LITERAL = /^("[^"]*"|'[^']*'|-?\d+(\.\d+)?|true|false|null)$/;
+  CALL = /^([A-Za-z_$][\w$]*)(?:\((.*)\))?$/;
+});
+
+// ../compiler/src/validate.ts
 function validateBindings(view, logic) {
-  if (view.elses > 0) {
-    throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: 'ax-else' is not yet supported in the runtime. ` + `Use inverted 'ax-if' booleans in logic.ts (Article I/V).`);
-  }
   const attrMustache = view.attributeMustaches[0];
   if (attrMustache) {
-    throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: Attribute mustache interpolation is not yet supported. ` + `Use direct element bindings or directives (Article V).` + `
+    throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: Attribute mustache interpolation is not yet supported. ` + `Use a binding instead: :${attrMustache.attribute}="${attrMustache.expression}" (Article V).` + `
   Found: ${attrMustache.attribute}="{{ ${attrMustache.expression} }}"`);
+  }
+  for (const e of view.elses) {
+    if (e.valued) {
+      throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: 'ax-else' takes no value \u2014 write it as a bare attribute (Article I).`);
+    }
+    if (!e.followsIf) {
+      throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: 'ax-else' must be an immediate sibling following an element with 'ax-if' (Article V).`);
+    }
   }
   for (const name of view.conditionals) {
     if (!IDENT.test(name))
@@ -169628,6 +169686,10 @@ function validateBindings(view, logic) {
   for (const name of view.models) {
     if (!IDENT.test(name))
       throw articleI("ax-model", name);
+  }
+  for (const { attribute, source } of view.boundAttributes) {
+    if (!IDENT.test(source))
+      throw articleI(`:${attribute}`, source);
   }
   const signals = new Set(logic.signals);
   const reactive = new Set([...logic.signals, ...logic.computed]);
@@ -169659,6 +169721,10 @@ function validateBindings(view, logic) {
     if (!declared.has(n))
       missing.add(n);
   });
+  view.boundAttributes.forEach((b) => {
+    if (!declared.has(b.source))
+      missing.add(b.source);
+  });
   if (missing.size) {
     throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: Missing exports for [${[...missing].join(", ")}]`);
   }
@@ -169672,6 +169738,11 @@ function validateBindings(view, logic) {
       throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ax-for="${alias} in ${source}" requires "${source}" ` + `to be a signal or computed exported from logic.ts.`);
     }
   }
+  for (const { attribute, source } of view.boundAttributes) {
+    if (!reactive.has(source)) {
+      throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: :${attribute}="${source}" requires "${source}" to be a ` + `signal or computed exported from logic.ts.`);
+    }
+  }
   for (const name of view.models) {
     if (!signals.has(name)) {
       throw new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ax-model="${name}" requires "${name}" to be a writable signal ` + `(not a computed or action).`);
@@ -169681,12 +169752,8 @@ function validateBindings(view, logic) {
 function articleI(attr, value) {
   return new Error(`\uD83D\uDEA8 ADVANXJS CONTRACT VIOLATION: ${attr}="${value}" must be a bare identifier ` + `(handlers may also use "name(arg, ...)" with dot-paths or literals) \u2014 ` + `expressions belong in logic.ts (Article I).`);
 }
-var IDENT, PATH, LITERAL, CALL;
 var init_validate = __esm(() => {
-  IDENT = /^[A-Za-z_$][\w$]*$/;
-  PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
-  LITERAL = /^("[^"]*"|'[^']*'|-?\d+(\.\d+)?|true|false|null)$/;
-  CALL = /^([A-Za-z_$][\w$]*)(?:\((.*)\))?$/;
+  init_handlers();
 });
 
 // ../compiler/src/pages.ts
@@ -169819,7 +169886,8 @@ async function compileComponent(dir) {
       conditionals: bindings.conditionals,
       events: bindings.events,
       loops: bindings.loops,
-      models: bindings.models
+      models: bindings.models,
+      boundAttributes: bindings.boundAttributes
     },
     tokens_hint: "This component is AdvanxJS compliant. Logic and View are decoupled."
   };
@@ -169827,7 +169895,7 @@ async function compileComponent(dir) {
   const dist = path2.join(dir, "dist");
   if (!fs2.existsSync(dist))
     fs2.mkdirSync(dist);
-  const isStatic = bindings.mustaches.length === 0 && bindings.conditionals.length === 0 && bindings.events.length === 0 && bindings.loops.length === 0 && bindings.models.length === 0;
+  const isStatic = !hasBindings(bindings);
   const scaffoldedRuntime = path2.join(dir, "..", "..", "lib", "advanx", "runtime.ts");
   const runtimeImport = fs2.existsSync(scaffoldedRuntime) ? "../../../lib/advanx/runtime.ts" : "../../../packages/core/src/runtime.ts";
   const glue = isStatic ? `const styleTag = document.createElement("style");
@@ -170281,6 +170349,7 @@ import {
   wireEvents,
   wireModels,
 } from "./directives";
+import { wireAttributes } from "./attributes";
 
 export { signal, computed, effect };
 export { initRouter } from "./router";
@@ -170288,9 +170357,14 @@ export { initRouter } from "./router";
 export function mount(root: HTMLElement, logic: any) {
   processLoops(root, logic);
   wireMustaches(root, logic);
-  wireConditionals(root, logic);
   wireEvents(root, logic);
   wireModels(root, logic);
+  wireAttributes(root, logic);
+  // Last on purpose: a branch that starts hidden is detached immediately, so
+  // every other pass has to have wired it \u2014 including the \`ax-else\` side \u2014
+  // while it is still in the tree. Those bindings hold node references and
+  // survive the swap, so a branch works the moment it mounts.
+  wireConditionals(root, logic);
 }
 
 export function bootstrap(view: string, style: string, logic: any) {
@@ -170308,6 +170382,8 @@ var init_runtime = () => {};
 
 // src/templates/core/directives.ts
 var directives_default = `import { effect } from "@preact/signals-core";
+import { wireEvents } from "./events";
+import { resolveArg } from "./resolve";
 
 export function wireMustaches(root: Element, logic: any) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -170341,17 +170417,28 @@ export function wireConditionals(root: Element, logic: any) {
     const key = element.getAttribute('ax-if');
     const sig = logic[key!];
     if (!sig || !('value' in sig)) return;
-    const placeholder = document.createComment(\` ax-if: \${key} \`);
-    let isMounted = true;
+
+    // Claim the paired \`ax-else\` before anything is detached \u2014 once a branch is
+    // swapped for its placeholder it is no longer anyone's sibling.
+    const next = element.nextElementSibling as HTMLElement | null;
+    const elseEl = next?.hasAttribute('ax-else') ? next : null;
+    elseEl?.removeAttribute('ax-else');
+
+    const ifSlot = document.createComment(' ax-if ');
+    const elseSlot = elseEl ? document.createComment(' ax-else ') : null;
+    let ifOn = true;
+    let elseOn = !!elseEl;
+
+    const swap = (node: HTMLElement, slot: Comment, want: boolean, on: boolean) => {
+      if (want && !on) slot.parentNode?.replaceChild(node, slot);
+      else if (!want && on) node.parentNode?.replaceChild(slot, node);
+      return want;
+    };
+
     effect(() => {
       const show = !!sig.value;
-      if (show && !isMounted) {
-        placeholder.parentNode?.replaceChild(element, placeholder);
-        isMounted = true;
-      } else if (!show && isMounted) {
-        element.parentNode?.replaceChild(placeholder, element);
-        isMounted = false;
-      }
+      ifOn = swap(element, ifSlot, show, ifOn);
+      if (elseEl && elseSlot) elseOn = swap(elseEl, elseSlot, !show, elseOn);
     });
   });
 }
@@ -170414,13 +170501,112 @@ function hydrateClone(template: HTMLElement, alias: string, item: any, logic: an
   return clone;
 }
 
+export { wireEvents };
+
+export function wireModels(root: Element, logic: any) {
+  root.querySelectorAll('[ax-model]').forEach(el => {
+    const name = el.getAttribute('ax-model')!;
+    const sig = logic[name];
+    if (!sig || !('value' in sig)) return;
+    el.removeAttribute('ax-model');
+    const input = el as HTMLInputElement;
+    effect(() => {
+      const v = String(sig.value ?? "");
+      if (input.value !== v) input.value = v;
+    });
+    const sync = () => { sig.value = input.value; };
+    ['input', 'change'].forEach(e => input.addEventListener(e, sync));
+    if (input.value) sync();
+  });
+}
+`;
+var init_directives = () => {};
+
+// src/templates/core/attributes.ts
+var attributes_default = `import { effect } from "@preact/signals-core";
+
+// Attributes whose presence \u2014 not value \u2014 carries the meaning. A falsy signal
+// removes them outright rather than rendering \`disabled="false"\`, which the DOM
+// would still treat as disabled.
+const BOOLEAN = new Set([
+  "disabled", "checked", "hidden", "readonly", "required", "selected",
+  "open", "multiple", "autofocus", "novalidate", "inert", "default",
+]);
+
+function applyStyle(el: HTMLElement, v: any) {
+  if (v == null) { el.style.cssText = ""; return; }
+  if (typeof v === "object") {
+    // Custom properties (--ax-mouse-x) only exist through setProperty; plain
+    // camelCase keys go through the style object as usual.
+    for (const k in v) {
+      const raw = v[k];
+      const val = raw == null ? "" : String(raw);
+      if (k.startsWith("--")) el.style.setProperty(k, val);
+      else (el.style as any)[k] = val;
+    }
+    return;
+  }
+  el.style.cssText = String(v);
+}
+
+function bind(el: HTMLElement, attr: string, sig: any, base: string) {
+  effect(() => {
+    const v = sig.value;
+    if (attr === "style") return applyStyle(el, v);
+    if (attr === "class") {
+      // The static class survives: \`class="card" :class="theme"\` yields both,
+      // so a binding adds to the stylesheet contract rather than erasing it.
+      const extra = v == null || v === false ? "" : String(v);
+      el.setAttribute("class", base && extra ? \`\${base} \${extra}\` : base || extra);
+      return;
+    }
+    if (BOOLEAN.has(attr)) {
+      if (v) el.setAttribute(attr, "");
+      else el.removeAttribute(attr);
+      return;
+    }
+    if (v == null || v === false) { el.removeAttribute(attr); return; }
+    el.setAttribute(attr, String(v));
+  });
+}
+
+/**
+ * Wire \`ax-bind:<attr>\` / \`:<attr>\` to a signal or computed. The prefixed
+ * attribute is removed, so the rendered DOM (and the SSG output, which runs this
+ * same code against happy-dom) carries only the resolved attribute.
+ */
+export function wireAttributes(root: Element, logic: any) {
+  const targets: Element[] = [root, ...Array.from(root.querySelectorAll("*"))];
+  for (const el of targets) {
+    // Snapshot: the loop removes attributes as it goes.
+    for (const attr of Array.from(el.attributes)) {
+      const name = attr.name;
+      const target = name.startsWith("ax-bind:")
+        ? name.slice(8)
+        : name.startsWith(":")
+          ? name.slice(1)
+          : null;
+      if (!target) continue;
+      el.removeAttribute(name);
+      const sig = logic[attr.value.trim()];
+      if (!sig || !("value" in sig)) continue;
+      bind(el as HTMLElement, target, sig, el.getAttribute(target) ?? "");
+    }
+  }
+}
+`;
+var init_attributes = () => {};
+
+// src/templates/core/events.ts
+var events_default = `import { resolveArg, splitArgs } from "./resolve";
+
 const AX_ON_RE = /^(\\w+)(?:\\((.*)\\))?$/;
 
 // The native DOM event is always passed as the LAST argument, after any args
 // declared in the view. Handlers that take no parameters simply ignore it, so
-// every existing \`ax-on:click="toggle"\` is unaffected. This is the only channel
-// a handler has to the element it is bound to (\`e.currentTarget\`) \u2014 attribute
-// bindings, which would otherwise carry pointer state into CSS, are M2.
+// every existing \`ax-on:click="toggle"\` is unaffected. It remains the channel a
+// handler has to the element it is bound to (\`e.currentTarget\`), though state
+// bound for CSS now belongs in a signal behind \`:style\` / \`:class\`.
 
 export function wireEvents(root: Element, logic: any, scope?: any) {
   const targets: Element[] = [root, ...Array.from(root.querySelectorAll('*'))];
@@ -170444,25 +170630,14 @@ export function wireEvents(root: Element, logic: any, scope?: any) {
     }
   }
 }
+`;
+var init_events = () => {};
 
-export function wireModels(root: Element, logic: any) {
-  root.querySelectorAll('[ax-model]').forEach(el => {
-    const name = el.getAttribute('ax-model')!;
-    const sig = logic[name];
-    if (!sig || !('value' in sig)) return;
-    el.removeAttribute('ax-model');
-    const input = el as HTMLInputElement;
-    effect(() => {
-      const v = String(sig.value ?? "");
-      if (input.value !== v) input.value = v;
-    });
-    const sync = () => { sig.value = input.value; };
-    ['input', 'change'].forEach(e => input.addEventListener(e, sync));
-    if (input.value) sync();
-  });
-}
+// src/templates/core/resolve.ts
+var resolve_default = `// Value resolution shared by the mustache, event, and loop paths: turns a view
+// token (a literal, or a dot-path into a signal or a loop alias) into a value.
 
-function resolveArg(expr: string, logic: any, scope?: any): any {
+export function resolveArg(expr: string, logic: any, scope?: any): any {
   const s = expr.trim();
   if (!s) return undefined;
   const c = s.charCodeAt(0);
@@ -170488,7 +170663,7 @@ function resolveArg(expr: string, logic: any, scope?: any): any {
   return cur;
 }
 
-function splitArgs(s: string): string[] {
+export function splitArgs(s: string): string[] {
   const out: string[] = [];
   let buf = "", q = 0;
   for (let i = 0; i < s.length; i++) {
@@ -170502,7 +170677,7 @@ function splitArgs(s: string): string[] {
   return out;
 }
 `;
-var init_directives = () => {};
+var init_resolve = () => {};
 
 // src/templates/core/router.ts
 var router_default = `import { mount } from "./runtime";
@@ -170575,6 +170750,9 @@ async function run2(args) {
   write("src/components/counter/style.css", COUNTER_STYLE);
   write("src/lib/advanx/runtime.ts", runtime_default);
   write("src/lib/advanx/directives.ts", directives_default);
+  write("src/lib/advanx/attributes.ts", attributes_default);
+  write("src/lib/advanx/events.ts", events_default);
+  write("src/lib/advanx/resolve.ts", resolve_default);
   write("src/lib/advanx/router.ts", router_default);
   write("src/pages/index/logic.ts", PAGE_INDEX_LOGIC);
   write("src/pages/index/view.html", PAGE_INDEX_VIEW);
@@ -170601,6 +170779,9 @@ async function run2(args) {
 var init_create = __esm(() => {
   init_runtime();
   init_directives();
+  init_attributes();
+  init_events();
+  init_resolve();
   init_router();
 });
 
@@ -220640,8 +220821,7 @@ async function registerDom() {
   domReady = true;
 }
 function isStaticView(view) {
-  const b = parseView(view);
-  return b.mustaches.length === 0 && b.conditionals.length === 0 && b.events.length === 0 && b.loops.length === 0 && b.models.length === 0;
+  return !hasBindings(parseView(view));
 }
 function resolveRuntime(logicPath) {
   let dir = path10.dirname(logicPath);
@@ -220845,9 +221025,14 @@ Text interpolation \u2014 text nodes only:
   <p>{{ count }}</p>
   <p>{{ user.name }}</p>
 
-ax-if \u2014 conditional rendering. Value is a BARE IDENTIFIER, never an expression:
+ax-if / ax-else \u2014 conditional rendering. The ax-if value is a BARE IDENTIFIER,
+never an expression; put the comparison in logic.ts as a computed and reference
+it by name. ax-else takes no value and MUST be the immediately following sibling
+element:
   <p ax-if="isEmpty">Nothing here yet.</p>
-  Put the comparison in logic.ts as a computed, then reference it by name.
+  <p ax-else>{{ count }} items.</p>
+  The inactive branch is replaced by a comment placeholder, so exactly one of
+  the two is in the DOM at any time.
 
 ax-for \u2014 list rendering. Exactly "alias in source", both bare identifiers:
   <li ax-for="item in items">{{ item }}</li>
@@ -220867,28 +221052,43 @@ ax-model \u2014 two-way binding on an input. Bare identifier naming a signal:
 ax-link \u2014 client-side SPA navigation on an anchor:
   <a ax-link="/about">About</a>
 
+ax-bind:<attr> / :<attr> \u2014 bind an attribute to a signal or computed. The value
+is a BARE IDENTIFIER; the prefixed attribute never reaches the rendered DOM:
+  <img :src="heroUrl" />
+  <button :disabled="loading">Save</button>
+  <a ax-bind:href="docsUrl">Docs</a>
+  Boolean attributes (:disabled, :checked, :hidden, :required, :open, ...) are
+  added when the value is truthy and removed when falsy \u2014 never disabled="false".
+  :class merges with the static class, so class="card" :class="theme" renders
+  both. :style takes an object (keys beginning with -- become CSS custom
+  properties) or a plain string, which is set as cssText:
+  <div class="card" :class="theme"></div>
+  <div :style="spotlightStyle"></div>
+  This is how pointer/scroll state reaches CSS: write signals in logic.ts and
+  let the view bind them. Never write element.style from logic.ts.
+
 # 5. WHAT DOES NOT WORK YET \u2014 the compiler will REJECT these
 
 Do not generate any of the following. Each one is a hard build failure or is
 silently inert at runtime. This list is the difference between code that ships
 and code that errors.
 
-  ax-else                     Not implemented. The build fails with a contract
-                              violation. Use a second ax-if on an inverted
-                              boolean computed in logic.ts instead.
-
   attribute mustaches         <a href="{{ url }}"> fails the build. Only text
-                              nodes are interpolated. Use a directive, or set
-                              the attribute from logic.ts.
+                              nodes are interpolated. Use a binding instead:
+                              <a :href="url">.
+
+  orphan ax-else              ax-else only compiles when the element directly
+                              before it carries ax-if. Anything in between \u2014
+                              including a wrapper element \u2014 fails the build.
 
   expressions in directives   ax-if="count > 0", ax-on:click="count++", and
                               ax-for="i in items.slice(0,3)" all fail. Directive
                               values are bare identifiers (Article I).
 
   nesting inside ax-for       Within an ax-for element, only mustaches and
-                              ax-on:* are wired. A nested ax-if, ax-model, or
-                              ax-for will not react. Flatten the data in
-                              logic.ts with a computed instead.
+                              ax-on:* are wired. A nested ax-if, ax-model,
+                              ax-for, or :attr binding will not react. Flatten
+                              the data in logic.ts with a computed instead.
 
 ax-for is index-based, not keyed: reordering a list re-renders the changed rows.
 

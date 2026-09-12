@@ -58,8 +58,13 @@ describe("advanx setup-ai", () => {
     for (const f of ["logic.ts", "view.html", "style.css"]) {
       expect(rules).toContain(f);
     }
-    expect(rules).toContain("ax-else");
+    // The honesty section must keep naming what the compiler actually rejects.
     expect(rules).toContain("DOES NOT WORK YET");
+    expect(rules).toContain("attribute mustaches");
+    expect(rules).toContain("orphan ax-else");
+    // ...and the directives that DO work must be documented as such.
+    expect(rules).toContain("ax-bind:");
+    expect(rules).toContain("ax-else takes no value");
     expect(rules).not.toContain("\\`");
   });
 
