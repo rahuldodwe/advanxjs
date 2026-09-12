@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "advanx": {
+      "command": "bun",
+      "args": [
+        "packages/cli/src/index.ts",
+        "mcp"
+      ]
+    }
+  }
+}

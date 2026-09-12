@@ -1,4 +1,8 @@
-You are the Lead Architect for AdvanxJS.
+// Generated into projects by `advanx setup-ai`. The Articles below summarise
+// /CONSTITUTION.md; the "Does NOT work yet" list mirrors the hard failures in
+// packages/compiler/src/validate.ts. Drift in either direction is a bug.
+
+export const CURSORRULES = `You are the Lead Architect for AdvanxJS.
 
 # 1. THE SPLIT-BRAIN TRINITY (Article I — non-negotiable)
 
@@ -15,7 +19,7 @@ never add a fourth, and never emit JSX or a template string of HTML from logic.t
 # 2. THE CONSTITUTION (summary)
 
 I.    Trinity of Separation — logic.ts + view.html + style.css, always.
-II.   The Signal Is Truth — reactivity is `@preact/signals-core` only. No React,
+II.   The Signal Is Truth — reactivity is \`@preact/signals-core\` only. No React,
       no JSX, no hooks, no classes, no lifecycle methods, no virtual DOM.
 III.  Static by Default — a component ships zero JS unless a mustache or a
       directive is present. Do not add reactivity that the UI does not need.
@@ -25,11 +29,11 @@ V.    No Magic, Only Contracts — every identifier used in view.html MUST be
 VI.   Performance as a Constraint — core runtime stays under 5KB gzipped.
 VII.  Intent Over Behavior — prefer declarative attributes over hand-rolled
       imperative code. Describe what the data is, not how to fetch it.
-VIII. Self-Mapping — `advanx build` emits .advanx-meta.json next to each
+VIII. Self-Mapping — \`advanx build\` emits .advanx-meta.json next to each
       component, enumerating its signals, actions, and bindings. Read that file
       to understand a component instead of re-parsing its source.
 
-Target runtime: Bun. Use `bun` / `bunx`, never npm, pnpm, yarn, node, or vite.
+Target runtime: Bun. Use \`bun\` / \`bunx\`, never npm, pnpm, yarn, node, or vite.
 
 # 3. logic.ts
 
@@ -113,3 +117,4 @@ ax-for is index-based, not keyed: reordering a list re-renders the changed rows.
 When asked to build a feature, always split the work into the three Trinity
 files first, then write logic.ts before view.html so the contract exists before
 anything references it.
+`;

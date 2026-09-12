@@ -14,6 +14,10 @@ Usage:
   advanx explain <component-path>    Print the component's contract from .advanx-meta.json
   advanx add <component>             Add a component from the registry
   advanx add --list                  List available registry components
+  advanx setup-ai [dir]              Generate .cursorrules + .mcp.json so Cursor and Claude Code
+                                     understand AdvanxJS (--force overwrites existing files;
+                                     dir defaults to the current directory)
+  advanx mcp                         Run the Advanx MCP server over stdio (wired by .mcp.json)
   advanx --help                      Show this help
 
 Examples:
@@ -27,6 +31,8 @@ Examples:
   advanx explain tests/counter
   advanx add navbar                  (add navbar component to src/components/)
   advanx add --list                  (show available components)
+  advanx setup-ai                    (configure the current project for AI agents)
+  advanx setup-ai . --force          (regenerate, overwriting existing files)
 `;
 
 export function printHelp(): void {

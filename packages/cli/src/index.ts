@@ -39,6 +39,16 @@ switch (cmd) {
     await run(rest);
     break;
   }
+  case "setup-ai": {
+    const { run } = await import("./commands/setupAi.ts");
+    await run(rest);
+    break;
+  }
+  case "mcp": {
+    const { run } = await import("./commands/mcp.ts");
+    await run();
+    break;
+  }
   case "--help":
   case "-h":
   case undefined:
